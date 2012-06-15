@@ -54,8 +54,7 @@
         android:label="@string/contactsList"
         android:icon="@mipmap/ic_launcher_contacts"
         android:taskAffinity="android.task.contacts"
-        android:hardwareAccelerated="true"
-    >
+        android:hardwareAccelerated="true">
 
         <!-- Intercept Dialer Intents for devices without a phone.
         This activity should have the same intent filters as the DialtactsActivity,
@@ -64,8 +63,7 @@
         are set lower, so that the user does not see a disambig dialog -->
         <activity
             android:name=".activities.NonPhoneActivity"
-            android:theme="@style/NonPhoneActivityTheme"
-        >
+            android:theme="@style/NonPhoneActivityTheme">
             <intent-filter android:priority="-1">
                 <action android:name="android.intent.action.DIAL" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -304,44 +302,37 @@
 
         <!-- Backwards compatibility: somebody may have hard coded this activity name -->
         <activity-alias android:name="ContactsListActivity"
-            android:targetActivity=".activities.PeopleActivity"
-        />
+            android:targetActivity=".activities.PeopleActivity" />
 
         <!-- Backwards compatibility: "Contacts" from Honeycomb -->
         <activity-alias android:name=".activities.ContactsFrontDoor"
             android:targetActivity=".activities.PeopleActivity"
-            android:exported="true"
-        />
+            android:exported="true" />
 
         <!-- Backwards compatibility: "Contacts" from Gingerbread and earlier -->
         <activity-alias android:name="DialtactsContactsEntryActivity"
             android:targetActivity=".activities.PeopleActivity"
-            android:exported="true"
-        />
+            android:exported="true" />
 
         <!-- Backwards compatibility: "Phone" from Gingerbread and earlier -->
         <activity-alias android:name="DialtactsActivity"
             android:targetActivity=".activities.DialtactsActivity"
-            android:exported="true"
-        />
+            android:exported="true" />
 
         <!-- Backwards compatibility: "Call log" from Gingerbread and earlier -->
         <activity-alias android:name="RecentCallsListActivity"
             android:targetActivity=".activities.DialtactsActivity"
-            android:exported="true"
-        />
+            android:exported="true" />
 
         <!-- Backwards compatibility: "Call log" from ICS -->
         <activity-alias android:name=".activities.CallLogActivity"
             android:targetActivity=".activities.DialtactsActivity"
-            android:exported="true"
-        />
+            android:exported="true" />
 
         <!-- An activity for joining contacts -->
         <activity android:name=".activities.JoinContactActivity"
             android:theme="@style/JoinContactActivityTheme"
-            android:clearTaskOnLaunch="true"
-        >
+            android:clearTaskOnLaunch="true">
             <intent-filter>
                 <action android:name="com.android.contacts.action.JOIN_CONTACT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -433,13 +424,11 @@
             android:label="@string/shortcutDialContact"
             android:icon="@mipmap/ic_launcher_shortcut_directdial"
             android:enabled="@*android:bool/config_voice_capable">
-
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.CAR_MODE" />
             </intent-filter>
-
         </activity-alias>
 
         <activity-alias android:name="alias.MessageShortcut"
@@ -447,12 +436,10 @@
             android:label="@string/shortcutMessageContact"
             android:icon="@mipmap/ic_launcher_shortcut_directmessage"
             android:enabled="@*android:bool/config_voice_capable">
-
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
         </activity-alias>
 
         <activity android:name="CallDetailActivity"
@@ -460,8 +447,7 @@
             android:theme="@style/CallDetailActivityTheme"
             android:screenOrientation="nosensor"
             android:icon="@mipmap/ic_launcher_phone"
-            android:taskAffinity="android.task.contacts.phone"
-        >
+            android:taskAffinity="android.task.contacts.phone">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -473,7 +459,6 @@
         <activity android:name=".activities.ContactDetailActivity"
             android:label="@string/viewContactTitle"
             android:theme="@style/DetailActivityTheme">
-
             <intent-filter android:label="@string/viewContactDesription">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -503,7 +488,6 @@
             android:name=".activities.ContactEditorActivity"
             android:theme="@style/EditorActivityTheme"
             android:windowSoftInputMode="adjustResize">
-
             <intent-filter android:label="@string/editContactDescription">
                 <action android:name="android.intent.action.EDIT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -631,54 +615,51 @@
                 <action android:name="android.intent.action.APPWIDGET_PICK" />
             </intent-filter>
         </activity>
-
-         
             
         <service
             android:name=".calllog.CallLogNotificationsService"
-            android:exported="false"
-        />
-         <!-- begin : JiangzhouQ 2012.03.01 -->
+            android:exported="false"/>
         
-           <activity android:name=".activities.SIMContactSelectionActivity"
-            android:label="@string/contactsList"
-            android:theme="@style/ContactPickerTheme"
-            android:launchMode="singleTop"
-            android:clearTaskOnLaunch="true"
-            android:configChanges="orientation|keyboardHidden|screenSize">
-            <intent-filter>
-                <action android:name="android.intent.action.SIMPICK" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.dir/phone_v2" />
-            </intent-filter>
-        </activity>
+		<!-- begin : JiangzhouQ 2012.03.01 -->
+		<activity android:name=".activities.SIMContactSelectionActivity"
+			android:label="@string/contactsList"
+			android:theme="@style/ContactPickerTheme"
+			android:launchMode="singleTop"
+			android:clearTaskOnLaunch="true"
+			android:configChanges="orientation|keyboardHidden|screenSize">
+			<intent-filter>
+				<action android:name="android.intent.action.SIMPICK" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="vnd.android.cursor.dir/phone_v2" />
+			</intent-filter>
+		</activity>
         
-           <activity android:name=".activities.ExportSIMContacts"
-            android:label="@string/contactsList"
-            android:theme="@style/ContactPickerTheme"
-            android:launchMode="singleTop"
-            android:clearTaskOnLaunch="true"
-            android:configChanges="orientation|keyboardHidden|screenSize">
-            <intent-filter>
-               <action android:name="android.intent.action.EXPORT_SIM_CONTACTS" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.dir/phone_v2" />
-            </intent-filter>
-             </activity>
-        <!-- end : JiangzhouQ 2012.03.01 -->
+		<activity android:name=".activities.ExportSIMContacts"
+			android:label="@string/contactsList"
+			android:theme="@style/ContactPickerTheme"
+			android:launchMode="singleTop"
+			android:clearTaskOnLaunch="true"
+			android:configChanges="orientation|keyboardHidden|screenSize">
+			<intent-filter>
+				<action android:name="android.intent.action.EXPORT_SIM_CONTACTS" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="vnd.android.cursor.dir/phone_v2" />
+			</intent-filter>
+		</activity>
+		<!-- end : JiangzhouQ 2012.03.01 -->
 
-        <!-- begin: added by yunzhou.song -->
-        <activity
-            android:name=".activities.OneKeyDialSetting"
-            android:configChanges="orientation|keyboardHidden"
-            android:label="@string/oneKeyDialSetting"
-            android:theme="@android:style/Theme.Holo.Light" >
-            <intent-filter>
-                <action android:name="android.intent.action.OneKeyDialSetting" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <!-- end: added by yunzhou.song -->
+       <!-- begin: added by yunzhou.song -->
+       <activity
+           android:name=".activities.OneKeyDialSetting"
+           android:configChanges="orientation|keyboardHidden"
+           android:label="@string/oneKeyDialSetting"
+           android:theme="@android:style/Theme.Holo.Light" >
+           <intent-filter>
+               <action android:name="android.intent.action.OneKeyDialSetting" />
+               <category android:name="android.intent.category.DEFAULT" />
+           </intent-filter>
+       </activity>
+       <!-- end: added by yunzhou.song -->
 
     </application>
 </manifest>

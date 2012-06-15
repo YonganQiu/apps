@@ -1585,6 +1585,10 @@ public class PeopleActivity extends ContactsActivity
            		 startActivityForResult(intent, 1);
             	}
             }
+            case R.id.menu_dialpad: {
+//            	mDialerFragment.setFragmentVisible(R.id.dialpad_fragment, !mDialerFragment.isFragmentVisible(R.id.dialpad_fragment));
+            	return true;
+            }
         }
         return false;
     }
