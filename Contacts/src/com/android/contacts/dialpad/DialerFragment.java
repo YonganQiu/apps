@@ -14,4 +14,10 @@ public class DialerFragment extends Fragment {
 			Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.dialer_fragment, container, false);
 	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString("tag", "DialerFragment");
+	}
 }

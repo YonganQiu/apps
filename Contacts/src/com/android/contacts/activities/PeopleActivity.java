@@ -88,7 +88,7 @@ import android.provider.ContactsContract.Intents;
 import android.provider.ContactsContract.ProviderStatus;
 import android.provider.ContactsContract.QuickContact;
 import android.provider.Settings;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.telephony.TelephonyManager;
@@ -1411,6 +1411,9 @@ public class PeopleActivity extends ContactsActivity
 
         final MenuItem addContactMenu = menu.findItem(R.id.menu_add_contact);
         final MenuItem contactsFilterMenu = menu.findItem(R.id.menu_contacts_filter);
+        final MenuItem dialpadMenu = menu.findItem(R.id.menu_dialpad);
+        final MenuItem callTypeMenu = menu.findItem(R.id.menu_call_type);
+        final MenuItem callSettingsMenu = menu.findItem(R.id.menu_call_settings);
 
         MenuItem addGroupMenu = menu.findItem(R.id.menu_add_group);
         if (addGroupMenu == null) {
@@ -1422,17 +1425,41 @@ public class PeopleActivity extends ContactsActivity
             addContactMenu.setVisible(false);
             addGroupMenu.setVisible(false);
             contactsFilterMenu.setVisible(false);
+            callSettingsMenu.setVisible(false);
+            final boolean showMiscOptions = !isSearchMode;
+            makeMenuItemVisible(menu, R.id.menu_search, showMiscOptions);
+            makeMenuItemVisible(menu, R.id.menu_import_export, showMiscOptions);
+            makeMenuItemVisible(menu, R.id.menu_accounts, showMiscOptions);
+            makeMenuItemVisible(menu, R.id.menu_display_settings,
+                    showMiscOptions && !ContactsPreferenceActivity.isEmpty(this));
+            makeMenuItemVisible(menu, R.id.menu_sim_contacts, showMiscOptions);
         } else {
             switch (mActionBarAdapter.getCurrentTab()) {
                 case FAVORITES:
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
                     contactsFilterMenu.setVisible(false);
+                    dialpadMenu.setVisible(false);
+                    callTypeMenu.setVisible(false);
+                    callSettingsMenu.setVisible(false);
+                    makeMenuItemVisible(menu, R.id.menu_search, true);
+                    makeMenuItemVisible(menu, R.id.menu_import_export, false);
+                    makeMenuItemVisible(menu, R.id.menu_accounts, false);
+                    makeMenuItemVisible(menu, R.id.menu_display_settings, false);
+                    makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
                     break;
                 case ALL:
                     addContactMenu.setVisible(true);
                     addGroupMenu.setVisible(false);
                     contactsFilterMenu.setVisible(true);
+                    dialpadMenu.setVisible(false);
+                    callTypeMenu.setVisible(false);
+                    callSettingsMenu.setVisible(false);
+                    makeMenuItemVisible(menu, R.id.menu_search, true);
+                    makeMenuItemVisible(menu, R.id.menu_import_export, true);
+                    makeMenuItemVisible(menu, R.id.menu_accounts, true);
+                    makeMenuItemVisible(menu, R.id.menu_display_settings, !ContactsPreferenceActivity.isEmpty(this));
+                    makeMenuItemVisible(menu, R.id.menu_sim_contacts, true);
                     break;
                 case GROUPS:
                     // Do not display the "new group" button if no accounts are available
@@ -1443,20 +1470,31 @@ public class PeopleActivity extends ContactsActivity
                     }
                     addContactMenu.setVisible(false);
                     contactsFilterMenu.setVisible(false);
+                    dialpadMenu.setVisible(false);
+                    callTypeMenu.setVisible(false);
+                    callSettingsMenu.setVisible(false);
+                    makeMenuItemVisible(menu, R.id.menu_search, true);
+                    makeMenuItemVisible(menu, R.id.menu_import_export, false);
+                    makeMenuItemVisible(menu, R.id.menu_accounts, true);
+                    makeMenuItemVisible(menu, R.id.menu_display_settings, false);
+                    makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
                     break;
                 case DIALER:
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
                     contactsFilterMenu.setVisible(false);
+                    dialpadMenu.setVisible(true);
+                    callTypeMenu.setVisible(true);
+                    callSettingsMenu.setVisible(true);
+                    callSettingsMenu.setIntent(DialtactsActivity.getCallSettingsIntent());
+                    makeMenuItemVisible(menu, R.id.menu_search, false);
+                    makeMenuItemVisible(menu, R.id.menu_import_export, false);
+                    makeMenuItemVisible(menu, R.id.menu_accounts, false);
+                    makeMenuItemVisible(menu, R.id.menu_display_settings, false);
+                    makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
                     break;
             }
         }
-        final boolean showMiscOptions = !isSearchMode;
-        makeMenuItemVisible(menu, R.id.menu_search, showMiscOptions);
-        makeMenuItemVisible(menu, R.id.menu_import_export, showMiscOptions);
-        makeMenuItemVisible(menu, R.id.menu_accounts, showMiscOptions);
-        makeMenuItemVisible(menu, R.id.menu_settings,
-                showMiscOptions && !ContactsPreferenceActivity.isEmpty(this));
 
         return true;
     }
@@ -1479,7 +1517,7 @@ public class PeopleActivity extends ContactsActivity
                 }
                 return true;
             }
-            case R.id.menu_settings: {
+            case R.id.menu_display_settings: {
                 final Intent intent = new Intent(this, ContactsPreferenceActivity.class);
                 // as there is only one section right now, make sure it is selected
                 // on small screens, this also hides the section selector
@@ -1536,7 +1574,7 @@ public class PeopleActivity extends ContactsActivity
                 startActivity(intent);
                 return true;
             }
-            case R.id.sim_manager: {
+            case R.id.menu_sim_contacts: {
             	if(checkSimState() == 5 ){
             		 Intent intent = new Intent("android.intent.action.SIMPICK");
 //           		 intent.setType("vnd.android.cursor.dir/phone");

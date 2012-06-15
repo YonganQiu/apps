@@ -54,4 +54,10 @@ public class ContactTileFrequentFragment extends ContactTileListFragment {
         headerContainer.addView(headerView);
         return listLayout;
     }
+    
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString("tag", "ContactTileFrequentFragment");
+	}
 }

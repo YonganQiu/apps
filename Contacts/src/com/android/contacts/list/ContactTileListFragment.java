@@ -97,6 +97,12 @@ public class ContactTileListFragment extends Fragment {
         // TODO: Use initLoader?
         getLoaderManager().restartLoader(LOADER_CONTACTS, null, mContactTileLoaderListener);
     }
+    
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString("tag", "ContactTileListFragment");
+	}
 
     public void setColumnCount(int columnCount) {
         mAdapter.setColumnCount(columnCount);

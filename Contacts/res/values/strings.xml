@@ -1879,5 +1879,7 @@
     <string name="num_8">8</string>
     <string name="num_9">9</string>
     <string name="showFilterPhonesDescrip">Only display contacts that have phone number</string>
+    <string name="menu_dialpad">Dialpad</string>
+    <string name="menu_call_type">Call type</string>
     <!-- end: added by yunzhou.song -->
 </resources>

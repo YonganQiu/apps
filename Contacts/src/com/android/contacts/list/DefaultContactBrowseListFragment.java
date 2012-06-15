@@ -26,6 +26,7 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.ContactsContract.Contacts;
 import android.text.TextUtils;
 import android.util.Log;
@@ -151,6 +152,12 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
         super.setSearchMode(flag);
         checkHeaderViewVisibility();
     }
+    
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString("tag", "DefaultContactBrowseListFragment");
+	}
 
     private void checkHeaderViewVisibility() {
         if (mCounterHeaderView != null) {

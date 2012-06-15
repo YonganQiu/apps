@@ -15,6 +15,24 @@
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/menu_call_type"
+        android:icon="@drawable/ic_ab_history_holo_dark"
+        android:title="@string/menu_call_type"
+        android:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/menu_dialpad"
+        android:icon="@drawable/ic_ab_dialpad_holo_dark"
+        android:title="@string/menu_dialpad"
+        android:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/menu_call_settings"
+        android:icon="@drawable/ic_menu_settings_holo_light"
+        android:title="@string/call_settings"
+        android:showAsAction="never" />
+    
+    <item
         android:id="@+id/menu_search"
         android:icon="@drawable/ic_ab_search_holo_dark"
         android:title="@string/menu_search"
@@ -45,15 +63,16 @@
     <item
         android:id="@+id/menu_accounts"
         android:icon="@drawable/ic_menu_accounts_holo_light"
-        android:title="@string/menu_accounts" />
+        android:title="@string/menu_accounts"
+        android:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/menu_settings"
+        android:id="@+id/menu_display_settings"
         android:icon="@drawable/ic_menu_settings_holo_light"
         android:title="@string/menu_settings" />
     
     <item
-        android:id="@+id/sim_manager"
+        android:id="@+id/menu_sim_contacts"
         android:icon="@drawable/ic_menu_settings_holo_light"
         android:title="@string/sim_manager"
         android:showAsAction="never" />
