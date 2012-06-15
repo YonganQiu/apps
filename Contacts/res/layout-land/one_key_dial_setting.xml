@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <RelativeLayout
+                android:id="@+id/contact2"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px" >
+
+                <ImageView
+                    android:id="@+id/photo2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_2" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_2"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/contact3"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px"
+                android:layout_marginLeft="2px" >
+
+                <ImageView
+                    android:id="@+id/photo3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_4" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_3"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/contact4"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px"
+                android:layout_marginLeft="2px" >
+
+                <ImageView
+                    android:id="@+id/photo4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_4" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_4"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/contact5"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px"
+                android:layout_marginLeft="2px" >
+
+                <ImageView
+                    android:id="@+id/photo5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_4" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_5"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2px" >
+
+            <RelativeLayout
+                android:id="@+id/contact6"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px" >
+
+                <ImageView
+                    android:id="@+id/photo6"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_6" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number6"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_6"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state6"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/contact7"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px"
+                android:layout_marginLeft="2px" >
+
+                <ImageView
+                    android:id="@+id/photo7"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_4" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number7"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_7"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state7"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/contact8"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px"
+                android:layout_marginLeft="2px" >
+
+                <ImageView
+                    android:id="@+id/photo8"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_8" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number8"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_8"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state8"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/contact9"
+                android:layout_width="297.5px"
+                android:layout_height="297.5px"
+                android:layout_marginLeft="2px" >
+
+                <ImageView
+                    android:id="@+id/photo9"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/num_4" >
+                </ImageView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/contact_tile_shadowbox_height"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/contact_tile_shadow_box_color"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="8dip"
+                    android:paddingRight="8dip" >
+
+                    <TextView
+                        android:id="@+id/number9"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:ellipsize="end"
+                        android:paddingRight="20dp"
+                        android:singleLine="true"
+                        android:text="@string/unset" >
+                    </TextView>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/num_9"
+                        android:textColor="#39caff"
+                        android:textAppearance="?android:attr/textAppearanceMedium" >
+                    </TextView>
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/push_state9"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:focusable="true" />
+            </RelativeLayout>
+        </TableRow>
+    </TableLayout>
+
+</ScrollView>

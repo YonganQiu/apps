@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="menu_array">
+        <item>@string/dialerIconLabel</item>
+        <item>@string/menu_sendTextMessage</item>
+        <item>@string/menu_deleteContact</item>
+        <item>@string/menu_editContact</item>
+    </array>
+
+</resources>
