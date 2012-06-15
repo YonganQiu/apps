@@ -31,7 +31,7 @@
         android:layout_weight="@integer/dialpad_layout_weight_digits"
         android:layout_marginTop="@dimen/dialpad_vertical_margin"
         android:gravity="center"
-        android:background="@drawable/dialpad_background" >
+        android:background="@android:color/holo_orange_dark" >
 
         <com.android.contacts.dialpad.DigitsEditText
             android:id="@+id/digits"
@@ -63,7 +63,7 @@
     <View
        android:layout_width="match_parent"
        android:layout_height="@dimen/dialpad_vertical_margin"
-       android:background="#66000000"/>
+       android:background="@android:color/holo_orange_dark"/>
 
     <!-- Horizontal row of buttons (Search + DialButton + Delete.) -->
     <include layout="@layout/dialpad_additional_buttons" />
