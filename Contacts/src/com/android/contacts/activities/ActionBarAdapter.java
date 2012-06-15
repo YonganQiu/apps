@@ -78,16 +78,20 @@ public class ActionBarAdapter implements OnQueryTextListener, OnCloseListener {
     private boolean mShowTabsAsText;
 
     public enum TabState {
-        GROUPS,
+        DIALER,
         ALL,
+        GROUPS,
         FAVORITES;
 
         public static TabState fromInt(int value) {
-            if (GROUPS.ordinal() == value) {
-                return GROUPS;
+            if (DIALER.ordinal() == value) {
+                return DIALER;
             }
             if (ALL.ordinal() == value) {
                 return ALL;
+            }
+            if (GROUPS.ordinal() == value) {
+                return GROUPS;
             }
             if (FAVORITES.ordinal() == value) {
                 return FAVORITES;
@@ -134,8 +138,9 @@ public class ActionBarAdapter implements OnQueryTextListener, OnCloseListener {
         mActionBar.setCustomView(customSearchView, layoutParams);
 
         // Set up tabs
-        addTab(TabState.GROUPS, R.drawable.ic_tab_groups, R.string.contactsGroupsLabel);
+        addTab(TabState.DIALER, R.drawable.ic_tab_dialer, R.string.dialerIconLabel);
         addTab(TabState.ALL, R.drawable.ic_tab_all, R.string.contactsAllLabel);
+        addTab(TabState.GROUPS, R.drawable.ic_tab_groups, R.string.contactsGroupsLabel);
         addTab(TabState.FAVORITES, R.drawable.ic_tab_starred, R.string.contactsFavoritesLabel);
     }
 

@@ -20,6 +20,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+	<fragment
+		android:id="@+id/dialer_fragment"
+		class="com.android.contacts.dialpad.DialerFragment"
+		android:layout_height="match_parent"
+		android:layout_width="match_parent" />
+    
     <com.android.contacts.widget.InterpolatingLayout
         android:id="@+id/main_view"
         android:layout_width="match_parent"

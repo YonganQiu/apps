@@ -27,6 +27,7 @@ import com.android.contacts.detail.ContactDetailLayoutController;
 import com.android.contacts.detail.ContactDetailUpdatesFragment;
 import com.android.contacts.detail.ContactLoaderFragment;
 import com.android.contacts.detail.ContactLoaderFragment.ContactLoaderFragmentListener;
+import com.android.contacts.dialpad.DialerFragment;
 import com.android.contacts.group.GroupBrowseListFragment;
 import com.android.contacts.group.GroupBrowseListFragment.OnGroupBrowserActionListener;
 import com.android.contacts.group.GroupDetailFragment;
@@ -62,6 +63,7 @@ import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
 import com.android.contacts.util.Constants;
 import com.android.contacts.util.DialogManager;
 import com.android.contacts.util.PhoneCapabilityTester;
+import com.android.contacts.voicemail.VoicemailStatusHelperImpl;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -92,14 +94,17 @@ import android.support.v4.view.ViewPager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListPopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -160,6 +165,7 @@ public class PeopleActivity extends ContactsActivity
     private ContactTileListFragment mFavoritesFragment;
     private ContactTileFrequentFragment mFrequentFragment;
     private GroupBrowseListFragment mGroupsFragment;
+    private DialerFragment mDialerFragment;
 
     private View mFavoritesView;
     private View mBrowserView;
@@ -349,8 +355,9 @@ public class PeopleActivity extends ContactsActivity
         boolean isUsingTwoPanes = PhoneCapabilityTester.isUsingTwoPanes(this);
         if (isUsingTwoPanes) {
             mFavoritesFragment = getFragment(R.id.favorites_fragment);
-            mAllFragment = getFragment(R.id.all_fragment);
             mGroupsFragment = getFragment(R.id.groups_fragment);
+            mAllFragment = getFragment(R.id.all_fragment);
+            mDialerFragment = getFragment(R.id.dialer_fragment);
         } else {
             mTabPager = getView(R.id.tab_pager);
             mTabPagerAdapter = new TabPagerAdapter();
@@ -358,8 +365,9 @@ public class PeopleActivity extends ContactsActivity
             mTabPager.setOnPageChangeListener(mTabPagerListener);
 
             final String FAVORITE_TAG = "tab-pager-favorite";
-            final String ALL_TAG = "tab-pager-all";
             final String GROUPS_TAG = "tab-pager-groups";
+            final String ALL_TAG = "tab-pager-all";
+            final String DIALER_TAG = "tab-pager-blank";
 
             // Create the fragments and add as children of the view pager.
             // The pager adapter will only change the visibility; it'll never create/destroy
@@ -369,19 +377,23 @@ public class PeopleActivity extends ContactsActivity
             // existing.
             mFavoritesFragment = (ContactTileListFragment)
                     fragmentManager.findFragmentByTag(FAVORITE_TAG);
-            mAllFragment = (DefaultContactBrowseListFragment)
-                    fragmentManager.findFragmentByTag(ALL_TAG);
             mGroupsFragment = (GroupBrowseListFragment)
                     fragmentManager.findFragmentByTag(GROUPS_TAG);
+            mAllFragment = (DefaultContactBrowseListFragment)
+                    fragmentManager.findFragmentByTag(ALL_TAG);
+            mDialerFragment = (DialerFragment)
+                    fragmentManager.findFragmentByTag(DIALER_TAG);
 
             if (mFavoritesFragment == null) {
                 mFavoritesFragment = new ContactTileListFragment();
-                mAllFragment = new DefaultContactBrowseListFragment();
                 mGroupsFragment = new GroupBrowseListFragment();
+                mAllFragment = new DefaultContactBrowseListFragment();
+                mDialerFragment = new DialerFragment();
 
                 transaction.add(R.id.tab_pager, mFavoritesFragment, FAVORITE_TAG);
-                transaction.add(R.id.tab_pager, mAllFragment, ALL_TAG);
                 transaction.add(R.id.tab_pager, mGroupsFragment, GROUPS_TAG);
+                transaction.add(R.id.tab_pager, mAllFragment, ALL_TAG);
+                transaction.add(R.id.tab_pager, mDialerFragment, DIALER_TAG);
             }
         }
 
@@ -398,8 +410,9 @@ public class PeopleActivity extends ContactsActivity
         // Hide all fragments for now.  We adjust visibility when we get onSelectedTabChanged()
         // from ActionBarAdapter.
         transaction.hide(mFavoritesFragment);
-        transaction.hide(mAllFragment);
         transaction.hide(mGroupsFragment);
+        transaction.hide(mAllFragment);
+        transaction.hide(mDialerFragment);
 
         if (isUsingTwoPanes) {
             // Prepare 2-pane only fragments/views...
@@ -440,7 +453,7 @@ public class PeopleActivity extends ContactsActivity
             mFavoritesFragment.enableQuickContact(true);
             mFavoritesFragment.setDisplayType(DisplayType.STARRED_ONLY);
         } else {
-            mFavoritesFragment.setDisplayType(DisplayType.STREQUENT);
+            mFavoritesFragment.setDisplayType(DisplayType.STARRED_ONLY);
         }
 
         // Configure action bar
@@ -705,6 +718,7 @@ public class PeopleActivity extends ContactsActivity
                 hideFragment(ft, mContactDetailFragment);
                 hideFragment(ft, mGroupsFragment);
                 hideFragment(ft, mGroupDetailFragment);
+                hideFragment(ft, mDialerFragment);
                 break;
             case ALL:
                 hideFragment(ft, mFavoritesFragment);
@@ -714,6 +728,7 @@ public class PeopleActivity extends ContactsActivity
                 showFragment(ft, mContactDetailFragment);
                 hideFragment(ft, mGroupsFragment);
                 hideFragment(ft, mGroupDetailFragment);
+                hideFragment(ft, mDialerFragment);
                 break;
             case GROUPS:
                 hideFragment(ft, mFavoritesFragment);
@@ -723,7 +738,17 @@ public class PeopleActivity extends ContactsActivity
                 hideFragment(ft, mContactDetailFragment);
                 showFragment(ft, mGroupsFragment);
                 showFragment(ft, mGroupDetailFragment);
+                hideFragment(ft, mDialerFragment);
                 break;
+            case DIALER:
+                hideFragment(ft, mFavoritesFragment);
+                hideFragment(ft, mFrequentFragment);
+                hideFragment(ft, mAllFragment);
+                hideFragment(ft, mContactDetailLoaderFragment);
+                hideFragment(ft, mContactDetailFragment);
+                hideFragment(ft, mGroupsFragment);
+                hideFragment(ft, mGroupDetailFragment);
+                showFragment(ft, mDialerFragment);
         }
         if (!ft.isEmpty()) {
             ft.commitAllowingStateLoss();
@@ -833,6 +858,9 @@ public class PeopleActivity extends ContactsActivity
                 if (object == mGroupsFragment) {
                     return TabState.GROUPS.ordinal();
                 }
+                if (object == mDialerFragment) {
+                    return TabState.DIALER.ordinal();
+                }
             }
             return POSITION_NONE;
         }
@@ -849,10 +877,12 @@ public class PeopleActivity extends ContactsActivity
             } else {
                 if (position == TabState.FAVORITES.ordinal()) {
                     return mFavoritesFragment;
-                } else if (position == TabState.ALL.ordinal()) {
-                    return mAllFragment;
                 } else if (position == TabState.GROUPS.ordinal()) {
                     return mGroupsFragment;
+                } else if (position == TabState.ALL.ordinal()) {
+                    return mAllFragment;
+                } else if (position == TabState.DIALER.ordinal()) {
+                    return mDialerFragment;
                 }
             }
             throw new IllegalArgumentException("position: " + position);
@@ -1412,6 +1442,11 @@ public class PeopleActivity extends ContactsActivity
                         addGroupMenu.setVisible(false);
                     }
                     addContactMenu.setVisible(false);
+                    contactsFilterMenu.setVisible(false);
+                    break;
+                case DIALER:
+                    addContactMenu.setVisible(false);
+                    addGroupMenu.setVisible(false);
                     contactsFilterMenu.setVisible(false);
                     break;
             }

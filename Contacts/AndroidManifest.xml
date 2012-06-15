@@ -184,8 +184,8 @@
             android:uiOptions="splitActionBarWhenNarrow"
             android:clearTaskOnLaunch="true"
             android:launchMode="singleTop"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-        >
+            android:screenOrientation="nosensor"
+            android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
