@@ -20,7 +20,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:paddingBottom="?android:attr/actionBarSize"
-    android:background="@android:color/holo_blue_dark">
+    >
 
     <FrameLayout
         android:id="@+id/voicemail_status"
@@ -36,12 +36,34 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
     >
+        <RadioGroup 
+            android:orientation="vertical"
+            android:layout_width="200px"
+            android:layout_height="match_parent">
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_all"/>
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_incoming"/>
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_outgoing"/>
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_missed"/>
+        </RadioGroup>
         <ListView android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fadingEdge="none"
             android:scrollbarStyle="outsideOverlay"
             android:divider="@null"
+            android:background="@android:color/holo_blue_dark"
         />
         <TextView android:id="@android:id/empty"
             android:layout_width="match_parent"

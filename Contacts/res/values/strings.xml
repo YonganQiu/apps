@@ -1857,6 +1857,7 @@
     <string name="delete_failed">Contacts delete failed!</string>
     <string name="delete_sim_contacts">Delete contacts in SIM card</string>
      <string name="import_sim_contacts">Import SIM contacts</string>
+     <string name="type_all">All Calls</string>
     <!-- end : added by JiangzhouQ -->
 
     <!-- begin: added by yunzhou.song -->

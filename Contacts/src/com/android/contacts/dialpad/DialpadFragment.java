@@ -61,6 +61,7 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.DialerKeyListener;
@@ -79,6 +80,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -293,7 +295,7 @@ public class DialpadFragment extends Fragment
             mDialButton = null;
         }
 
-        mDelete = mAdditionalButtonsRow.findViewById(R.id.deleteButton);
+        mDelete = fragmentView.findViewById(R.id.deleteButton);
         mDelete.setOnClickListener(this);
         mDelete.setOnLongClickListener(this);
 
@@ -1600,4 +1602,5 @@ public class DialpadFragment extends Fragment
     public void onVisibilityChanged(boolean visible) {
         mShowOptionsMenu = visible;
     }
+
 }

@@ -1587,6 +1587,15 @@ public class PeopleActivity extends ContactsActivity
             }
             case R.id.menu_dialpad: {
 //            	mDialerFragment.setFragmentVisible(R.id.dialpad_fragment, !mDialerFragment.isFragmentVisible(R.id.dialpad_fragment));
+            	mDialerFragment.setFragmentVisible(R.id.dialpad_fragment,
+    					R.animator.fragment_slide_down_enter,
+    					R.animator.fragment_slide_down_exit,
+    					!mDialerFragment.isFragmentVisible(R.id.dialpad_fragment));
+            	return true;
+            }
+            
+            case R.id.menu_call_type:{
+            	mDialerFragment.onAnimationFragment();
             	return true;
             }
         }

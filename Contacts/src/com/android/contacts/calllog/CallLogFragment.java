@@ -40,6 +40,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.provider.CallLog.Calls;
 import android.telephony.PhoneNumberUtils;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,6 +49,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -433,4 +436,6 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
         serviceIntent.setAction(CallLogNotificationsService.ACTION_UPDATE_NOTIFICATIONS);
         getActivity().startService(serviceIntent);
     }
+    
+
 }

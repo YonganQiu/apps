@@ -34,13 +34,15 @@
         android:state_enabled="false"
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@string/description_search_button"
-        android:src="@drawable/ic_dial_action_search"/>
+        android:src="@drawable/ic_dial_action_search"
+        android:visibility="gone"/>
 
     <View
         android:layout_width="1dip"
         android:layout_height="24dip"
         android:layout_gravity="center_vertical"
-        android:background="?android:attr/dividerVertical" />
+        android:background="?android:attr/dividerVertical" 
+        android:paddingLeft="10dip"/>
 
     <!-- Onscreen "Dial" button, diused on all platforms by
          default. Its usage can be disabled using resources (see
@@ -59,17 +61,10 @@
         android:layout_width="1dip"
         android:layout_height="24dip"
         android:layout_gravity="center_vertical"
-        android:background="?android:attr/dividerVertical" />
+        android:background="?android:attr/dividerVertical" 
+        android:paddingRight="10dip"/>
 
     <!-- Onscreen "Backspace/Delete" button -->
-    <ImageButton android:id="@+id/deleteButton"
-        android:layout_width="0px"
-        android:layout_weight="0.30"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:state_enabled="false"
-        android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/description_delete_button"
-        android:src="@drawable/ic_dial_action_delete" />
+
 </LinearLayout>
 

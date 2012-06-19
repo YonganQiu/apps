@@ -44,7 +44,18 @@
             android:textColor="?android:attr/textColorPrimary"
             android:nextFocusRight="@+id/overflow_menu"
             android:background="@android:color/transparent" />
-
+        
+        <ImageButton
+            android:id="@+id/deleteButton"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:layout_weight="0.30"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/description_delete_button"
+            android:src="@drawable/ic_dial_action_delete"
+            android:state_enabled="false" />
+            
         <ImageButton
             android:id="@+id/overflow_menu"
             android:layout_width="48dip"
@@ -53,7 +64,8 @@
             android:src="@drawable/ic_menu_overflow"
             android:contentDescription="@*android:string/action_menu_overflow_description"
             android:nextFocusLeft="@id/digits"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
