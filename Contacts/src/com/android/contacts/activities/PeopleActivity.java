@@ -714,6 +714,11 @@ public class PeopleActivity extends ContactsActivity
                 mBrowserView.setVisibility(View.VISIBLE);
                 mDetailsView.setVisibility(View.VISIBLE);
                 break;
+            case DIALER:
+                mFavoritesView.setVisibility(View.GONE);
+                mBrowserView.setVisibility(View.GONE);
+                mDetailsView.setVisibility(View.GONE);
+                break;
         }
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction ft = fragmentManager.beginTransaction();
@@ -1448,6 +1453,8 @@ public class PeopleActivity extends ContactsActivity
             addContactMenu.setVisible(false);
             addGroupMenu.setVisible(false);
             contactsFilterMenu.setVisible(false);
+            dialpadMenu.setVisible(false);
+            callTypeMenu.setVisible(false);
             callSettingsMenu.setVisible(false);
             final boolean showMiscOptions = !isSearchMode;
             makeMenuItemVisible(menu, R.id.menu_search, showMiscOptions);
@@ -1606,6 +1613,7 @@ public class PeopleActivity extends ContactsActivity
 //           		 intent.setType("vnd.android.cursor.dir/contact");
            		 intent.putExtra("multiple_choice", true);
            		 startActivityForResult(intent, 1);
+           		 return true;
             	}
             }
             case R.id.menu_dialpad: {
@@ -1615,10 +1623,15 @@ public class PeopleActivity extends ContactsActivity
     					!mDialerFragment.isFragmentShow(R.id.dialpad_fragment));
             	return true;
             }
-            
             case R.id.menu_call_type:{
-            	mDialerFragment.onAnimationFragment();
-            	return true;
+                if(mDialerFragment.isFragmentShow(R.id.dialpad_fragment)) {
+                    mDialerFragment.setFragmentShow(R.id.dialpad_fragment,
+                        R.animator.fragment_slide_down_enter,
+                        R.animator.fragment_slide_down_exit,
+                        !mDialerFragment.isFragmentShow(R.id.dialpad_fragment));
+                }
+                mDialerFragment.onAnimationFragment();
+                return true;
             }
         }
         return false;

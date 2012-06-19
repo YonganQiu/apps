@@ -174,6 +174,7 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
                 new ContactInfoHelper(getActivity(), currentCountryIso));
         setListAdapter(mAdapter);
         getListView().setItemsCanFocus(true);
+        refreshData();
     }
 
     @Override
@@ -188,11 +189,11 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
         super.onStart();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        refreshData();
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        refreshData();
+//    }
 
     private void updateVoicemailStatusMessage(Cursor statusCursor) {
         List<StatusMessage> messages = mVoicemailStatusHelper.getStatusMessages(statusCursor);
