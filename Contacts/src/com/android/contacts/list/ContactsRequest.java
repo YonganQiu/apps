@@ -76,6 +76,10 @@ public class ContactsRequest implements Parcelable {
 
     /** Show all contacts and activate the specified one */
     public static final int ACTION_VIEW_CONTACT = 140;
+    
+    public static final int 	ACTION_DIAL = 150;
+    
+    public static final int ACTION_VIEW_CALL_LOG = 160;
 
     private boolean mValid = true;
     private int mActionCode = ACTION_DEFAULT;

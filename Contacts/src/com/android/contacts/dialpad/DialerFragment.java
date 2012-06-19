@@ -25,8 +25,8 @@ public class DialerFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View mContentView = inflater.inflate(R.layout.dialer_fragment, container, false);
-		return mContentView;
+		View contentView = inflater.inflate(R.layout.dialer_fragment, container, false);
+		return contentView;
 	}
 	
 	@Override
@@ -36,21 +36,21 @@ public class DialerFragment extends Fragment {
 	}
 	
 	
-	public boolean isFragmentVisible(int id) {
+	public boolean isFragmentShow(int id) {
 		Fragment fragment = getFragmentManager().findFragmentById(id);
 		if(fragment != null) {
-			return fragment.isVisible();
+			return !fragment.isHidden();
 		}
 		return false;
 	}
 	
-	public void setFragmentVisible(int id, int animEnter, int animExit, boolean visible) {
+	public void setFragmentShow(int id, int animEnter, int animExit, boolean isShow) {
 		FragmentManager fragmentManager = getFragmentManager();
 		Fragment fragment = fragmentManager.findFragmentById(id);
-		if(fragment != null && fragment.isVisible() ^ visible) {
+		if(fragment != null && !fragment.isHidden() ^ isShow) {
 			FragmentTransaction transaction = getFragmentManager().beginTransaction();
 			transaction.setCustomAnimations(animEnter, animExit);
-			if(visible) {
+			if(isShow) {
 				transaction.show(fragment);
 			} else {
 				transaction.hide(fragment);

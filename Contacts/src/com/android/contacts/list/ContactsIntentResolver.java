@@ -18,6 +18,8 @@ package com.android.contacts.list;
 
 import com.android.contacts.CallContactActivity;
 import com.android.contacts.ContactsSearchManager;
+import com.android.contacts.activities.DialtactsActivity;
+import com.android.contacts.activities.PeopleActivity;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -59,7 +61,23 @@ public class ContactsIntentResolver {
 
         Log.i(TAG, "Called with action: " + action);
 
-        if (UI.LIST_DEFAULT.equals(action) ) {
+        if(DialtactsActivity.class.getName().equals(intent.getComponent().getClassName())) {
+            request.setActionCode(ContactsRequest.ACTION_VIEW_CALL_LOG);
+            if(Intent.ACTION_MAIN.equals(action)) {
+                request.setActionCode(ContactsRequest.ACTION_DIAL);
+            } else if (Intent.ACTION_DIAL.equals(action)
+                    || DialtactsActivity.ACTION_TOUCH_DIALER.equals(action)) {
+                request.setActionCode(ContactsRequest.ACTION_DIAL);
+            } else if (Intent.ACTION_VIEW.equals(action)) {
+                final Uri data = intent.getData();
+                if (data != null && "tel".equals(data.getScheme())) {
+                    request.setActionCode(ContactsRequest.ACTION_DIAL);
+                }
+            }
+        } else if (Intent.ACTION_MAIN.equals(action)
+                && PeopleActivity.class.getName().equals(intent.getComponent().getClassName())) {
+            request.setActionCode(ContactsRequest.ACTION_ALL_CONTACTS);
+        } else if (UI.LIST_DEFAULT.equals(action) ) {
             request.setActionCode(ContactsRequest.ACTION_DEFAULT);
         } else if (UI.LIST_ALL_CONTACTS_ACTION.equals(action)) {
             request.setActionCode(ContactsRequest.ACTION_ALL_CONTACTS);

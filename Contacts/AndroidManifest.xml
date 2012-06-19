@@ -111,7 +111,7 @@
              dialpad screen. -->
         <activity android:name=".activities.DialtactsActivity"
             android:label="@string/launcherDialer"
-            android:theme="@style/DialtactsTheme"
+            android:theme="@style/PeopleTheme"
             android:uiOptions="splitActionBarWhenNarrow"
             android:launchMode="singleTask"
             android:clearTaskOnLaunch="true"

@@ -70,6 +70,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -313,6 +314,7 @@ public class PeopleActivity extends ContactsActivity
      *         farther initialization.
      */
     private boolean processIntent(boolean forNewIntent) {
+        boolean isDialtactsIntent = DialtactsActivity.isDialtactsIntent(getIntent());
         // Extract relevant information from the intent
         mRequest = mIntentResolver.resolveIntent(getIntent());
         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -324,6 +326,10 @@ public class PeopleActivity extends ContactsActivity
             return false;
         }
 
+        if(isDialtactsIntent) {
+        	return true;
+        }
+        
         Intent redirect = mRequest.getRedirectIntent();
         if (redirect != null) {
             // Need to start a different activity
@@ -577,6 +583,10 @@ public class PeopleActivity extends ContactsActivity
                 case ContactsRequest.ACTION_GROUP:
                     tabToOpen = TabState.GROUPS;
                     break;
+                case ContactsRequest.ACTION_DIAL:
+                case ContactsRequest.ACTION_VIEW_CALL_LOG:
+                    tabToOpen = TabState.DIALER;
+                    break;
             }
             if (tabToOpen != null) {
                 mActionBarAdapter.setCurrentTab(tabToOpen);
@@ -592,6 +602,7 @@ public class PeopleActivity extends ContactsActivity
             }
 
             mActionBarAdapter.setSearchMode(searchMode);
+            configureDialerFragment();
             configureContactListFragmentForRequest();
         }
 
@@ -950,6 +961,18 @@ public class PeopleActivity extends ContactsActivity
     private void setQueryTextToFragment(String query) {
         mAllFragment.setQueryString(query, true);
         mAllFragment.setVisibleScrollbarEnabled(!mAllFragment.isSearchMode());
+    }
+    
+    private void configureDialerFragment() {
+        int actionCode = mRequest.getActionCode();
+        switch(actionCode) {
+            case ContactsRequest.ACTION_DIAL:
+                mDialerFragment.setFragmentShow(R.id.dialpad_fragment, 0, 0, true);
+                break;
+            case ContactsRequest.ACTION_VIEW_CALL_LOG:
+                mDialerFragment.setFragmentShow(R.id.dialpad_fragment, 0, 0, false);
+                break;
+        }
     }
 
     private void configureContactListFragmentForRequest() {
@@ -1586,11 +1609,10 @@ public class PeopleActivity extends ContactsActivity
             	}
             }
             case R.id.menu_dialpad: {
-//            	mDialerFragment.setFragmentVisible(R.id.dialpad_fragment, !mDialerFragment.isFragmentVisible(R.id.dialpad_fragment));
-            	mDialerFragment.setFragmentVisible(R.id.dialpad_fragment,
+            	mDialerFragment.setFragmentShow(R.id.dialpad_fragment,
     					R.animator.fragment_slide_down_enter,
     					R.animator.fragment_slide_down_exit,
-    					!mDialerFragment.isFragmentVisible(R.id.dialpad_fragment));
+    					!mDialerFragment.isFragmentShow(R.id.dialpad_fragment));
             	return true;
             }
             
