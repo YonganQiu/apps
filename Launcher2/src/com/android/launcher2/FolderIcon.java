@@ -54,7 +54,11 @@ public class FolderIcon extends LinearLayout implements FolderListener {
     private static boolean sStaticValuesDirty = true;
 
     // The number of icons to display in the
-    private static final int NUM_ITEMS_IN_PREVIEW = 3;
+    //Modified by lijuan.li at 2012.06.21 begin
+    //Original code
+    //private static final int NUM_ITEMS_IN_PREVIEW = 3;
+    private static final int NUM_ITEMS_IN_PREVIEW = 9;
+    //Modified by lijuan.li at 2012.06.21 end
     private static final int CONSUMPTION_ANIMATION_DURATION = 100;
     private static final int DROP_IN_ANIMATION_DURATION = 400;
     private static final int INITIAL_ITEM_ANIMATION_DURATION = 350;
@@ -88,6 +92,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
     private int mTotalWidth = -1;
     private int mPreviewOffsetX;
     private int mPreviewOffsetY;
+    private int mLineCount = 1;
     private float mMaxPerspectiveShift;
     boolean mAnimating = false;
     private PreviewItemDrawingParams mParams = new PreviewItemDrawingParams(0, 0, 0, 0);
@@ -435,8 +440,8 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
         mParams.transX += mPreviewOffsetX;
         mParams.transY += mPreviewOffsetY;
-        float offsetX = mParams.transX + (mParams.scale * mIntrinsicIconSize) / 2;
-        float offsetY = mParams.transY + (mParams.scale * mIntrinsicIconSize) / 2;
+        float offsetX = mParams.transX + (mParams.scale * mIntrinsicIconSize) ;
+        float offsetY = mParams.transY + (mParams.scale * mIntrinsicIconSize) ;
 
         center[0] = (int) Math.round(offsetX);
         center[1] = (int) Math.round(offsetY);
@@ -445,6 +450,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
     private PreviewItemDrawingParams computePreviewItemDrawingParams(int index,
             PreviewItemDrawingParams params) {
+    	/*Original code
         index = NUM_ITEMS_IN_PREVIEW - index - 1;
         float r = (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1);
         float scale = (1 - PERSPECTIVE_SCALE_FACTOR * (1 - r));
@@ -467,8 +473,42 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             params.transY = transY;
             params.scale = totalScale;
             params.overlayAlpha = overlayAlpha;
-        }
-        return params;
+        }*/
+    	
+    	//added by lijuan.li at 2012.6.21 begin
+		float r = (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1);
+		float scale = 0.3f;
+
+		float offset = FolderRingAnimator.sPreviewPadding;
+		float scaledSize = scale * mBaselineIconSize;
+		float scaleOffsetCorrection = (1 - scale) * mBaselineIconSize;
+
+		// We want to imagine our coordinates from the bottom left, growing up
+		// and to the
+		// right. This is natural for the x-axis, but for the y-axis, we have to
+		// invert things.
+		float transY = 0;
+		int d = (index + 1) / 3;
+		if ((index + 1) % 3 == 0) {
+			transY = (d - 1) * 6 + scaledSize * (d - 1) + offset;
+		} else {
+			transY = d * 6 + scaledSize * d + offset;
+		}
+		float transX = offset + (index % 3) * 6f + scaledSize * (index % 3);
+		float totalScale = mBaselineIconScale * scale;
+		final int overlayAlpha = (int) (80 * (1 - r));
+
+		if (params == null) {
+			params = new PreviewItemDrawingParams(transX, transY, totalScale,
+					overlayAlpha);
+		} else {
+			params.transX = transX;
+			params.transY = transY;
+			params.scale = totalScale;
+			params.overlayAlpha = overlayAlpha;
+		}
+		//added by lijuan.li at 2012.6.21 end
+		return params;
     }
 
     private void drawPreviewItem(Canvas canvas, PreviewItemDrawingParams params) {
@@ -508,6 +548,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             computePreviewDrawingParams(d);
         }
 
+        /* Original code
         int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
         if (!mAnimating) {
             for (int i = nItemsInPreview - 1; i >= 0; i--) {
@@ -520,7 +561,23 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             }
         } else {
             drawPreviewItem(canvas, mAnimParams);
+        }*/
+        //added by lijuan.li at 2012.06.21 begin
+        int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
+        if (!mAnimating) {
+            for (int i = 0; i < nItemsInPreview; i++) {
+                v = (TextView) items.get(i);
+                d = v.getCompoundDrawables()[1];
+
+                mParams = computePreviewItemDrawingParams(i, mParams);
+                mParams.drawable = d;
+                drawPreviewItem(canvas, mParams);
+            }
+        } else {
+            drawPreviewItem(canvas, mAnimParams);
         }
+      //added by lijuan.li at 2012.06.21 end
+        
     }
 
     private void animateFirstItem(final Drawable d, int duration) {
