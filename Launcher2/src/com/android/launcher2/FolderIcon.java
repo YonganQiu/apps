@@ -92,7 +92,6 @@ public class FolderIcon extends LinearLayout implements FolderListener {
     private int mTotalWidth = -1;
     private int mPreviewOffsetX;
     private int mPreviewOffsetY;
-    private int mLineCount = 1;
     private float mMaxPerspectiveShift;
     boolean mAnimating = false;
     private PreviewItemDrawingParams mParams = new PreviewItemDrawingParams(0, 0, 0, 0);
@@ -440,8 +439,8 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
         mParams.transX += mPreviewOffsetX;
         mParams.transY += mPreviewOffsetY;
-        float offsetX = mParams.transX + (mParams.scale * mIntrinsicIconSize) ;
-        float offsetY = mParams.transY + (mParams.scale * mIntrinsicIconSize) ;
+        float offsetX = mParams.transX + (mParams.scale * mIntrinsicIconSize)/2;
+        float offsetY = mParams.transY + (mParams.scale * mIntrinsicIconSize)/2;
 
         center[0] = (int) Math.round(offsetX);
         center[1] = (int) Math.round(offsetY);
