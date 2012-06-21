@@ -56,7 +56,7 @@ import java.util.ArrayList;
  */
 public abstract class PagedView extends ViewGroup {
     private static final String TAG = "PagedView";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     protected static final int INVALID_PAGE = -1;
 
     // the min drag distance for a fling to register, to prevent random page shifts
@@ -109,7 +109,10 @@ public abstract class PagedView extends ViewGroup {
     protected final static int TOUCH_STATE_PREV_PAGE = 2;
     protected final static int TOUCH_STATE_NEXT_PAGE = 3;
     protected final static float ALPHA_QUANTIZE_LEVEL = 0.0001f;
-
+    
+    //{add by zhongheng.zheng at 2012.6.18 begin for constant of quick sliding
+    protected final static int TOUCH_STATE_QUICK_SLIDE = 4;
+    //}add by zhongheng.zheng end
     protected int mTouchState = TOUCH_STATE_REST;
     protected boolean mForceScreenScrolled = false;
 
@@ -944,6 +947,11 @@ public abstract class PagedView extends ViewGroup {
                 mTotalMotionX = 0;
                 mActivePointerId = ev.getPointerId(0);
                 mAllowLongPress = true;
+              //{add by zhongheng.zheng at 2012.6.18 begin for interception quick sliding mode
+                if(mTouchState == TOUCH_STATE_QUICK_SLIDE){
+                	break;
+                }
+                //}add by zhongheng.zheng end
 
                 /*
                  * If being flinged and user touches the screen, initiate drag;
@@ -991,6 +999,9 @@ public abstract class PagedView extends ViewGroup {
          * The only time we want to intercept motion events is if we are in the
          * drag mode.
          */
+        //{add by zhongheng.zheng at 2012.6.18 begin for log
+        Log.w(TAG, "mTouchState = " + mTouchState);
+        //}add by zhongheng.zheng end
         return mTouchState != TOUCH_STATE_REST;
     }
 
@@ -1173,6 +1184,9 @@ public abstract class PagedView extends ViewGroup {
             mActivePointerId = ev.getPointerId(0);
             if (mTouchState == TOUCH_STATE_SCROLLING) {
                 pageBeginMoving();
+            }else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {//add by zhongheng.zheng at 2012.6.18 begin for quick sliding
+                pageBeginMoving();
+              //add by zhongheng.zheng end
             }
             break;
 
@@ -1202,8 +1216,35 @@ public abstract class PagedView extends ViewGroup {
                 } else {
                     awakenScrollBars();
                 }
-            } else {
-                determineScrollingStart(ev);
+            } else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {//{add by zhongheng.zheng at 2012.6.18 begin for quick sliding moving
+            	// Scroll to follow the motion event
+                final int pointerIndex = ev.findPointerIndex(mActivePointerId);
+                final float x = ev.getX(pointerIndex);
+                final float deltaX = mLastMotionX + mLastMotionXRemainder - x;
+
+                mTotalMotionX += Math.abs(deltaX);
+
+                // Only scroll and update mLastMotionX if we have moved some discrete amount.  We
+                // keep the remainder because we are actually testing if we've moved from the last
+                // scrolled position (which is discrete).
+                if (Math.abs(deltaX) >= 1.0f) {
+                    mTouchX += deltaX;
+                    mSmoothingTime = System.nanoTime() / NANOTIME_DIV;
+                    if (!mDeferScrollUpdate) {
+                        scrollBy((int) -deltaX*getPageCount(), 0);
+                        Log.d(TAG, "getPageCount(): " + getPageCount());
+                        if (DEBUG) Log.d(TAG, "onTouchEvent().Scrolling: " + deltaX);
+                    } else {
+                        invalidate();
+                    }
+                    mLastMotionX = x;
+                    mLastMotionXRemainder = deltaX - (int) deltaX;
+                } else {
+                    awakenScrollBars();
+                }
+            	//}add by zhongheng.zheng end
+            }else {
+               determineScrollingStart(ev);
             }
             break;
 
@@ -1271,7 +1312,14 @@ public abstract class PagedView extends ViewGroup {
                 } else {
                     snapToDestination();
                 }
-            } else {
+            } else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {//{add by zhongheng.zheng at 2012.6.18 begin for quick sliding up
+            	final int activePointerId = mActivePointerId;
+                final int pointerIndex = ev.findPointerIndex(activePointerId);
+                final float x = ev.getX(pointerIndex);
+                mTotalMotionX += Math.abs(mLastMotionX + mLastMotionXRemainder - x);
+                snapToDestination();
+            	//}add by zhongheng.zheng end
+            }else {
                 onUnhandledTap(ev);
             }
             mTouchState = TOUCH_STATE_REST;

@@ -236,6 +236,11 @@ public class Workspace extends SmoothPagedView
     private float[] mNewAlphas;
     private float[] mNewRotationYs;
     private float mTransitionProgress;
+    
+    
+    //{add by zhongheng.zheng at 2012.6.18 begin for constant of quick sliding
+    private static final int QUICK_SLIDE_AREA_EXPAND_Y = 20;
+    //}add by zhongheng.zheng end
 
     /**
      * Used to inflate the Workspace from XML.
@@ -623,6 +628,15 @@ public class Workspace extends SmoothPagedView
         case MotionEvent.ACTION_DOWN:
             mXDown = ev.getX();
             mYDown = ev.getY();
+            //{add by zhongheng.zheng at 2012.6.18 begin for judge whether is not quick sliding mode
+            View indicatorView = getScrollingIndicator();
+            Log.w(TAG, "indicatorView.top = " + indicatorView.getTop() + "; indicatorView.bottom = " + indicatorView.getBottom());
+            if(mYDown <= indicatorView.getBottom() + QUICK_SLIDE_AREA_EXPAND_Y && mYDown >= indicatorView.getTop() - QUICK_SLIDE_AREA_EXPAND_Y){
+            	mTouchState = TOUCH_STATE_QUICK_SLIDE;
+            	Log.w(TAG, "mTouchState = " + mTouchState);
+            }
+            //}add by zhongheng.zheng end
+            
             break;
         case MotionEvent.ACTION_POINTER_UP:
         case MotionEvent.ACTION_UP:
