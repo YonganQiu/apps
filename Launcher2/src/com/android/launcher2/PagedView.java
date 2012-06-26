@@ -951,7 +951,7 @@ public abstract class PagedView extends ViewGroup {
                 if(mTouchState == TOUCH_STATE_QUICK_SLIDE){
                 	break;
                 }
-                //}add by zhongheng.zheng end
+              //}add by zhongheng.zheng end
 
                 /*
                  * If being flinged and user touches the screen, initiate drag;
@@ -1000,7 +1000,7 @@ public abstract class PagedView extends ViewGroup {
          * drag mode.
          */
         //{add by zhongheng.zheng at 2012.6.18 begin for log
-        Log.w(TAG, "mTouchState = " + mTouchState);
+        if (DEBUG) Log.w(TAG, "mTouchState = " + mTouchState);
         //}add by zhongheng.zheng end
         return mTouchState != TOUCH_STATE_REST;
     }
@@ -1184,9 +1184,10 @@ public abstract class PagedView extends ViewGroup {
             mActivePointerId = ev.getPointerId(0);
             if (mTouchState == TOUCH_STATE_SCROLLING) {
                 pageBeginMoving();
-            }else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {//add by zhongheng.zheng at 2012.6.18 begin for quick sliding
+            //{add by zhongheng.zheng at 2012.6.18 begin for quick sliding
+            }else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {
                 pageBeginMoving();
-              //add by zhongheng.zheng end
+            //}add by zhongheng.zheng end
             }
             break;
 
@@ -1216,7 +1217,8 @@ public abstract class PagedView extends ViewGroup {
                 } else {
                     awakenScrollBars();
                 }
-            } else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {//{add by zhongheng.zheng at 2012.6.18 begin for quick sliding moving
+            //{add by zhongheng.zheng at 2012.6.18 begin for quick sliding moving
+            } else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {
             	// Scroll to follow the motion event
                 final int pointerIndex = ev.findPointerIndex(mActivePointerId);
                 final float x = ev.getX(pointerIndex);
@@ -1232,8 +1234,10 @@ public abstract class PagedView extends ViewGroup {
                     mSmoothingTime = System.nanoTime() / NANOTIME_DIV;
                     if (!mDeferScrollUpdate) {
                         scrollBy((int) -deltaX*getPageCount(), 0);
-                        Log.d(TAG, "getPageCount(): " + getPageCount());
-                        if (DEBUG) Log.d(TAG, "onTouchEvent().Scrolling: " + deltaX);
+                        if (DEBUG){
+                           	Log.d(TAG, "getPageCount(): " + getPageCount());
+                         	Log.d(TAG, "onTouchEvent().Scrolling: " + deltaX);
+                           }
                     } else {
                         invalidate();
                     }
@@ -1312,13 +1316,14 @@ public abstract class PagedView extends ViewGroup {
                 } else {
                     snapToDestination();
                 }
-            } else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {//{add by zhongheng.zheng at 2012.6.18 begin for quick sliding up
-            	final int activePointerId = mActivePointerId;
+            //{add by zhongheng.zheng at 2012.6.18 begin for quick sliding up
+            } else if (mTouchState == TOUCH_STATE_QUICK_SLIDE) {
+            	  final int activePointerId = mActivePointerId;
                 final int pointerIndex = ev.findPointerIndex(activePointerId);
                 final float x = ev.getX(pointerIndex);
                 mTotalMotionX += Math.abs(mLastMotionX + mLastMotionXRemainder - x);
                 snapToDestination();
-            	//}add by zhongheng.zheng end
+            //}add by zhongheng.zheng end
             }else {
                 onUnhandledTap(ev);
             }
