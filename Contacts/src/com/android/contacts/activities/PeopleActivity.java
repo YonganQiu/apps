@@ -28,12 +28,16 @@ import com.android.contacts.detail.ContactDetailUpdatesFragment;
 import com.android.contacts.detail.ContactLoaderFragment;
 import com.android.contacts.detail.ContactLoaderFragment.ContactLoaderFragmentListener;
 import com.android.contacts.dialpad.DialerFragment;
+import com.android.contacts.dialpad.DialerFragment.OnFragmentReadyListener;
+import com.android.contacts.dialpad.DialpadFragment;
+import com.android.contacts.dialpad.DialpadFragment.OnDightsChangedListener;
 import com.android.contacts.group.GroupBrowseListFragment;
 import com.android.contacts.group.GroupBrowseListFragment.OnGroupBrowserActionListener;
 import com.android.contacts.group.GroupDetailFragment;
 import com.android.contacts.interactions.ContactDeletionInteraction;
 import com.android.contacts.interactions.ImportExportDialogFragment;
 import com.android.contacts.interactions.PhoneNumberInteraction;
+import com.android.contacts.list.CallLogPhoneNumberFragment;
 import com.android.contacts.list.ContactBrowseListFragment;
 import com.android.contacts.list.ContactEntryListFragment;
 import com.android.contacts.list.ContactListFilter;
@@ -93,6 +97,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -119,7 +124,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PeopleActivity extends ContactsActivity
         implements View.OnCreateContextMenuListener, ActionBarAdapter.Listener,
         DialogManager.DialogShowingViewActivity,
-        ContactListFilterController.ContactListFilterListener, ProviderStatusListener {
+        ContactListFilterController.ContactListFilterListener, ProviderStatusListener,
+        //{Added by yongan.qiu on 2012.6.21 begin.
+        DialerFragment.OnFragmentReadyListener, 
+        DialpadFragment.OnDightsChangedListener
+        //}Added by yongan.qiu end.
+        {
 
     private static final String TAG = "PeopleActivity";
 
@@ -167,6 +177,9 @@ public class PeopleActivity extends ContactsActivity
     private ContactTileFrequentFragment mFrequentFragment;
     private GroupBrowseListFragment mGroupsFragment;
     private DialerFragment mDialerFragment;
+    //{Added by yongan.qiu on 2012.6.21 begin.
+    private CallLogPhoneNumberFragment mCallLogPhoneNumberFragment;
+    //}Added by yongan.qiu end.
 
     private View mFavoritesView;
     private View mBrowserView;
@@ -262,6 +275,16 @@ public class PeopleActivity extends ContactsActivity
             mContactsUnavailableFragment.setOnContactsUnavailableActionListener(
                     new ContactsUnavailableFragmentListener());
         }
+        //{Added by yongan.qiu on 2012.6.26 begin.
+        else if (fragment instanceof CallLogPhoneNumberFragment) {
+          mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment) fragment;
+          mCallLogPhoneNumberFragment.setListener(mCallLogPhoneNumberListener);
+          if (mContactListFilterController != null
+                  && mContactListFilterController.getFilter() != null) {
+              mCallLogPhoneNumberFragment.setFilter(mContactListFilterController.getFilter());
+              }
+        }
+        //}Added by yongan.qiu end.
     }
 
     @Override
@@ -364,6 +387,10 @@ public class PeopleActivity extends ContactsActivity
             mGroupsFragment = getFragment(R.id.groups_fragment);
             mAllFragment = getFragment(R.id.all_fragment);
             mDialerFragment = getFragment(R.id.dialer_fragment);
+            //{Added by yongan.qiu on 2012.6.21 begin.
+            mCallLogPhoneNumberFragment = getFragment(R.id.call_log_phone_number_fragment);
+            //}Added by yongan.qiu end.
+
         } else {
             mTabPager = getView(R.id.tab_pager);
             mTabPagerAdapter = new TabPagerAdapter();
@@ -389,12 +416,19 @@ public class PeopleActivity extends ContactsActivity
                     fragmentManager.findFragmentByTag(ALL_TAG);
             mDialerFragment = (DialerFragment)
                     fragmentManager.findFragmentByTag(DIALER_TAG);
+            //{Added by yongan.qiu on 2012.6.21 begin.
+            mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment)
+                    fragmentManager.findFragmentById(R.id.call_log_phone_number_fragment);
+            //}Added by yongan.qiu end.
 
             if (mFavoritesFragment == null) {
                 mFavoritesFragment = new ContactTileListFragment();
                 mGroupsFragment = new GroupBrowseListFragment();
                 mAllFragment = new DefaultContactBrowseListFragment();
                 mDialerFragment = new DialerFragment();
+                //{Added by yongan.qiu on 2012.6.21 begin.
+                mDialerFragment.setFragmentReadyListener(this);
+                //}Added by yongan.qiu end.
 
                 transaction.add(R.id.tab_pager, mFavoritesFragment, FAVORITE_TAG);
                 transaction.add(R.id.tab_pager, mGroupsFragment, GROUPS_TAG);
@@ -614,13 +648,23 @@ public class PeopleActivity extends ContactsActivity
 
     @Override
     public void onContactListFilterChanged() {
-        if (mAllFragment == null || !mAllFragment.isAdded()) {
-            return;
+        boolean doInvalidateOptionsMenu = false;
+
+        if (mAllFragment != null && mAllFragment.isAdded()) {
+            mAllFragment.setFilter(mContactListFilterController.getFilter());
+            doInvalidateOptionsMenu = true;
         }
 
-        mAllFragment.setFilter(mContactListFilterController.getFilter());
+        //{Added by yongan.qiu on 2012.6.21 begin.
+        if (mCallLogPhoneNumberFragment != null && mCallLogPhoneNumberFragment.isAdded()) {
+            mCallLogPhoneNumberFragment.setFilter(mContactListFilterController.getFilter());
+            doInvalidateOptionsMenu = true;
+        }
+        //}Added by yongan.qiu end.
 
-        invalidateOptionsMenuIfNeeded();
+        if (doInvalidateOptionsMenu) {
+            invalidateOptionsMenuIfNeeded();
+        }
     }
 
     private void setupContactDetailFragment(final Uri contactLookupUri) {
@@ -1004,6 +1048,11 @@ public class PeopleActivity extends ContactsActivity
         //begin: remarked by yunzhou.song
         //mAllFragment.setFilter(mContactListFilterController.getFilter());
         //end: remarked by yunzhou.song
+        //{Added by yongan.qiu on 2012.6.21 begin.
+        if (mCallLogPhoneNumberFragment != null && mCallLogPhoneNumberFragment.isAdded()) {
+            mCallLogPhoneNumberFragment.setFilter(filter);
+        }
+        //}Added by yongan.qiu end.
         setQueryTextToFragment(mActionBarAdapter.getQueryString());
 
         if (mRequest.isDirectorySearchEnabled()) {
@@ -1027,6 +1076,11 @@ public class PeopleActivity extends ContactsActivity
         //begin: remarked by yunzhou.song
         //mAllFragment.setFilter(mContactListFilterController.getFilter());
         //end: remarked by yunzhou.song
+        //{Added by yongan.qiu on 2012.6.21 begin.
+        if (mCallLogPhoneNumberFragment != null && mCallLogPhoneNumberFragment.isAdded()) {
+            mCallLogPhoneNumberFragment.setFilter(filter);
+        }
+        //}Added by yongan.qiu end.
 
         final boolean useTwoPane = PhoneCapabilityTester.isUsingTwoPanes(this);
         mAllFragment.setVerticalScrollbarPosition(
@@ -1879,4 +1933,60 @@ public class PeopleActivity extends ContactsActivity
     public ContactDetailFragment getDetailFragment() {
         return mContactDetailFragment;
     }
+
+    //{Added by yongan.qiu on 2012.6.21 begin.
+	public static final String CALL_ORIGIN_DIALTACTS = "com.android.contacts.activities.PeopleActivity";
+	private CallLogPhoneNumberFragment.Listener mCallLogPhoneNumberListener = new CallLogPhoneNumberFragment.Listener() {
+		@Override
+		public void onContactSelected(Uri contactUri) {
+			PhoneNumberInteraction.startInteractionForPhoneCall(
+					PeopleActivity.this, contactUri, CALL_ORIGIN_DIALTACTS);
+		}
+	};
+
+	@Override
+	public void onFragmentReady() {
+		// TODO Auto-generated method stub
+		mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment) 
+				getFragmentManager().findFragmentById(R.id.call_log_phone_number_fragment);
+		DialpadFragment dialpadFragment = (DialpadFragment) getFragmentManager().findFragmentById(R.id.dialpad_fragment);
+		Log.i(TAG, "mCallLogPhoneNumberFragment " + mCallLogPhoneNumberFragment + ", dialpadFragment " + dialpadFragment
+				+ ", dialpadFragment isAdded() " + dialpadFragment.isAdded());
+		Log.i(TAG, "mDialerFragment " + mDialerFragment);
+		if (mCallLogPhoneNumberFragment != null
+				&& mCallLogPhoneNumberFragment.isAdded()) {
+			if (mContactListFilterController == null) {
+				mContactListFilterController = ContactListFilterController.getInstance(this);
+			}
+			mCallLogPhoneNumberFragment.setFilter(mContactListFilterController
+					.getFilter());
+		}
+		if (dialpadFragment != null && dialpadFragment.isAdded()) {
+			dialpadFragment.setOnDightsChangedListener(this);
+		}
+		if (mDialerFragment != null) {
+			FragmentManager fragmentManager = getFragmentManager();
+			FragmentTransaction transaction = fragmentManager.beginTransaction();
+			mDialerFragment.showCallLogFragment(transaction);
+		}
+	}
+	
+	@Override
+	public void onDightsChanged(CharSequence input) {
+		Log.i(TAG, "onDightsChanged(). " + input + "mDialerFragment = " + mDialerFragment);
+		if (mDialerFragment == null) {
+			return;
+		}
+		FragmentManager fragmentManager = getFragmentManager();
+		FragmentTransaction transaction = fragmentManager.beginTransaction();
+		if (TextUtils.isEmpty(input)) {
+			mDialerFragment.showCallLogFragment(transaction);
+		} else {
+			mDialerFragment.showCallLogPhoneNumberFragment(transaction);
+		}
+		fragmentManager.executePendingTransactions();
+
+		mCallLogPhoneNumberFragment.onQueryTextChange(input.toString());
+	}
+	//}Added by yongan.qiu end.
 }

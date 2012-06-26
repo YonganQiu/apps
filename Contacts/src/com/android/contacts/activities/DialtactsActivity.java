@@ -16,6 +16,7 @@
 
 package com.android.contacts.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 
 public class DialtactsActivity extends PeopleActivity {
@@ -41,10 +42,10 @@ public class DialtactsActivity extends PeopleActivity {
 	 * enabling them to know when it becomes visible or invisible inside the
 	 * ViewPager.
 	 */
-	public interface ViewPagerVisibilityListener {
+/*	public interface ViewPagerVisibilityListener {
 		public void onVisibilityChanged(boolean visible);
 	}
-	
+*/	
     public static boolean isDialtactsIntent(Intent intent) {
         return DialtactsActivity.class.getName().equals(intent.getComponent().getClassName());
     }

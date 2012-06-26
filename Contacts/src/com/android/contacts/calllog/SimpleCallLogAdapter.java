@@ -1,0 +1,175 @@
+/*
+ * Copyright (C) 2011 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.contacts.calllog;
+
+import com.android.common.widget.GroupingListAdapter;
+import com.android.contacts.ContactPhotoManager;
+import com.android.contacts.PhoneCallDetails;
+import com.android.contacts.PhoneCallDetailsHelper;
+import com.android.contacts.PhoneCallDetailsViews;
+import com.android.contacts.R;
+import com.android.contacts.calllog.SimpleCallLogQueryHandler.SimpleCallLogQuery;
+import com.android.contacts.util.ExpirableCache;
+import com.android.contacts.util.UriUtils;
+import com.google.common.annotations.VisibleForTesting;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
+import android.provider.CallLog.Calls;
+import android.provider.ContactsContract.PhoneLookup;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.CursorAdapter;
+import android.widget.ImageView;
+import android.widget.QuickContactBadge;
+import android.widget.TextView;
+
+import java.util.LinkedList;
+
+import libcore.util.Objects;
+
+/**
+ * Adapter class to fill in data for the Call Log.
+ */
+    public class SimpleCallLogAdapter extends CursorAdapter {
+    /** Interface used to initiate a refresh of the content. */
+    public interface CallFetcher {
+        public void fetchCalls();
+    }
+
+    private final Context mContext;
+    private final CallFetcher mCallFetcher;
+
+    private boolean mLoading = true;
+
+    /** Helper to set up contact photos. */
+    private final ContactPhotoManager mContactPhotoManager;
+
+    /** Helper to parse and process phone numbers. */
+    private PhoneNumberHelper mPhoneNumberHelper;
+
+    /** Listener for the secondary action in the list, either call or play. */
+    private final View.OnClickListener mActionListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            IntentProvider intentProvider = (IntentProvider) view.getTag();
+            if (intentProvider != null) {
+                mContext.startActivity(intentProvider.getIntent(mContext));
+            }
+        }
+    };
+
+    public SimpleCallLogAdapter(Context context, CallFetcher callFetcher,
+            ContactInfoHelper contactInfoHelper, Cursor cursor) {
+        super(context, cursor);
+
+        mContext = context;
+        mCallFetcher = callFetcher;
+
+        mContactPhotoManager = ContactPhotoManager.getInstance(mContext);
+
+        Resources resources = mContext.getResources();
+        mPhoneNumberHelper = new PhoneNumberHelper(resources);
+    }
+
+    /**
+     * Requery on background thread when {@link Cursor} changes.
+     */
+    @Override
+    protected void onContentChanged() {
+        super.onContentChanged();
+        mCallFetcher.fetchCalls();
+    }
+
+    public void setLoading(boolean loading) {
+        mLoading = loading;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        if (mLoading) {
+            // We don't want the empty state to show when loading.
+            return false;
+        } else {
+            return super.isEmpty();
+        }
+    }
+
+    @Override
+	public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        LayoutInflater inflater =
+                (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.simple_call_log_list_item, parent, false);
+        view.findViewById(R.id.primary_action_view).setOnClickListener(mActionListener);
+        return view;
+    }
+
+    @Override
+	public void bindView(View view, Context context, Cursor cursor) {
+        bindView(view, cursor, 1);
+    }
+
+    /**
+     * Binds the views in the entry to the data in the call log.
+     *
+     * @param view the view corresponding to this entry
+     * @param c the cursor pointing to the entry in the call log
+     * @param count the number of entries in the current item, greater than 1 if it is a group
+     */
+    private void bindView(View view, Cursor c, int count) {
+        QuickContactBadge badgeView = (QuickContactBadge) view.findViewById(R.id.quick_contact_photo);
+        View primaryView = view.findViewById(R.id.primary_action_view);
+        TextView nameView = (TextView) view.findViewById(R.id.name);
+        TextView numberView = (TextView) view.findViewById(R.id.number);
+
+        final String number = c.getString(SimpleCallLogQuery.NUMBER);
+        
+        // Store away the voicemail information so we can play it directly.
+        if (!TextUtils.isEmpty(number)) {
+            // Store away the number so we can call it directly if you click on the call icon.
+            primaryView.setTag(
+                    IntentProvider.getReturnCallIntentProvider(number));
+        } else {
+            // No action enabled.
+            primaryView.setTag(null);
+        }
+
+        if (!mPhoneNumberHelper.canPlaceCallsTo(number)) {
+            // If this is a number that cannot be dialed, there is no point in looking up a contact
+            // for it.
+            // TODO
+        }
+
+        nameView.setText(number);
+        numberView.setText(number);
+        setPhoto(badgeView, 0, null);
+    }
+
+    private void setPhoto(QuickContactBadge view, long photoId, Uri contactUri) {
+        view.assignContactUri(contactUri);
+        mContactPhotoManager.loadPhoto(view, photoId, false, false);
+    }
+
+}

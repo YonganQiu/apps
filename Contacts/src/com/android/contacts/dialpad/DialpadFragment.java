@@ -20,7 +20,7 @@ import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
 import com.android.contacts.SpecialCharSequenceMgr;
 import com.android.contacts.activities.DialtactsActivity;
-import com.android.contacts.activities.DialtactsActivity.ViewPagerVisibilityListener;
+import com.android.contacts.activities.ViewPagerVisibilityListener;
 import com.android.contacts.activities.OneKeyDialSetting.PhoneItem;
 import com.android.contacts.util.Constants;
 import com.android.contacts.util.PhoneNumberFormatter;
@@ -114,6 +114,12 @@ public class DialpadFragment extends Fragment
         public void onSearchButtonPressed();
     }
 
+    //{Added by yongan.qiu on 2012.6.21 begin.
+    public static interface OnDightsChangedListener {
+        public void onDightsChanged(CharSequence input);
+    }
+    //}Added by yongan.qiu end.
+
     /**
      * View (usually FrameLayout) containing mDigits field. This can be null, in which mDigits
      * isn't enclosed by the container.
@@ -129,6 +135,9 @@ public class DialpadFragment extends Fragment
 
     private View mSearchButton;
     private Listener mListener;
+    //{Added by yongan.qiu on 2012.6.21 begin.
+    private OnDightsChangedListener mOnDightsChangedListener;
+    //}Added by yongan.qiu end.
 
     private View mDialButton;
     private ListView mDialpadChooser;
@@ -196,9 +205,15 @@ public class DialpadFragment extends Fragment
     };
 
     private boolean mWasEmptyBeforeTextChange;
+    //{Added by yongan.qiu on 2012.6.21 begin.
+    private CharSequence mOldTextBeforeTextChange;
+    //}Added by yongan.qiu end.
 
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
         mWasEmptyBeforeTextChange = TextUtils.isEmpty(s);
+        //{Added by yongan.qiu on 2012.6.21 begin.
+        mOldTextBeforeTextChange = s;
+        //}Added by yongan.qiu end.
     }
 
     public void onTextChanged(CharSequence input, int start, int before, int changeCount) {
@@ -223,6 +238,22 @@ public class DialpadFragment extends Fragment
             mDigits.setCursorVisible(false);
         }
 
+        //{Added by yongan.qiu on 2012.6.21 begin.
+        Log.i(TAG, "afterTextChanged(). mOldTextBeforeTextChange " + mOldTextBeforeTextChange +
+                ", mDigits "+ mDigits.getText() + ", mOnDightsChangedListener " + mOnDightsChangedListener);
+        if (mOldTextBeforeTextChange.equals(mDigits.getText()) 
+                && mOnDightsChangedListener != null) {
+
+
+            String[] subs = input.toString().split(" ");
+            StringBuilder sb = new StringBuilder();
+            for (String sub : subs) {
+                sb.append(sub);
+            }
+            mOnDightsChangedListener.onDightsChanged(sb.toString());
+        }
+
+        //}Added by yongan.qiu end.
         updateDialAndDeleteButtonEnabledState();
     }
 
@@ -1597,6 +1628,12 @@ public class DialpadFragment extends Fragment
     public void setListener(Listener listener) {
         mListener = listener;
     }
+
+    //{Added by yongan.qiu on 2012.6.21 begin.
+    public void setOnDightsChangedListener(OnDightsChangedListener listener) {
+        mOnDightsChangedListener = listener;
+    }
+    //}Added by yongan.qiu end.
 
     @Override
     public void onVisibilityChanged(boolean visible) {
