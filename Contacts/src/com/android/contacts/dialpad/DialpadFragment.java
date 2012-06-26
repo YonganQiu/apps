@@ -252,6 +252,8 @@ public class DialpadFragment extends Fragment
             }
             mOnDightsChangedListener.onDightsChanged(sb.toString());
         }
+        //fix the bug that when delete button long clicked, the text still visible.
+        mDigits.invalidate();
 
         //}Added by yongan.qiu end.
         updateDialAndDeleteButtonEnabledState();
