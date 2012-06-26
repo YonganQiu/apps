@@ -40,9 +40,6 @@ public class DialerFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		RuntimeException re = new RuntimeException();
-		re.fillInStackTrace();
-		Log.i(TAG, "onCreateView-------------", re);
 		View contentView = inflater.inflate(R.layout.dialer_fragment, container, false);
 		return contentView;
 	}
