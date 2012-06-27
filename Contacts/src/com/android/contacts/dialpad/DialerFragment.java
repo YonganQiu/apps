@@ -8,8 +8,11 @@ import android.os.Bundle;
 import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
@@ -28,6 +31,8 @@ public class DialerFragment extends Fragment {
 		void onFragmentReady();
 	}
 	
+	private View mCallTypeDialpadButtons;
+	
 	OnFragmentReadyListener mOnFragmentReadyListener;
 	
 	private CallLogFragment mCallLogFragment;
@@ -41,8 +46,48 @@ public class DialerFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View contentView = inflater.inflate(R.layout.dialer_fragment, container, false);
-		return contentView;
+		mCallTypeDialpadButtons = contentView.findViewById(R.id.callTypeDialpadButtons);
+        contentView.findViewById(R.id.call_log_fragment_touch_area).setOnTouchListener(
+                new OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
+                                R.animator.fragment_slide_down_exit, false);
+                        return false;
+                    }
+                });
+
+        contentView.findViewById(R.id.callTypeButton).setOnClickListener(
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onAnimationFragment();
+                    }
+                });
+
+        contentView.findViewById(R.id.dialpadButton).setOnClickListener(
+                new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
+                                R.animator.fragment_slide_down_exit, true);
+                    }
+                });
+        
+        return contentView;
 	}
+	
+	@Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        FragmentManager frgMgr = getFragmentManager();
+        mCallLogFragment = (CallLogFragment)frgMgr.findFragmentById(R.id.call_log_fragment);
+        mDialpadFragment = (DialpadFragment)frgMgr.findFragmentById(R.id.dialpad_fragment);
+        
+        setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
+                R.animator.fragment_slide_down_exit, true);
+    }
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
@@ -89,6 +134,9 @@ public class DialerFragment extends Fragment {
 			transaction.commitAllowingStateLoss();
 			fragmentManager.executePendingTransactions();
 		}
+		if(id == R.id.dialpad_fragment) {
+            mCallTypeDialpadButtons.setVisibility(isShow ? View.GONE : View.VISIBLE);
+        }
 	}
 	
 	//{Added by yongan.qiu on 2012.6.21 begin.

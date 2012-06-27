@@ -1,27 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent" >
 
-    <fragment
-        android:id="@+id/call_log_fragment"
+    <RelativeLayout
+        android:id="@+id/fragments"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        class="com.android.contacts.calllog.CallLogFragment" />
+        android:layout_alignTop="@+id/callTypeDialpadButtons" >
 
-    <fragment
-        android:id="@+id/call_log_phone_number_fragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        class="com.android.contacts.list.CallLogPhoneNumberFragment" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
 
-    <fragment
-        android:id="@+id/dialpad_fragment"
+            <fragment
+                android:id="@+id/call_log_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                class="com.android.contacts.calllog.CallLogFragment" />
+
+            <fragment
+                android:id="@+id/call_log_phone_number_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                class="com.android.contacts.list.CallLogPhoneNumberFragment" />
+
+            <LinearLayout
+                android:id="@+id/call_log_fragment_touch_area"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+            </LinearLayout>
+        </RelativeLayout>
+
+        <fragment
+            android:id="@+id/dialpad_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="300dip"
+            android:layout_alignParentBottom="true"
+            class="com.android.contacts.dialpad.DialpadFragment" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/callTypeDialpadButtons"
         android:layout_width="match_parent"
-        android:layout_height="300dip"
+        android:layout_height="50dip"
         android:layout_alignParentBottom="true"
-        class="com.android.contacts.dialpad.DialpadFragment" />
+        android:background="@android:color/holo_orange_dark"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/callTypeButton"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/description_delete_button"
+            android:src="@drawable/ic_ab_history_holo_dark" />
+
+        <ImageButton
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null" />
+
+        <ImageButton
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null" />
+
+        <ImageButton
+            android:id="@+id/dialpadButton"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="@string/description_delete_button"
+            android:src="@drawable/ic_ab_dialpad_holo_dark" />
+    </LinearLayout>
 
 </RelativeLayout>

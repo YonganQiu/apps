@@ -55,6 +55,7 @@ import android.provider.Contacts.People;
 import android.provider.Contacts.Phones;
 import android.provider.Contacts.PhonesColumns;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.Settings;
 import android.telephony.PhoneNumberUtils;
@@ -133,12 +134,13 @@ public class DialpadFragment extends Fragment
     private View mDialpad;
     private View mAdditionalButtonsRow;
 
-    private View mSearchButton;
+//    private View mSearchButton;
     private Listener mListener;
     //{Added by yongan.qiu on 2012.6.21 begin.
     private OnDightsChangedListener mOnDightsChangedListener;
     //}Added by yongan.qiu end.
 
+    private View mIpDialButton;
     private View mDialButton;
     private ListView mDialpadChooser;
     private DialpadChooserAdapter mDialpadChooserAdapter;
@@ -286,6 +288,14 @@ public class DialpadFragment extends Fragment
         Resources r = getResources();
 
         mDigitsContainer = fragmentView.findViewById(R.id.digits_container);
+        mDigitsContainer.findViewById(R.id.addToContacts).setOnClickListener(new OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_INSERT_OR_EDIT);
+                intent.setType(Contacts.CONTENT_ITEM_TYPE);
+                intent.putExtra(Insert.PHONE, mDigits.getText().toString());
+                startActivity(intent);
+            }});
         mDigits = (EditText) fragmentView.findViewById(R.id.digits);
         mDigits.setKeyListener(DialerKeyListener.getInstance());
         mDigits.setOnClickListener(this);
@@ -313,10 +323,10 @@ public class DialpadFragment extends Fragment
 
         mAdditionalButtonsRow = fragmentView.findViewById(R.id.dialpadAdditionalButtons);
 
-        mSearchButton = mAdditionalButtonsRow.findViewById(R.id.searchButton);
-        if (mSearchButton != null) {
-            mSearchButton.setOnClickListener(this);
-        }
+//        mSearchButton = mAdditionalButtonsRow.findViewById(R.id.searchButton);
+//        if (mSearchButton != null) {
+//            mSearchButton.setOnClickListener(this);
+//        }
 
         // Check whether we should show the onscreen "Dial" button.
         mDialButton = mAdditionalButtonsRow.findViewById(R.id.dialButton);
@@ -328,6 +338,8 @@ public class DialpadFragment extends Fragment
             mDialButton = null;
         }
 
+        mIpDialButton = mAdditionalButtonsRow.findViewById(R.id.ipDialButton);
+        
         mDelete = fragmentView.findViewById(R.id.deleteButton);
         mDelete.setOnClickListener(this);
         mDelete.setOnLongClickListener(this);
@@ -824,13 +836,13 @@ public class DialpadFragment extends Fragment
                 dialButtonPressed();
                 return;
             }
-            case R.id.searchButton: {
-                mHaptic.vibrate();
-                if (mListener != null) {
-                    mListener.onSearchButtonPressed();
-                }
-                return;
-            }
+//            case R.id.searchButton: {
+//                mHaptic.vibrate();
+//                if (mListener != null) {
+//                    mListener.onSearchButtonPressed();
+//                }
+//                return;
+//            }
             case R.id.digits: {
                 if (!isDigitsEmpty()) {
                     mDigits.setCursorVisible(true);
@@ -1238,7 +1250,7 @@ public class DialpadFragment extends Fragment
         } else {
             // Log.i(TAG, "Displaying normal Dialer UI.");
             if (mDigitsContainer != null) {
-                mDigitsContainer.setVisibility(View.VISIBLE);
+                mDigitsContainer.setVisibility(TextUtils.isEmpty(mDigits.getText()) ? View.INVISIBLE : View.VISIBLE);
             } else {
                 mDigits.setVisibility(View.VISIBLE);
             }
@@ -1531,6 +1543,7 @@ public class DialpadFragment extends Fragment
             }
         }
         mDelete.setEnabled(digitsNotEmpty);
+        mDigitsContainer.setVisibility(digitsNotEmpty ? View.VISIBLE : View.INVISIBLE);
     }
 
     /**

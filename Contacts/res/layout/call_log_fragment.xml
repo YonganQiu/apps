@@ -61,7 +61,7 @@
             android:fadingEdge="none"
             android:scrollbarStyle="outsideOverlay"
             android:divider="@null"
-            android:background="@android:color/holo_blue_dark"
+            android:background="@drawable/background_holo_light"
         />
         <TextView android:id="@android:id/empty"
             android:layout_width="match_parent"

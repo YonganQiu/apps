@@ -1567,8 +1567,8 @@ public class PeopleActivity extends ContactsActivity
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
                     contactsFilterMenu.setVisible(false);
-                    dialpadMenu.setVisible(true);
-                    callTypeMenu.setVisible(true);
+                    dialpadMenu.setVisible(false);
+                    callTypeMenu.setVisible(false);
                     callSettingsMenu.setVisible(true);
                     callSettingsMenu.setIntent(DialtactsActivity.getCallSettingsIntent());
                     makeMenuItemVisible(menu, R.id.menu_search, false);

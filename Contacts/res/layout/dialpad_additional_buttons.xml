@@ -24,47 +24,70 @@
     android:background="@android:color/holo_orange_dark"
     android:orientation="horizontal">
 
-    <!-- Onscreen "All contacts" button.
-         TODO: rename this id. -->
-    <ImageButton android:id="@+id/searchButton"
-        android:layout_width="0px"
-        android:layout_weight="0.30"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:state_enabled="false"
-        android:background="?android:attr/selectableItemBackground"
-        android:contentDescription="@string/description_search_button"
-        android:src="@drawable/ic_dial_action_search"
-        android:visibility="gone"/>
-
-    <View
-        android:layout_width="1dip"
-        android:layout_height="24dip"
-        android:layout_gravity="center_vertical"
-        android:background="?android:attr/dividerVertical" 
-        android:paddingLeft="10dip"/>
-
-    <!-- Onscreen "Dial" button, diused on all platforms by
-         default. Its usage can be disabled using resources (see
-         config.xml.) -->
-    <ImageButton android:id="@+id/dialButton"
-        android:layout_width="0px"
-        android:layout_weight="0.40"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:state_enabled="false"
-        android:background="@drawable/btn_call"
-        android:contentDescription="@string/description_dial_button"
-        android:src="@drawable/ic_dial_action_call" />
-
-    <View
-        android:layout_width="1dip"
-        android:layout_height="24dip"
-        android:layout_gravity="center_vertical"
-        android:background="?android:attr/dividerVertical" 
-        android:paddingRight="10dip"/>
-
-    <!-- Onscreen "Backspace/Delete" button -->
+	    <!-- Onscreen "All contacts" button.
+	         TODO: rename this id. -->
+	    <!--  
+	    <ImageButton android:id="@+id/searchButton"
+	        android:layout_width="0px"
+	        android:layout_weight="1"
+	        android:layout_height="match_parent"
+	        android:layout_gravity="center_vertical"
+	        android:state_enabled="false"
+	        android:background="?android:attr/selectableItemBackground"
+	        android:contentDescription="@string/description_search_button"
+	        android:src="@drawable/ic_dial_action_search"/>
+	    -->
+	    <!--
+	    <View
+	        android:layout_width="1dip"
+	        android:layout_height="24dip"
+	        android:layout_gravity="center_vertical"
+	        android:background="?android:attr/dividerVertical" 
+	        android:paddingLeft="10dip"/>
+	    -->
+	
+	    <ImageButton android:id="@+id/ipDialButton"
+	        android:layout_width="0px"
+	        android:layout_weight="1"
+	        android:layout_height="match_parent"
+	        android:layout_gravity="center_vertical"
+	        android:state_enabled="false"
+	        android:background="@drawable/btn_ip_call"
+	        android:contentDescription="@string/description_dial_button"
+	        android:src="@drawable/ic_dial_action_ip_call" />
+	
+	    <!-- Onscreen "Dial" button, diused on all platforms by
+	         default. Its usage can be disabled using resources (see
+	         config.xml.) -->
+	    <ImageButton android:id="@+id/dialButton"
+	        android:layout_width="0px"
+	        android:layout_weight="2"
+	        android:layout_height="match_parent"
+	        android:layout_gravity="center_vertical"
+	        android:state_enabled="false"
+	        android:background="@drawable/btn_call"
+	        android:contentDescription="@string/description_dial_button"
+	        android:src="@drawable/ic_dial_action_call" />
+	    
+		<!--
+	    <View
+	        android:layout_width="1dip"
+	        android:layout_height="24dip"
+	        android:layout_gravity="center_vertical"
+	        android:background="?android:attr/dividerVertical" 
+	        android:paddingRight="10dip"/>
+		-->
+	
+	    <!-- Onscreen "Backspace/Delete" button -->
+	    <ImageButton
+	        android:id="@+id/deleteButton"
+	        android:layout_width="0px"
+	        android:layout_weight="1"
+	        android:layout_height="match_parent"
+	        android:layout_gravity="center_vertical"
+	        android:background="?android:attr/selectableItemBackground"
+	        android:contentDescription="@string/description_delete_button"
+	        android:src="@drawable/ic_dial_action_delete"
+	        android:state_enabled="false" />
 
 </LinearLayout>
-
