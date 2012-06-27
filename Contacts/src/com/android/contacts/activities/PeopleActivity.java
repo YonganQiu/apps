@@ -809,6 +809,7 @@ public class PeopleActivity extends ContactsActivity
                 hideFragment(ft, mGroupsFragment);
                 hideFragment(ft, mGroupDetailFragment);
                 showFragment(ft, mDialerFragment);
+                break;
         }
         if (!ft.isEmpty()) {
             ft.commitAllowingStateLoss();
@@ -833,6 +834,27 @@ public class PeopleActivity extends ContactsActivity
                     break;
                 case ALL:
                     mContactsUnavailableFragment.setMessageText(R.string.noContacts, -1);
+                    break;
+            }
+            FragmentManager fragmentManager = getFragmentManager();
+            switch(tab) {
+                case FAVORITES:
+                case GROUPS:
+                case ALL:
+                    if(mContactsUnavailableFragment.isHidden()) {
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.show(mContactsUnavailableFragment);
+                        transaction.commitAllowingStateLoss();
+                        fragmentManager.executePendingTransactions();
+                    }
+                    break;
+                case DIALER:
+                    if(!mContactsUnavailableFragment.isHidden()) {
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.hide(mContactsUnavailableFragment);
+                        transaction.commitAllowingStateLoss();
+                        fragmentManager.executePendingTransactions();
+                    }
                     break;
             }
         }
@@ -898,7 +920,7 @@ public class PeopleActivity extends ContactsActivity
 
         @Override
         public int getCount() {
-            return mTabPagerAdapterSearchMode ? 1 : TabState.values().length;
+            return mTabPagerAdapterSearchMode ? 1 : 2;//TabState.values().length;
         }
 
         /** Gets called when the number of items changes. */

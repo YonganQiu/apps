@@ -124,7 +124,7 @@ public class DialerFragment extends Fragment {
 		FragmentManager fragmentManager = getFragmentManager();
 		Fragment fragment = fragmentManager.findFragmentById(id);
 		if(fragment != null && !fragment.isHidden() ^ isShow) {
-			FragmentTransaction transaction = getFragmentManager().beginTransaction();
+			FragmentTransaction transaction = fragmentManager.beginTransaction();
 			transaction.setCustomAnimations(animEnter, animExit);
 			if(isShow) {
 				transaction.show(fragment);
