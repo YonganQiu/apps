@@ -107,5 +107,9 @@
     <!-- Added by yongan.qiu on 2012.3.21 begin. -->
     <string name="home_not_ready">桌面未初始化，请先按Home键激活桌面</string>
     <!-- Added by yongan.qiu on 2012.3.21 end. -->
+    <!--add by jingjiang.yu at 2012.06.25 begin for scale preview. -->
+    <string name="delete_workspace_screen_title">删除屏幕</string>
+    <string name="delete_workspace_screen_message">确定要删除非空白屏幕?</string>
+    <!--add by jingjiang.yu end -->
 
 </resources>

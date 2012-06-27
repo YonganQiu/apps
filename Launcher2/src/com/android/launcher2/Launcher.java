@@ -594,7 +594,7 @@ public final class Launcher extends Activity
         clearTypedText();
       //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
         if(mWorkspace.isPreviewShow()){
-        	mWorkspace.closePreview();
+        	closeWorkspacePreview();
         }
       //}add by jingjiang.yu end
     }
@@ -3042,7 +3042,10 @@ public final class Launcher extends Activity
         final Workspace workspace = mWorkspace;
 
         mWorkspace.clearDropTargets();
-        int count = workspace.getChildCount();
+      //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+       // int count = workspace.getChildCount();
+        int count = workspace.getPageCount();
+      //}modify by jingjiang.yu end
         for (int i = 0; i < count; i++) {
             // Use removeAllViewsInLayout() to avoid an extra requestLayout() and invalidate().
             final CellLayout layoutParent = (CellLayout) workspace.getChildAt(i);

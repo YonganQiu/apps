@@ -141,8 +141,8 @@ public class CellLayout extends ViewGroup {
     private Drawable mHomeButton;
     private Drawable mActiveHomeButton;
     private Drawable mDeleteButton;
-    private boolean mIsHomePage;
-    protected boolean mIsAddPageButton = false;
+    private boolean mIsHomePage = false;
+    private boolean mIsShowDelButton = true;
   //}add by jingjiang.yu end
 
     public CellLayout(Context context) {
@@ -270,9 +270,9 @@ public class CellLayout extends ViewGroup {
         addView(mChildren);
         
       //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-        mHomeButton = res.getDrawable(R.drawable.home_button_normal);
-        mActiveHomeButton = res.getDrawable(R.drawable.home_button_active);
-        mDeleteButton = res.getDrawable(R.drawable.ic_delete);
+		mHomeButton = res.getDrawable(R.drawable.home_button_normal);
+		mActiveHomeButton = res.getDrawable(R.drawable.home_button_active);
+		mDeleteButton = res.getDrawable(R.drawable.ic_delete);
       //}add by jingjiang.yu end
     }
 
@@ -523,14 +523,17 @@ public class CellLayout extends ViewGroup {
             p.setXfermode(null);
         }
       //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-        if(mIsShowPreviewBg && !mIsAddPageButton){
-        	if(mIsHomePage){
-        		mActiveHomeButton.draw(canvas);
-        	}else{
-        		mHomeButton.draw(canvas);
-        	}
-        	mDeleteButton.draw(canvas);
-        }
+		if (mIsShowPreviewBg) {
+			if (mIsHomePage) {
+				mActiveHomeButton.draw(canvas);
+			} else {
+				mHomeButton.draw(canvas);
+			}
+
+			if (mIsShowDelButton) {
+				mDeleteButton.draw(canvas);
+			}
+		}
       //}add by jingjiang.yu end
     }
 
@@ -1896,8 +1899,8 @@ out:            for (int i = x; i < x + spanX && i < xCount; i++) {
     }
     
 	private void calculateHomeButtonRect(int width, int height) {
-		int buttonW = mHomeButton.getIntrinsicWidth();
-		int buttonH = mHomeButton.getIntrinsicHeight();
+		int buttonW = 300;
+		int buttonH = 300;
 
 		mHomeButton.setBounds(width / 2 - buttonW / 2, height - buttonH, width
 				/ 2 - buttonW / 2 + buttonW, height);
@@ -1906,30 +1909,33 @@ out:            for (int i = x; i < x + spanX && i < xCount; i++) {
 	}
 
 	private void calculateDelButtonRect(int width, int height) {
-		int buttonW = mDeleteButton.getIntrinsicWidth();
-		int buttonH = mDeleteButton.getIntrinsicHeight();
-
+		int buttonW = 150;
+		int buttonH = 150;
 		mDeleteButton.setBounds(width - buttonW, 0, width, buttonH);
 	}
 	
 	public int getHomeButtonWidth() {
-		return mHomeButton.getIntrinsicWidth();
+		return mHomeButton.getBounds().width();
 	}
 
 	public int getHomeButtonHeight() {
-		return mHomeButton.getIntrinsicHeight();
+		return mHomeButton.getBounds().width();
 	}
 
 	public int getDelButtonWidth() {
-		return mDeleteButton.getIntrinsicWidth();
+		return mDeleteButton.getBounds().width();
 	}
 
 	public int getDelButtonHeight() {
-		return mDeleteButton.getIntrinsicHeight();
+		return mDeleteButton.getBounds().width();
 	}
 	
 	public void setIsHomePage(boolean isHomePage){
 		mIsHomePage = isHomePage;
+	}
+	
+	public void setIsShowDelButton(boolean isShowDelButton){
+		mIsShowDelButton = isShowDelButton;
 	}
   //}add by jingjiang.yu end
 }

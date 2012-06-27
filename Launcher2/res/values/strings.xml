@@ -254,5 +254,9 @@ s -->
     <!-- Added by yongan.qiu on 2012.3.21 begin. -->
     <string name="home_not_ready">Home screen is not ready, please press HOME key to activative it.</string>
     <!-- Added by yongan.qiu on 2012.3.21 end. -->
+    <!--add by jingjiang.yu at 2012.06.25 begin for scale preview. -->
+    <string name="delete_workspace_screen_title">Delete screen</string>
+    <string name="delete_workspace_screen_message">Delete not empty screen?</string>
+    <!--add by jingjiang.yu end -->
 
 </resources>

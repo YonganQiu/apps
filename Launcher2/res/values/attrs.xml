@@ -43,6 +43,9 @@
         <attr name="cellCountX" format="integer"  />
         <!-- The number of vertical cells in the CellLayout -->
         <attr name="cellCountY" format="integer"  />
+        <!--add by jingjiang.yu at 2012.06.25 begin for scale preview. -->
+        <attr name="screenCount" format="integer" />
+        <!--add by jingjiang.yu end -->
     </declare-styleable>
     
     <!-- Hotseat specific attributes. These attributes are used to customize
