@@ -35,6 +35,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.AttributeSet;
@@ -134,6 +135,15 @@ public class CellLayout extends ViewGroup {
 
     private TimeInterpolator mEaseOutInterpolator;
     private CellLayoutChildren mChildren;
+  //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+    private boolean mIsShowPreviewBg;
+    private Drawable mPreviewBg = new ColorDrawable(0x60FFFFFF);
+    private Drawable mHomeButton;
+    private Drawable mActiveHomeButton;
+    private Drawable mDeleteButton;
+    private boolean mIsHomePage;
+    protected boolean mIsAddPageButton = false;
+  //}add by jingjiang.yu end
 
     public CellLayout(Context context) {
         this(context, null);
@@ -258,6 +268,12 @@ public class CellLayout extends ViewGroup {
         mChildren = new CellLayoutChildren(context);
         mChildren.setCellDimensions(mCellWidth, mCellHeight, mWidthGap, mHeightGap);
         addView(mChildren);
+        
+      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+        mHomeButton = res.getDrawable(R.drawable.home_button_normal);
+        mActiveHomeButton = res.getDrawable(R.drawable.home_button_active);
+        mDeleteButton = res.getDrawable(R.drawable.ic_delete);
+      //}add by jingjiang.yu end
     }
 
     static int widthInPortrait(Resources r, int numCells) {
@@ -488,6 +504,12 @@ public class CellLayout extends ViewGroup {
             d.draw(canvas);
             canvas.restore();
         }
+      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+        if(mIsShowPreviewBg){
+        	mPreviewBg.setBounds(mBackgroundRect);
+        	mPreviewBg.draw(canvas);
+        }
+      //}add by jingjiang.yu end
     }
 
     @Override
@@ -500,6 +522,16 @@ public class CellLayout extends ViewGroup {
             mOverScrollForegroundDrawable.draw(canvas);
             p.setXfermode(null);
         }
+      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+        if(mIsShowPreviewBg && !mIsAddPageButton){
+        	if(mIsHomePage){
+        		mActiveHomeButton.draw(canvas);
+        	}else{
+        		mHomeButton.draw(canvas);
+        	}
+        	mDeleteButton.draw(canvas);
+        }
+      //}add by jingjiang.yu end
     }
 
     public void showFolderAccept(FolderRingAnimator fra) {
@@ -887,6 +919,10 @@ public class CellLayout extends ViewGroup {
         mBackgroundRect.set(0, 0, w, h);
         mForegroundRect.set(mForegroundPadding, mForegroundPadding,
                 w - 2 * mForegroundPadding, h - 2 * mForegroundPadding);
+      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+        calculateHomeButtonRect(w, h);
+        calculateDelButtonRect(w, h);
+      //}add by jingjiang.yu end
     }
 
     @Override
@@ -1854,4 +1890,46 @@ out:            for (int i = x; i < x + spanX && i < xCount; i++) {
     public boolean lastDownOnOccupiedCell() {
         return mLastDownOnOccupiedCell;
     }
+  //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+    public void setShowPreviewBackground(boolean isShow) {
+    	mIsShowPreviewBg = isShow;
+    }
+    
+	private void calculateHomeButtonRect(int width, int height) {
+		int buttonW = mHomeButton.getIntrinsicWidth();
+		int buttonH = mHomeButton.getIntrinsicHeight();
+
+		mHomeButton.setBounds(width / 2 - buttonW / 2, height - buttonH, width
+				/ 2 - buttonW / 2 + buttonW, height);
+		mActiveHomeButton.setBounds(width / 2 - buttonW / 2, height - buttonH,
+				width / 2 - buttonW / 2 + buttonW, height);
+	}
+
+	private void calculateDelButtonRect(int width, int height) {
+		int buttonW = mDeleteButton.getIntrinsicWidth();
+		int buttonH = mDeleteButton.getIntrinsicHeight();
+
+		mDeleteButton.setBounds(width - buttonW, 0, width, buttonH);
+	}
+	
+	public int getHomeButtonWidth() {
+		return mHomeButton.getIntrinsicWidth();
+	}
+
+	public int getHomeButtonHeight() {
+		return mHomeButton.getIntrinsicHeight();
+	}
+
+	public int getDelButtonWidth() {
+		return mDeleteButton.getIntrinsicWidth();
+	}
+
+	public int getDelButtonHeight() {
+		return mDeleteButton.getIntrinsicHeight();
+	}
+	
+	public void setIsHomePage(boolean isHomePage){
+		mIsHomePage = isHomePage;
+	}
+  //}add by jingjiang.yu end
 }

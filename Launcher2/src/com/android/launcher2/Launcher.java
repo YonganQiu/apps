@@ -592,6 +592,11 @@ public final class Launcher extends Activity
             });
         }
         clearTypedText();
+      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+        if(mWorkspace.isPreviewShow()){
+        	mWorkspace.closePreview();
+        }
+      //}add by jingjiang.yu end
     }
 
     @Override
@@ -1196,10 +1201,21 @@ public final class Launcher extends Activity
             Folder openFolder = mWorkspace.getOpenFolder();
             // In all these cases, only animate if we're already on home
             mWorkspace.exitWidgetResizeMode();
-            if (alreadyOnHome && mState == State.WORKSPACE && !mWorkspace.isTouchActive() &&
+          //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+           /** if (alreadyOnHome && mState == State.WORKSPACE && !mWorkspace.isTouchActive() &&
                     openFolder == null) {
                 mWorkspace.moveToDefaultScreen(true);
+            }**/
+            if (alreadyOnHome && mState == State.WORKSPACE && !mWorkspace.isTouchActive() &&
+                    openFolder == null) {
+            	if(!mWorkspace.isPreviewShow()){
+            		mWorkspace.moveToDefaultScreen(true);
+            	}else{
+            		mWorkspace.moveToDefaultScreen(false);
+            		closeWorkspacePreview();
+            	}
             }
+          //}add by jingjiang.yu end
 
             closeFolder();
             exitSpringLoadedDragMode();
@@ -1660,6 +1676,13 @@ public final class Launcher extends Activity
 
     @Override
     public void onBackPressed() {
+    	//{add by jingjiang.yu at 2012.06.25 begin
+    	if(mWorkspace.isPreviewShow()){
+    		closeWorkspacePreview();
+    		return;
+    	}
+    	//}add by jingjiang.yu end
+    	
         if (mState == State.APPS_CUSTOMIZE) {
             showWorkspace(true);
         } else if (mWorkspace.getOpenFolder() != null) {
@@ -2553,14 +2576,26 @@ public final class Launcher extends Activity
     }
 
     void hideDockDivider() {
+    	//{modify by jingjiang.yu at 2012.06.25 begin
+    	/**
         if (mQsbDivider != null && mDockDivider != null) {
             mQsbDivider.setVisibility(View.INVISIBLE);
             mDockDivider.setVisibility(View.INVISIBLE);
         }
+        **/
+		if (mQsbDivider != null) {
+			mQsbDivider.setVisibility(View.INVISIBLE);
+		}
+
+		if (mDockDivider != null) {
+			mDockDivider.setVisibility(View.INVISIBLE);
+		}
+      //}modify by jingjiang.yu end
     }
 
     void showDockDivider(boolean animated) {
-        if (mQsbDivider != null && mDockDivider != null) {
+    	//{modify by jingjiang.yu at 2012.06.25 begin
+      /**  if (mQsbDivider != null && mDockDivider != null) {
             mQsbDivider.setVisibility(View.VISIBLE);
             mDockDivider.setVisibility(View.VISIBLE);
             if (mDividerAnimator != null) {
@@ -2577,6 +2612,16 @@ public final class Launcher extends Activity
                 mDividerAnimator.start();
             }
         }
+       **/
+		if (mQsbDivider != null) {
+			mQsbDivider.setVisibility(View.VISIBLE);
+		}
+
+		if (mDockDivider != null) {
+			mDockDivider.setVisibility(View.VISIBLE);
+		}
+    	
+   	 //}modify by jingjiang.yu end
     }
 
     void lockAllApps() {
@@ -2598,9 +2643,21 @@ public final class Launcher extends Activity
         if (!LauncherApplication.isScreenLarge()) {
             if (animated) {
                 int duration = mSearchDropTargetBar.getTransitionInDuration();
-                mHotseat.animate().alpha(1f).setDuration(duration);
+              //{modify by jingjiang.yu at 2012.06.25 begin
+               //mHotseat.animate().alpha(1f).setDuration(duration);
+				mHotseat.animate().alpha(1f).setDuration(duration)
+						.setListener(new AnimatorListenerAdapter() {
+							@Override
+							public void onAnimationEnd(Animator animation) {
+								mHotseat.setVisibility(View.VISIBLE);
+							}
+						});
+              //}modify by jingjiang.yu end
             } else {
                 mHotseat.setAlpha(1f);
+            	//{add by jingjiang.yu at 2012.06.25 begin
+                mHotseat.setVisibility(View.VISIBLE);
+              //}add by jingjiang.yu end
             }
         }
     }
@@ -2612,9 +2669,21 @@ public final class Launcher extends Activity
         if (!LauncherApplication.isScreenLarge()) {
             if (animated) {
                 int duration = mSearchDropTargetBar.getTransitionOutDuration();
-                mHotseat.animate().alpha(0f).setDuration(duration);
+              //{modify by jingjiang.yu at 2012.06.25 begin
+               // mHotseat.animate().alpha(0f).setDuration(duration);
+				mHotseat.animate().alpha(0f).setDuration(duration)
+						.setListener(new AnimatorListenerAdapter() {
+							@Override
+							public void onAnimationEnd(Animator animation) {
+								mHotseat.setVisibility(View.INVISIBLE);
+							}
+						});
+				// }modify by jingjiang.yu end
             } else {
                 mHotseat.setAlpha(0f);
+              //{add by jingjiang.yu at 2012.06.25 begin
+                mHotseat.setVisibility(View.INVISIBLE);
+              //}add by jingjiang.yu end
             }
         }
     }
@@ -3383,6 +3452,25 @@ public final class Launcher extends Activity
             writer.println("  " + sDumpLogs.get(i));
         }
     }
+    
+  //{add by jingjiang.yu at 2012.06.25 begin
+    public void showWorkspacePreview(){
+    	mSearchDropTargetBar.hideSearchBar(false);
+    	closeFolder();
+    	mWorkspace.hideScrollingIndicator(true);
+    	hideDockDivider();
+    	hideHotseat(false);
+    	mWorkspace.showPreview();
+    }
+    
+    public void closeWorkspacePreview(){
+    	mWorkspace.closePreview();
+    	mSearchDropTargetBar.showSearchBar(false);
+    	mWorkspace.flashScrollingIndicator(false);
+    	showDockDivider(false);
+    	showHotseat(false);
+    }
+  //}add by jingjiang.yu end
 }
 
 interface LauncherTransitionable {

@@ -16,6 +16,10 @@
 
 package com.android.launcher2;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
@@ -46,11 +50,14 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region.Op;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.IBinder;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.FloatMath;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Display;
@@ -59,6 +66,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -67,10 +75,6 @@ import android.widget.Toast;
 import com.android.launcher.R;
 import com.android.launcher2.FolderIcon.FolderRingAnimator;
 import com.android.launcher2.InstallWidgetReceiver.WidgetMimeTypeHandlerData;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * The workspace is a wide area with a wallpaper and a finite number of pages.
@@ -242,6 +246,33 @@ public class Workspace extends SmoothPagedView
     private static final boolean DEBUG = true;
     private static final int QUICK_SLIDE_AREA_EXPAND_Y = 20;
     //}add by zhongheng.zheng end
+    
+  //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+	private static final int[] PREVIEW_LAYOUT = { 3, 3, 3 };
+	private float mPreviewScaleW;
+	private float mPreviewScaleH;
+	private static final int PREVIEW_COLSED = 1;
+	private static final int PREVIEW_OPEN = 2;
+	private static final int PREVIEW_OPENING = 3;
+	private static final int PREVIEW_CLOSING = 4;
+	private int mPreviewStatus = PREVIEW_COLSED;
+	private long mPreviewAnimStartTime;
+	private static final int PREVIEW_ANIM_DURATION = 300;
+	private static final int PREVIEW_X_SPAN = 20;
+	private static final int PREVIEW_Y_SPAN = 20;
+	private static final int PREVIEW_MARGIN_LEFT = 20;
+	private static final int PREVIEW_MARGIN_RIGHT = 20;
+	private static final int PREVIEW_MARGIN_TOP = 40;
+	private static final int PREVIEW_MARGIN_BOTTOM = 40;
+	private boolean mMultiTouchState;
+	private float mMultiTouchLastDistance = -1;
+	private int mLastClickedPreviewIndex = -1;
+	private float mPreviewLastMotionX = -1;
+	private float mPreviewLastMotionY = -1;
+	private boolean mPreviewProcessedDown = false;
+	private boolean mPreviewIsMove = false;
+  //}add by jingjiang.yu end
+    
 
     /**
      * Used to inflate the Workspace from XML.
@@ -431,14 +462,15 @@ public class Workspace extends SmoothPagedView
 
     @Override
     protected void onViewAdded(View child) {
-        super.onViewAdded(child);
-        if (!(child instanceof CellLayout)) {
-            throw new IllegalArgumentException("A Workspace can only have CellLayout children.");
-        }
-        CellLayout cl = ((CellLayout) child);
-        cl.setOnInterceptTouchListener(this);
-        cl.setClickable(true);
-        cl.enableHardwareLayers();
+		super.onViewAdded(child);
+		if (!(child instanceof CellLayout)) {
+			throw new IllegalArgumentException(
+					"A Workspace can only have CellLayout children.");
+		}
+		CellLayout cl = ((CellLayout) child);
+		cl.setOnInterceptTouchListener(this);
+		cl.setClickable(true);
+		cl.enableHardwareLayers();
     }
 
     /**
@@ -625,6 +657,16 @@ public class Workspace extends SmoothPagedView
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+    	//{add by jingjiang.yu at 2012.06.25 begin
+    	if(mPreviewStatus != PREVIEW_COLSED){
+    		return true;
+    	}
+    	
+    	if(ev.getPointerCount() >= 2){
+    		mMultiTouchState = true;
+			return true;
+    	}
+    	//}add by jingjiang.yu end
         switch (ev.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
             mXDown = ev.getX();
@@ -1249,6 +1291,9 @@ public class Workspace extends SmoothPagedView
         mWindowToken = getWindowToken();
         computeScroll();
         mDragController.setWindowToken(mWindowToken);
+        //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+        setHomePage(mDefaultPage);
+        //}add by jingjiang.yu end
     }
 
     protected void onDetachedFromWindow() {
@@ -1324,6 +1369,38 @@ public class Workspace extends SmoothPagedView
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
+    	//{add by jingjiang.yu at 2012.06.25 begin
+		if (mPreviewStatus != PREVIEW_COLSED) {
+			long currentTime;
+			if (mPreviewAnimStartTime == 0) {
+				mPreviewAnimStartTime = SystemClock.uptimeMillis();
+				currentTime = 0;
+			} else {
+				currentTime = SystemClock.uptimeMillis()
+						- mPreviewAnimStartTime;
+			}
+			if (currentTime >= PREVIEW_ANIM_DURATION) {
+				if (mPreviewStatus == PREVIEW_OPENING) {
+					mPreviewStatus = PREVIEW_OPEN;
+				} else if (mPreviewStatus == PREVIEW_CLOSING) {
+					mPreviewStatus = PREVIEW_COLSED;
+					setAllChildrenLayersEnabled(false);
+					postInvalidate();
+				}
+			} else {
+				postInvalidate();
+			}
+
+			final int count = getChildCount();
+			for (int i = 0; i < count; i++) {
+				View childView = getChildAt(i);
+				drawChild(canvas, childView, getDrawingTime());
+			}
+			return;
+		}
+    	//}add by jingjiang.yu end
+    	
+    	
         super.dispatchDraw(canvas);
 
         if (mInScrollArea && !LauncherApplication.isScreenLarge()) {
@@ -1417,7 +1494,7 @@ public class Workspace extends SmoothPagedView
             // In software mode, we don't want the items to continue to be drawn into bitmaps
             if (!isHardwareAccelerated()) {
                 layout.setChildrenDrawingCacheEnabled(false);
-            }
+           }
         }
     }
 
@@ -3545,4 +3622,334 @@ public class Workspace extends SmoothPagedView
         if (dockDivider != null) dockDivider.setAlpha(reducedFade);
         scrollIndicator.setAlpha(1 - fade);
     }
+    
+  //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+	public void showPreview() {
+		if (mPreviewStatus == PREVIEW_OPEN || mPreviewStatus == PREVIEW_OPENING) {
+			return;
+		}
+		
+		changeState(State.NORMAL, false, 0);
+		calculatePreviewScale();
+		setAllChildrenLayersEnabled(true);
+		mPreviewStatus = PREVIEW_OPENING;
+		mPreviewAnimStartTime = 0;
+		invalidate();
+	}
+
+	public void closePreview() {
+		if (mPreviewStatus == PREVIEW_COLSED
+				|| mPreviewStatus == PREVIEW_CLOSING) {
+			return;
+		}
+		mPreviewStatus = PREVIEW_CLOSING;
+		mPreviewAnimStartTime = 0;
+		invalidate();
+	}
+
+	public boolean isPreviewShow() {
+		return mPreviewStatus == PREVIEW_OPEN
+				|| mPreviewStatus == PREVIEW_OPENING;
+	}
+
+	protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+		CellLayout cell = (CellLayout) child;
+		if(isPreviewShow()){
+			cell.setShowPreviewBackground(true);
+		}else{
+			cell.setShowPreviewBackground(false);
+		}
+		
+		if (mPreviewStatus == PREVIEW_COLSED) {
+			return super.drawChild(canvas, child, drawingTime);
+		}
+
+		float left = 0;
+		float top = 0;
+		float scaleW = 0;
+		float scaleH = 0;
+		long currentTime = SystemClock.uptimeMillis() - mPreviewAnimStartTime;
+
+
+		RectF scaledRect = getScaledChild(child);
+
+		if (mPreviewStatus == PREVIEW_OPENING) {
+			left = easeOut(currentTime, child.getLeft(), scaledRect.left,
+					PREVIEW_ANIM_DURATION);
+			top = easeOut(currentTime, child.getTop(), scaledRect.top,
+					PREVIEW_ANIM_DURATION);
+			scaleW = easeOut(currentTime, 1.0f, mPreviewScaleW,
+					PREVIEW_ANIM_DURATION);
+			scaleH = easeOut(currentTime, 1.0f, mPreviewScaleH,
+					PREVIEW_ANIM_DURATION);
+		} else if (mPreviewStatus == PREVIEW_CLOSING) {
+			left = easeOut(currentTime, scaledRect.left, child.getLeft(),
+					PREVIEW_ANIM_DURATION);
+			top = easeOut(currentTime, scaledRect.top, child.getTop(),
+					PREVIEW_ANIM_DURATION);
+			scaleW = easeOut(currentTime, mPreviewScaleW, 1.0f,
+					PREVIEW_ANIM_DURATION);
+			scaleH = easeOut(currentTime, mPreviewScaleH, 1.0f,
+					PREVIEW_ANIM_DURATION);
+		} else if (mPreviewStatus == PREVIEW_OPEN) {
+			left = scaledRect.left;
+			top = scaledRect.top;
+			scaleW = mPreviewScaleW;
+			scaleH = mPreviewScaleH;
+		}
+		canvas.save();
+		canvas.translate(left, top);
+		canvas.scale(scaleW, scaleH);
+		child.draw(canvas);
+		canvas.restore();
+
+		return true;
+	}
+
+	private float easeOut(float time, float begin, float end, float duration) {
+		float change = end - begin;
+		float value = change * ((time = time / duration - 1) * time * time + 1)
+				+ begin;
+		if (change > 0 && value > end)
+			value = end;
+		if (change < 0 && value < end)
+			value = end;
+		return value;
+	}
+
+	private void calculatePreviewScale() {
+		int maxPreviewColumns = 0;
+
+		int PreviewRows = PREVIEW_LAYOUT.length;
+		for (int rows = 0; rows < PreviewRows; rows++) {
+			if (PREVIEW_LAYOUT[rows] > maxPreviewColumns) {
+				maxPreviewColumns = PREVIEW_LAYOUT[rows];
+			}
+		}
+		float previewHeight = (getMeasuredHeight() - PREVIEW_MARGIN_TOP
+				- PREVIEW_MARGIN_BOTTOM - PREVIEW_Y_SPAN * (PreviewRows - 1))
+				/ PreviewRows;
+		float previewWidth = (getMeasuredWidth() - PREVIEW_MARGIN_LEFT
+				- PREVIEW_MARGIN_RIGHT - PREVIEW_X_SPAN
+				* (maxPreviewColumns - 1))
+				/ maxPreviewColumns;
+		mPreviewScaleW = previewWidth / getChildAt(0).getWidth();
+		mPreviewScaleH = previewHeight / getChildAt(0).getHeight();
+		if (mPreviewScaleW >= 1) {
+			mPreviewScaleW = 0.8f;
+		}
+		if (mPreviewScaleH >= 1) {
+			mPreviewScaleH = 0.8f;
+		}
+	}
+
+	private RectF getScaledChild(View child) {
+		float xpos = getScrollX();
+		float ypos = 0;
+		int childPos = 0;
+
+		float previewWidth = child.getWidth() * mPreviewScaleW;
+		float previewHeight = child.getHeight() * mPreviewScaleH;
+
+		final float topMargin = (getHeight() - previewHeight
+				* PREVIEW_LAYOUT.length - PREVIEW_Y_SPAN
+				* (PREVIEW_LAYOUT.length - 1)) / 2;
+		for (int rows = 0; rows < PREVIEW_LAYOUT.length; rows++) {
+			final float leftMargin = (getWidth() - previewWidth
+					* PREVIEW_LAYOUT[rows] - PREVIEW_X_SPAN
+					* (PREVIEW_LAYOUT[rows] - 1)) / 2;
+			for (int columns = 0; columns < PREVIEW_LAYOUT[rows]; columns++) {
+				if (childPos > getChildCount() - 1) {
+					break;
+				}
+				final View c = getChildAt(childPos);
+				if (child == c) {
+					RectF value = new RectF(leftMargin + xpos,
+							topMargin + ypos, leftMargin + xpos + previewWidth,
+							topMargin + ypos + previewHeight);
+					return value;
+				} else {
+					xpos += previewWidth + PREVIEW_X_SPAN;
+				}
+				childPos++;
+			}
+			xpos = getScrollX();
+			ypos += previewHeight + PREVIEW_Y_SPAN;
+		}
+		return new RectF();
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent ev) {
+
+		int actionMasked = ev.getActionMasked();
+		if (mMultiTouchState) {
+			if (ev.getPointerCount() < 2) {
+				if (actionMasked == MotionEvent.ACTION_UP) {
+					mMultiTouchState = false;
+				}
+				mMultiTouchLastDistance = -1;
+				return true;
+			}
+
+			float distance = spacing(ev);
+			if (mMultiTouchLastDistance == -1) {
+				mMultiTouchLastDistance = distance;
+			} else if ((mMultiTouchLastDistance - distance) > 50) {
+				mMultiTouchState = false;
+				mMultiTouchLastDistance = -1;
+				mLauncher.showWorkspacePreview();
+			}
+
+			return true;
+		}
+
+		if (mPreviewStatus == PREVIEW_OPEN) {
+			float x = ev.getX();
+			float y = ev.getY();
+			switch (actionMasked) {
+			case MotionEvent.ACTION_DOWN:
+				mLastClickedPreviewIndex = findClickedPreview(x, y);
+				mPreviewLastMotionX = x;
+				mPreviewLastMotionY = y;
+				mPreviewProcessedDown = true;
+				break;
+			case MotionEvent.ACTION_MOVE:
+				if (!mPreviewProcessedDown) {
+					return true;
+				}
+				final int xDiff = (int) Math.abs(x - mPreviewLastMotionX);
+				final int yDiff = (int) Math.abs(y - mPreviewLastMotionY);
+				if (xDiff > mTouchSlop || yDiff > mTouchSlop) {
+					mPreviewIsMove = true;
+				}
+
+				break;
+			case MotionEvent.ACTION_UP:
+				if (!mPreviewProcessedDown || mPreviewIsMove
+						|| mLastClickedPreviewIndex == -1) {
+					clearPreviewTouchData();
+					return true;
+				}
+
+				int clickedPreviewIndex = findClickedPreview(x, y);
+				if (clickedPreviewIndex == mLastClickedPreviewIndex) {
+					if (checkIsClickedHomeButton(clickedPreviewIndex, x, y)) {
+						onPreviewHomeButtonClicked(clickedPreviewIndex);
+					} else if (checkIsClickedDelButton(clickedPreviewIndex, x,
+							y)) {
+						onPreviewDelButtonClicked(clickedPreviewIndex);
+					} else {
+						onPreviewClicked(clickedPreviewIndex);
+					}
+				}
+
+				clearPreviewTouchData();
+				break;
+			case MotionEvent.ACTION_CANCEL:
+				clearPreviewTouchData();
+				return true;
+			}
+
+			return true;
+		}
+
+		if (mPreviewStatus != PREVIEW_COLSED) {
+			return true;
+		}
+		return super.onTouchEvent(ev);
+	}
+	
+	private boolean checkIsClickedHomeButton(int previewIndex, float x, float y) {
+		CellLayout cell = (CellLayout) getChildAt(previewIndex);
+		RectF previewRect = getScaledChild(cell);
+		float homeButtonWidth = cell.getHomeButtonWidth() * mPreviewScaleW;
+		float homeButtonHeight = cell.getHomeButtonHeight() * mPreviewScaleH;
+		RectF homeButtonRect = new RectF();
+		homeButtonRect.set(previewRect.left
+				+ (previewRect.right - previewRect.left) / 2 - homeButtonWidth
+				/ 2, previewRect.bottom - homeButtonHeight, previewRect.left
+				+ (previewRect.right - previewRect.left) / 2 + homeButtonWidth
+				/ 2, previewRect.bottom);
+		if(homeButtonRect.contains(x + getScrollX(), y + getScrollY())){
+			return true;
+		}
+
+		return false;
+	}
+	
+	private boolean checkIsClickedDelButton(int previewIndex, float x, float y) {
+		CellLayout cell = (CellLayout) getChildAt(previewIndex);
+		RectF previewRect = getScaledChild(cell);
+		float delButtonWidth = cell.getDelButtonWidth() * mPreviewScaleW;
+		float delButtonHeight = cell.getDelButtonHeight() * mPreviewScaleH;
+		RectF delButtonRect = new RectF();
+		delButtonRect.set(previewRect.right - delButtonWidth, previewRect.top,
+				previewRect.right, previewRect.top + delButtonHeight);
+		if (delButtonRect.contains(x + getScrollX(), y + getScrollY())) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private void clearPreviewTouchData() {
+		mLastClickedPreviewIndex = -1;
+		mPreviewLastMotionX = -1;
+		mPreviewLastMotionY = -1;
+		mPreviewProcessedDown = false;
+		mPreviewIsMove = false;
+	}
+
+	private int findClickedPreview(float x, float y) {
+		for (int i = 0; i < getChildCount(); i++) {
+			RectF tmp = getScaledChild(getChildAt(i));
+			if (tmp.contains(x + getScrollX(), y + getScrollY())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	private void onPreviewClicked(int previewIndex) {
+		if (mCurrentPage != previewIndex) {
+			setCurrentPage(previewIndex);
+		}
+		mLauncher.closeWorkspacePreview();
+	}
+
+	private void onPreviewHomeButtonClicked(int previewIndex) {
+		setHomePage(previewIndex);
+		invalidate();
+	}
+
+	private void onPreviewDelButtonClicked(int previewIndex) {
+
+	}
+
+	private float spacing(MotionEvent event) {
+		float x = event.getX(0) - event.getX(1);
+		float y = event.getY(0) - event.getY(1);
+		return FloatMath.sqrt(x * x + y * y);
+	}
+	
+	public void setHomePage(int homePage) {
+		mDefaultPage = (homePage < 0 ? 0 : homePage) > (getChildCount() - 1) ? (getChildCount() - 1)
+				: homePage;
+		for (int i = 0; i < getChildCount(); i++) {
+			CellLayout cell = (CellLayout) getChildAt(i);
+			if (i == mDefaultPage) {
+				cell.setIsHomePage(true);
+			} else {
+				cell.setIsHomePage(false);
+			}
+		}
+	}
+	
+	private void setAllChildrenLayersEnabled(boolean enabled){
+		for (int i = 0; i < getChildCount(); i++) {
+			((ViewGroup) getChildAt(i)).setChildrenLayersEnabled(enabled);
+		}
+	}
+  //}add by jingjiang.yu end
 }
