@@ -143,7 +143,27 @@ public class CellLayout extends ViewGroup {
     private Drawable mDeleteButton;
     private boolean mIsHomePage = false;
     private boolean mIsShowDelButton = true;
-  //}add by jingjiang.yu end
+  //}add by jingjiang.yu end    
+
+    // {added by zhong.chen 2012-6-28 for launcher user-defined
+    private float mOriginalX;
+    private float mOriginalY;
+    
+    public void setOriginalX(float originalX) {
+        mOriginalX = originalX;
+    }
+    public float getOriginalX() {
+        return mOriginalX;
+    }
+    
+    public void setOriginalY(float originalY) {
+        mOriginalY = originalY;
+    }
+    
+    public float getOriginalY() {
+        return mOriginalY;
+    }
+    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午2:39:06
 
     public CellLayout(Context context) {
         this(context, null);

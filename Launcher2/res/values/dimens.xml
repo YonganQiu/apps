@@ -81,6 +81,9 @@
     <dimen name="button_bar_width_left_padding">0dp</dimen>
     <dimen name="button_bar_width_right_padding">0dp</dimen>
     <dimen name="button_bar_height_plus_padding">70dp</dimen>
+    <!-- added by zhong.chen for user_defined_settings -->
+    <dimen name="user_defined_settings_height">132dp</dimen>
+    <!-- added by zhong.chen for user_defined_settings -->
 
     <!-- extra horizontal spacing between mini screen thumbnails ie. in all
          apps and in customization mode -->

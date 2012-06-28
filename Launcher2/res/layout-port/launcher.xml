@@ -60,6 +60,13 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_bar_height_plus_padding"
         android:layout_gravity="bottom" />
+        
+    <include layout="@layout/user_defined_settings_pane"
+        android:id="@+id/user_defined_settings"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/user_defined_settings_height"
+        android:layout_gravity="bottom"
+        android:visibility="gone"/>
 
     <include
         android:id="@+id/qsb_bar"

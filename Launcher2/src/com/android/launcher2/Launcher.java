@@ -23,6 +23,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -50,7 +51,16 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.LinearGradient;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Bitmap.Config;
+import android.graphics.Shader.TileMode;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -69,6 +79,7 @@ import android.text.TextUtils;
 import android.text.method.TextKeyListener;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -77,6 +88,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -88,6 +100,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Advanceable;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -159,8 +173,12 @@ public final class Launcher extends Activity
 
     private static final String TOOLBAR_ICON_METADATA_NAME = "com.android.launcher.toolbar_icon";
 
+    // {added by zhong.chen 2012-6-28 for launcher user-defined added state:USER_DEFINED_SETTINGS
     /** The different states that Launcher can be in. */
-    private enum State { WORKSPACE, APPS_CUSTOMIZE, APPS_CUSTOMIZE_SPRING_LOADED };
+    private enum State { WORKSPACE, APPS_CUSTOMIZE, APPS_CUSTOMIZE_SPRING_LOADED, 
+        USER_DEFINED_SETTINGS };
+     // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午2:56:07
+
     private State mState = State.WORKSPACE;
     private AnimatorSet mStateAnimation;
     private AnimatorSet mDividerAnimator;
@@ -568,6 +586,14 @@ public final class Launcher extends Activity
         // market intent, so refresh the icon
         updateAppMarketIcon();
         mAppsCustomizeTabHost.onResume();
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        mUserDefinedTabHost.onResume();
+        if(mState != State.USER_DEFINED_SETTINGS 
+                && mUserDefinedTabHost.getVisibility() == View.VISIBLE) {
+            showUserDefinedSettings(false, true);
+        }
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:01:15
+
         if (!mWorkspaceLoading) {
             final ViewTreeObserver observer = mWorkspace.getViewTreeObserver();
             final Workspace workspace = mWorkspace;
@@ -710,6 +736,13 @@ public final class Launcher extends Activity
         if (state == State.APPS_CUSTOMIZE) {
             showAllApps(false);
         }
+        
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        if (state == State.USER_DEFINED_SETTINGS) {
+            showUserDefinedSettings(false, true);
+        }
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:03:09
+
 
         final int currentScreen = savedState.getInt(RUNTIME_STATE_CURRENT_SCREEN, -1);
         if (currentScreen > -1) {
@@ -750,6 +783,23 @@ public final class Launcher extends Activity
             int currentIndex = savedState.getInt("apps_customize_currentIndex");
             mAppsCustomizeContent.restorePageForIndex(currentIndex);
         }
+        
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        if (mUserDefinedTabHost != null) {
+            String curTab = savedState.getString("user_defined_settings_currentTab");
+            if (curTab != null) {
+                mUserDefinedContent.setContentType(
+                        mUserDefinedTabHost.getContentTypeForTabTag(curTab));
+                mUserDefinedTabHost.setCurrentTabByTag(curTab);
+                mUserDefinedContent.loadAssociatedPages(
+                        mUserDefinedContent.getCurrentPage());
+            }
+
+            int currentIndex = savedState.getInt("user_defined_settings_currentIndex");
+            mUserDefinedContent.restorePageForIndex(currentIndex);
+        }
+       // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:03:54
+        
     }
 
     /**
@@ -762,6 +812,9 @@ public final class Launcher extends Activity
         mWorkspace = (Workspace) mDragLayer.findViewById(R.id.workspace);
         mQsbDivider = (ImageView) findViewById(R.id.qsb_divider);
         mDockDivider = (ImageView) findViewById(R.id.dock_divider);
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        mScrollIndicator = (ImageView) findViewById(R.id.paged_view_indicator);
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:04:36
 
         // Setup the drag layer
         mDragLayer.setup(this, dragController);
@@ -787,6 +840,14 @@ public final class Launcher extends Activity
         mAppsCustomizeContent = (AppsCustomizePagedView)
                 mAppsCustomizeTabHost.findViewById(R.id.apps_customize_pane_content);
         mAppsCustomizeContent.setup(this, dragController);
+        
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        mUserDefinedTabHost = (UserDefinedSettingsTabHost)
+                findViewById(R.id.user_defined_settings);
+        mUserDefinedContent = (UserDefinedSettingsPagedView)
+                mUserDefinedTabHost.findViewById(R.id.apps_customize_pane_content);
+        mUserDefinedContent.setup(this);
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:05:21
 
         // Get the all apps button
         mAllAppsButton = findViewById(R.id.all_apps_button);
@@ -1042,6 +1103,14 @@ public final class Launcher extends Activity
                     mAppsCustomizeTabHost.reset();
                     showWorkspace(false);
                 }
+                
+                // {added by zhong.chen 2012-6-28 for launcher user-defined
+                if (mUserDefinedTabHost != null && mPendingAddInfo.container == ItemInfo.NO_ID) {
+                    mUserDefinedTabHost.reset();
+                    showWorkspace(false);
+                }
+                // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:06:25
+
             } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                 mUserPresent = true;
                 updateRunning();
@@ -1232,6 +1301,13 @@ public final class Launcher extends Activity
             if (!alreadyOnHome && mAppsCustomizeTabHost != null) {
                 mAppsCustomizeTabHost.reset();
             }
+            
+            // {added by zhong.chen 2012-6-28 for launcher user-defined
+            if (!alreadyOnHome && mUserDefinedTabHost != null) {
+                mUserDefinedTabHost.reset();
+            }
+            // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:07:52
+            
         }
     }
 
@@ -1273,6 +1349,18 @@ public final class Launcher extends Activity
             int currentIndex = mAppsCustomizeContent.getSaveInstanceStateIndex();
             outState.putInt("apps_customize_currentIndex", currentIndex);
         }
+        
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        if (mUserDefinedTabHost != null) {
+            String currentTabTag = mUserDefinedTabHost.getCurrentTabTag();
+            if (currentTabTag != null) {
+                outState.putString("user_defined_settings_currentTab", currentTabTag);
+            }
+            int currentIndex = mUserDefinedContent.getSaveInstanceStateIndex();
+            outState.putInt("user_defined_settings_currentIndex", currentIndex);
+        }
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:09:55
+
     }
 
     @Override
@@ -1406,7 +1494,10 @@ public final class Launcher extends Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case MENU_WALLPAPER_SETTINGS:
-            startWallpaper();
+            // {added by zhong.chen 2012-6-28 for launcher user-defined
+            //startWallpaper();
+            showUserDefinedSettings(true, false);
+            // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:10:40
             return true;
         }
 
@@ -1683,8 +1774,20 @@ public final class Launcher extends Activity
     	}
     	//}add by jingjiang.yu end
     	
-        if (mState == State.APPS_CUSTOMIZE) {
+    	// {added by zhong.chen 2012-6-28 for launcher user-defined
+    	if(mState != State.WORKSPACE) {
+            
+            hideUserDefinedSettings(true, false);
+            return;
+        }
+    	// }added by zhong.chen 2012-6-28 for launcher user-defined end
+        // 下午3:13:00
+
+    	// {modified by zhong.chen 2012-6-28 for launcher user-defined
+        if (mState == State.APPS_CUSTOMIZE 
+                || mState == State.USER_DEFINED_SETTINGS) {
             showWorkspace(true);
+        //}modified by zhong.chen 2012-6-28 for launcher user-defined end 下午3:13:23 
         } else if (mWorkspace.getOpenFolder() != null) {
             Folder openFolder = mWorkspace.getOpenFolder();
             if (openFolder.isEditingName()) {
@@ -2028,7 +2131,12 @@ public final class Launcher extends Activity
                 // User long pressed on empty space
                 mWorkspace.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
                         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
-                startWallpaper();
+                // {modified by zhong.chen 2012-6-28 for launcher user-defined
+                //startWallpaper();
+                if(mState != State.USER_DEFINED_SETTINGS) {
+                    showUserDefinedSettings(true, false);
+                }
+                // }modified by zhong.chen 2012-6-28 for launcher user-defined end 下午3:14:43 
             } else {
                 if (!(itemUnderLongClick instanceof Folder)) {
                     // User long pressed on an item
@@ -2487,7 +2595,12 @@ public final class Launcher extends Activity
         mWorkspace.changeState(Workspace.State.NORMAL, animated, stagger);
         if (mState != State.WORKSPACE) {
             mWorkspace.setVisibility(View.VISIBLE);
-            hideAppsCustomizeHelper(animated, false);
+            // {modified by zhong.chen 2012-6-28 for launcher user-defined
+            if(mState != State.USER_DEFINED_SETTINGS) {
+                hideAppsCustomizeHelper(animated, false);
+            }
+            // }modified by zhong.chen 2012-6-28 for launcher user-defined end
+            // 下午3:17:09 
 
             // Show the search bar and hotseat
             mSearchDropTargetBar.showSearchBar(animated);
@@ -2962,7 +3075,12 @@ public final class Launcher extends Activity
                     break;
                 }
                 case AddAdapter.ITEM_WALLPAPER: {
-                    startWallpaper();
+                    // {modified by zhong.chen 2012-6-28 for launcher
+                    // user-defined
+                    //startWallpaper();
+                    showUserDefinedSettings(true, false);
+                    // }modified by zhong.chen 2012-6-28 for launcher
+                    // user-defined end 下午3:22:34 
                     break;
                 }
             }
@@ -3458,6 +3576,9 @@ public final class Launcher extends Activity
     
   //{add by jingjiang.yu at 2012.06.25 begin
     public void showWorkspacePreview(){
+        if(mState == State.USER_DEFINED_SETTINGS) {
+            hideUserDefinedSettings(false, false);
+        }
     	mSearchDropTargetBar.hideSearchBar(false);
     	closeFolder();
     	mWorkspace.hideScrollingIndicator(true);
@@ -3474,6 +3595,395 @@ public final class Launcher extends Activity
     	showHotseat(false);
     }
   //}add by jingjiang.yu end
+    
+  //=========== {added by zhong.chen 2012-6-28 for launcher user-defined ==================
+    private View mScrollIndicator;
+    private UserDefinedSettingsTabHost mUserDefinedTabHost;
+    private UserDefinedSettingsPagedView mUserDefinedContent;
+    
+    private void showUserDefinedSettingsHelper(final boolean animated, final boolean springLoaded) {
+        if (mStateAnimation != null) {
+            mStateAnimation.cancel();
+            mStateAnimation = null;
+        }
+        final Resources res = getResources();
+        final Launcher instance = this;
+
+        final int duration = res.getInteger(R.integer.config_appsCustomizeZoomInTime);
+        final float scale = (float) res.getInteger(R.integer.config_appsCustomizeZoomScaleFactor);
+        final View toView = mUserDefinedTabHost;
+        Resources r = getResources();
+        final int userDefinedSettingsHeight = r.getDimensionPixelSize(R.dimen.user_defined_settings_height);
+        final int buttonBarHeight = r.getDimensionPixelSize(R.dimen.button_bar_height);
+        setPivotsForZoom(toView, scale);
+
+        // Shrink workspaces away if going to AppsCustomize from workspace
+        //mWorkspace.changeState(Workspace.State.NORMAL, animated);
+        mWorkspace.changeState(Workspace.State.USER_DEFINED, animated);
+        
+        final int bottom = mDragLayer.getHeight();
+        final int topY = bottom - userDefinedSettingsHeight;
+        
+        //final ValueAnimator yAnim = ValueAnimator.ofInt(bottom, toY).setDuration(duration);
+        ObjectAnimator yAnim = ObjectAnimator.ofFloat(toView, "y", bottom, topY);
+        yAnim.setDuration(duration);
+        yAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+        yAnim.addListener(new AnimatorListenerAdapter() {
+            boolean animationCancelled = false;
+            @Override
+            public void onAnimationStart(Animator animation) {
+                toView.setTranslationX(0.0f);
+                toView.setTranslationY(0.0f);
+                toView.setScaleX(1.0f);
+                toView.setScaleY(1.0f);
+                toView.setY(bottom);
+                toView.setVisibility(View.VISIBLE);
+                toView.bringToFront();
+                toView.requestFocus();
+            }
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                toView.setTranslationX(0.0f);
+                toView.setTranslationY(0.0f);
+                toView.setScaleX(1.0f);
+                toView.setScaleY(1.0f);
+                toView.setY(topY);
+                toView.setVisibility(View.VISIBLE);
+                toView.bringToFront();
+                toView.requestFocus();
+
+//                hideScrollIndicator();
+//                hideDockDivider();
+                if (animationCancelled) {
+                    updateWallpaperVisibility(true);
+                }
+            }
+            
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                animationCancelled = true;
+            }
+
+        });
+        
+        final int size = mWorkspace.getChildCount();
+        ArrayList<ObjectAnimator> anims = new ArrayList<ObjectAnimator>();
+        anims.add(yAnim);
+        PropertyValuesHolder xScaleHolder, yScaleHolder, xHolder, yHolder;
+        float x, y;
+        if(!springLoaded && false) {
+            for (int i = 0; i < size; i++) {
+                final CellLayout cl = (CellLayout) mWorkspace.getChildAt(i);
+                
+                //cl = (CellLayout) mWorkspace.getChildAt(mWorkspace.mCurrentPage);
+                x = cl.getX();
+                y = cl.getY();
+                if(!mInitialized) {
+                    Log.e("zh.cn", "................................................................");
+                    cl.setOriginalX(x);
+                    cl.setOriginalY(y);
+                }
+              
+                xScaleHolder = PropertyValuesHolder.ofFloat("scaleX", 1.00f, 0.85f);
+                yScaleHolder = PropertyValuesHolder.ofFloat("scaleY", 1.00f, 0.85f);
+                
+                final float toX = x + 12.0f;
+                final float toY = y - CELL_MARGIN_Y;
+                Log.e("zh.cn", ".......show................x: " + x + " ,toX: " + toX
+                        + "y: " + y + " ,toY: " + toY);
+                xHolder = PropertyValuesHolder.ofFloat("x", x, toX);
+                yHolder = PropertyValuesHolder.ofFloat("y", y, toY);
+                ObjectAnimator anim = ObjectAnimator.ofPropertyValuesHolder(cl, xScaleHolder, yScaleHolder, /*xHolder,*/ yHolder);
+                anim.setInterpolator(new Workspace.ZoomOutInterpolator());
+                
+                anim.setDuration(duration);
+                anim.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        cl.setBackgroundResource(R.drawable.homescreen_blue_normal_holo);
+                        cl.setOnClickListener(new OnClickListener(){
+                            @Override
+                            public void onClick(View v) {
+                                if(mState == State.USER_DEFINED_SETTINGS) {
+                                    hideUserDefinedSettings(true, true);
+                                }
+                            }
+                        });
+                    }
+                    
+                });
+                anims.add(anim);
+            }
+            mInitialized = true;
+        }
+        
+        if(null == mDockDivider) {
+            mDockDivider = (ImageView) findViewById(R.id.dock_divider);
+        }
+        if(null != mDockDivider) {
+            ObjectAnimator dockDividerAnim = ObjectAnimator.ofFloat(mDockDivider, "alpha", 0.0f, 1.0f);
+            dockDividerAnim.setDuration(duration / 2);
+            dockDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+            dockDividerAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mDockDivider.setAlpha(0f);
+                    mDockDivider.setVisibility(View.VISIBLE);
+                }
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (mDockDivider != null) {
+                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mDockDivider.getWidth(), mDockDivider.getHeight());
+                        lp.topMargin = buttonBarHeight;
+                        lp.gravity = Gravity.TOP;
+                        mDockDivider.setLayoutParams(lp);
+                    }
+                    mDockDivider.setAlpha(1.0f);
+                    mDockDivider.setVisibility(View.VISIBLE);
+                    
+                }
+                
+            });
+            
+            anims.add(dockDividerAnim);
+                
+        }
+        if(null == mScrollIndicator) {
+            mScrollIndicator = (ImageView) findViewById(R.id.paged_view_indicator);
+        }
+        if(null != mScrollIndicator) {
+            ObjectAnimator scrollIndicatorAnim = ObjectAnimator.ofFloat(mScrollIndicator, "alpha", 0.0f, 1.0f);
+            scrollIndicatorAnim.setDuration(duration);
+            scrollIndicatorAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+            scrollIndicatorAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mScrollIndicator.setAlpha(0f);
+                    mScrollIndicator.setVisibility(View.VISIBLE);
+                }
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (mScrollIndicator != null) {
+                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mScrollIndicator.getWidth(), mScrollIndicator.getHeight());
+                        lp.topMargin = buttonBarHeight;
+                        lp.gravity = Gravity.TOP;
+                        mScrollIndicator.setLayoutParams(lp);
+                    }
+                    mScrollIndicator.setAlpha(1.0f);
+                    mScrollIndicator.setVisibility(View.VISIBLE);
+                    
+                }
+                
+            });
+            
+            anims.add(scrollIndicatorAnim);
+        }
+        
+            
+        mStateAnimation = new AnimatorSet();
+        mStateAnimation.setDuration(duration);
+        mStateAnimation.playTogether(anims.toArray(new ObjectAnimator[]{}));
+        mStateAnimation.start();
+        
+        if (toView instanceof LauncherTransitionable) {
+            ((LauncherTransitionable) toView).onLauncherTransitionStart(instance, null, false);
+            ((LauncherTransitionable) toView).onLauncherTransitionEnd(instance, null, false);
+
+            if (!springLoaded && !LauncherApplication.isScreenLarge()) {
+                // Hide the workspace scrollbar
+                mWorkspace.hideScrollingIndicator(true);
+                hideDockDivider();
+            }
+        }
+    }
+    
+    private final static float CELL_MARGIN_Y = 42.0f;
+    private boolean mInitialized = false;
+    void showUserDefinedSettings(boolean animated, boolean fromResume) {
+        if (mState != State.WORKSPACE) return;
+        
+        if(!mUserDefinedContent.checkDataReady())
+        {
+            mUserDefinedContent.initData();
+        }
+        if (mHotseat != null) {
+            mHotseat.setVisibility(View.INVISIBLE);
+        }
+
+        showUserDefinedSettingsHelper(animated, fromResume);
+        mState = State.USER_DEFINED_SETTINGS;
+        //mState = State.APPS_CUSTOMIZE_SPRING_LOADED;
+        
+        // Send an accessibility event to announce the context change
+        getWindow().getDecorView().sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
+        
+    }
+    
+    void hideUserDefinedSettings(final boolean animated, final boolean immediately) {
+
+        if (mStateAnimation != null) {
+            mStateAnimation.cancel();
+            mStateAnimation = null;
+        }
+        
+        final Resources res = getResources();
+
+        final int duration = res.getInteger(R.integer.config_appsCustomizeZoomInTime);
+        final View toView = mUserDefinedTabHost;
+        Resources r = getResources();
+        final int userDefinedSettingsHeight = r.getDimensionPixelSize(R.dimen.user_defined_settings_height);
+
+        final int buttonBarHeight = res.getDimensionPixelSize(R.dimen.button_bar_height);
+        
+        final int bottom = mDragLayer.getHeight();
+        final int topY = bottom - userDefinedSettingsHeight;
+        
+        //final ValueAnimator yAnim = ValueAnimator.ofInt(bottom, toY).setDuration(duration);
+        ObjectAnimator yAnim = ObjectAnimator.ofFloat(toView, "y", topY, bottom);
+        yAnim.setDuration(duration);
+        yAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+        
+        ArrayList<ObjectAnimator> anims = new ArrayList<ObjectAnimator>();
+        anims.add(yAnim);
+        
+        ObjectAnimator hotseatAnim = ObjectAnimator.ofFloat(mHotseat, "alpha", 0.0f, 1.0f);
+        hotseatAnim.setDuration(duration);
+        hotseatAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+        hotseatAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mHotseat.setAlpha(0f);
+                mHotseat.setVisibility(View.VISIBLE);
+            }
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mHotseat.setAlpha(1.0f);
+                mHotseat.setVisibility(View.VISIBLE);
+            }
+            
+        });
+        anims.add(hotseatAnim);
+        
+        if(null == mQsbDivider) {
+            mQsbDivider = (ImageView) findViewById(R.id.qsb_divider);
+        }
+        if(null == mDockDivider) {
+            mDockDivider = (ImageView) findViewById(R.id.dock_divider);
+        }
+        if(null == mScrollIndicator) {
+            mScrollIndicator = (ImageView) findViewById(R.id.paged_view_indicator);
+        }
+        
+        
+        if (mQsbDivider != null) {
+            ObjectAnimator qsbDividerAnim = ObjectAnimator.ofFloat(mQsbDivider, "alpha", 1.0f)
+                    .setDuration(duration);
+            qsbDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+            qsbDividerAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mQsbDivider.setAlpha(0f);
+                    mQsbDivider.setVisibility(View.VISIBLE);
+                }
+                
+            });
+            anims.add(qsbDividerAnim);
+        }
+        if (mDockDivider != null) {
+            ObjectAnimator dockDividerAnim = ObjectAnimator.ofFloat(mDockDivider, "alpha", 0.0f, 1.0f);
+            dockDividerAnim.setDuration(duration / 2);
+            dockDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+            dockDividerAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mDockDivider.setAlpha(0f);
+                    mDockDivider.setVisibility(View.VISIBLE);
+                }
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if (mDockDivider != null) {
+                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mDockDivider.getWidth(), mDockDivider.getHeight());
+                        lp.bottomMargin = buttonBarHeight;
+                        lp.gravity = Gravity.BOTTOM;
+                        mDockDivider.setLayoutParams(lp);
+                    }
+                    mDockDivider.setAlpha(1.0f);
+                    mDockDivider.setVisibility(View.VISIBLE);
+                    
+                }
+                
+            });
+            
+            anims.add(dockDividerAnim);
+        }
+        if (mScrollIndicator != null) {
+            ObjectAnimator dockDividerAnim = ObjectAnimator.ofFloat(mScrollIndicator, "alpha", 1.0f)
+                    .setDuration(duration);
+            dockDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+            dockDividerAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mScrollIndicator.setAlpha(0f);
+                    mScrollIndicator.setVisibility(View.INVISIBLE);
+                }
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mScrollIndicator.setAlpha(1.0f);
+                    mScrollIndicator.setVisibility(View.VISIBLE);
+                    if(mScrollIndicator != null) {
+                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mScrollIndicator.getWidth(), mScrollIndicator.getHeight());
+                        lp.bottomMargin = buttonBarHeight;
+                        /*lp.width = LayoutParams.WRAP_CONTENT;
+                        lp.height = LayoutParams.WRAP_CONTENT;*/
+                        lp.gravity = Gravity.BOTTOM;
+                        mScrollIndicator.setLayoutParams(lp);
+                    }
+                }
+                
+            });
+            anims.add(dockDividerAnim);
+        }
+        
+        mStateAnimation = new AnimatorSet();
+        mStateAnimation.setDuration(duration);
+        mStateAnimation.playTogether(anims.toArray(new ObjectAnimator[]{}));
+        mStateAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+//                mUserDefinedSettingsTabHost.reset();
+                mUserDefinedTabHost.setVisibility(View.GONE);
+                //FIXME showWorkspace(true);
+                mHotseat.setVisibility(View.VISIBLE);
+            }
+            
+            @Override
+            public void onAnimationCancel(Animator animation) {
+//                mUserDefinedSettingsTabHost.reset();
+                mUserDefinedTabHost.setVisibility(View.GONE);
+                //mSearchDropTargetBar.showSearchBar(true);
+                showWorkspace(true);
+                //FIXME TODO showScrollIndicator(true);
+                showHotseat(true);
+                mHotseat.setVisibility(View.VISIBLE);
+            }
+        });
+        if(immediately) {
+            mStateAnimation.start();
+        } else {
+            showWorkspace(true);
+        }
+        
+    }
+    
+    AnimatorSet getStateAnimation() {
+        return mStateAnimation;
+    }
+    
+    public boolean isUserDefinedOpen() {
+        return mState == State.USER_DEFINED_SETTINGS;
+    }
+    
+    //=========== {added by zhong.chen 2012-6-28 for launcher user-defined end ==============
 }
 
 interface LauncherTransitionable {

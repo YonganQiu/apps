@@ -67,6 +67,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.Display;
 import android.view.DragEvent;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -164,7 +165,9 @@ public class Workspace extends SmoothPagedView
     // State variable that indicates whether the pages are small (ie when you're
     // in all apps or customize mode)
 
-    enum State { NORMAL, SPRING_LOADED, SMALL };
+    // {added by zhong.chen 2012-6-28 for launcher user-defined
+    enum State { NORMAL, SPRING_LOADED, SMALL, USER_DEFINED };
+    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:30:22
     private State mState = State.NORMAL;
     private boolean mIsSwitchingState = false;
     private boolean mSwitchStateAfterFirstLayout = false;
@@ -281,7 +284,11 @@ public class Workspace extends SmoothPagedView
 	private static final String WORKSPACE_DEFAULT_PAGE_KEY = "workspace.default.page.key";
 	private static final int MAX_SCREEN_COUNT = 9;
   //}add by jingjiang.yu end
-    
+  
+	// {added by zhong.chen 2012-6-28 for launcher user-defined
+    private static final int MIN_LENGTH_FOR_FLING = 60;
+    private GestureDetector mGestureDetector;
+    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:35:38
 
     /**
      * Used to inflate the Workspace from XML.
@@ -382,10 +389,41 @@ public class Workspace extends SmoothPagedView
         LauncherModel.updateWorkspaceLayoutCells(cellCountX, cellCountY);
         setHapticFeedbackEnabled(false);
 
+        mLauncher = (Launcher) context;
         initWorkspace();
 
         // Disable multitouch across the workspace/all apps/customize tray
         setMotionEventSplittingEnabled(true);
+        
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                                   float velocityY) {
+                if(null == e1 || null == e2) {
+                    return false;
+                }
+                int dy = (int) (e2.getY() - e1.getY());
+                
+                if (Math.abs(dy) > MIN_LENGTH_FOR_FLING && Math.abs(velocityY) > Math.abs(velocityX)) {
+                    if (velocityY < 0) {
+                        if(mState != State.USER_DEFINED) {
+                            mLauncher.showUserDefinedSettings(true, false);
+                        }
+                    } else {
+                        if(mState == State.USER_DEFINED) {
+                            mLauncher.hideUserDefinedSettings(true, false);
+                        }
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
+        // 下午3:31:20
+
     }
 
     // estimate the size of a widget with spans hSpan, vSpan. return MAX_VALUE for each
@@ -717,7 +755,11 @@ public class Workspace extends SmoothPagedView
     	if(mPreviewStatus != PREVIEW_COLSED){
     		return true;
     	}
-    	
+    	// {added by zhong.chen 2012-6-28 for launcher user-defined
+    	mGestureDetector.onTouchEvent(ev);
+    	// }added by zhong.chen 2012-6-28 for launcher user-defined end
+        // 下午3:47:17
+
     	if(ev.getPointerCount() >= 2){
     		mMultiTouchState = true;
 			return true;
@@ -1779,9 +1821,17 @@ public class Workspace extends SmoothPagedView
         final State oldState = mState;
         final boolean oldStateIsNormal = (oldState == State.NORMAL);
         final boolean oldStateIsSmall = (oldState == State.SMALL);
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        final boolean oldStateIsUserDefined = (oldState == State.USER_DEFINED);
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
+        // 下午3:50:09
         mState = state;
         final boolean stateIsNormal = (state == State.NORMAL);
         final boolean stateIsSpringLoaded = (state == State.SPRING_LOADED);
+        // {added by zhong.chen 2012-6-28 for launcher user-defined
+        final boolean stateIsUserDefined = (state == State.USER_DEFINED);
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
+        // 下午3:50:24
         final boolean stateIsSmall = (state == State.SMALL);
         float finalScaleFactor = 1.0f;
         float finalBackgroundAlpha = stateIsSpringLoaded ? 1.0f : 0f;
@@ -1846,6 +1896,27 @@ public class Workspace extends SmoothPagedView
             if (LauncherApplication.isScreenLarge()) {
                 translationX = getOffsetXForRotation(rotation, cl.getWidth(), cl.getHeight());
             }
+
+            // {added by zhong.chen 2012-6-28 for launcher user-defined
+            if(stateIsUserDefined) {
+                cl.setIsDragOverlapping(true);
+                cl.setBackgroundResource(R.drawable.user_defined_tab_bg);
+                cl.setOnClickListener(new OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        if(mState == State.USER_DEFINED) {
+                            mLauncher.hideUserDefinedSettings(true, false);
+                        }
+                    }
+                });
+            } 
+            
+            if(oldStateIsUserDefined) {
+                cl.setIsDragOverlapping(false);
+                cl.setBackgroundDrawable(null);
+            } 
+            // }added by zhong.chen 2012-6-28 for launcher user-defined end
+            // 下午3:51:43
 
             mOldAlphas[i] = initialAlpha;
             mNewAlphas[i] = finalAlpha;
@@ -1951,7 +2022,17 @@ public class Workspace extends SmoothPagedView
                 }
             });
 
-            mAnimator.playTogether(animWithInterpolator, rotationAnim);
+            // {modified by zhong.chen 2012-6-28 for launcher user-defined
+            if(oldStateIsUserDefined) {
+                AnimatorSet stateAnimation = mLauncher.getStateAnimation();
+                if(null != stateAnimation)
+                mAnimator.playTogether(animWithInterpolator, rotationAnim, stateAnimation);
+            } else {
+                mAnimator.playTogether(animWithInterpolator, rotationAnim);
+            }
+            // }modified by zhong.chen 2012-6-28 for launcher user-defined end
+            // 下午3:52:40 
+            
             mAnimator.setStartDelay(delay);
             // If we call this when we're not animated, onAnimationEnd is never called on
             // the listener; make sure we only use the listener when we're actually animating
@@ -3903,7 +3984,11 @@ public class Workspace extends SmoothPagedView
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-
+	    // {added by zhong.chen 2012-6-28 for launcher user-defined
+	    if(mState == State.USER_DEFINED) {
+	        mGestureDetector.onTouchEvent(ev);
+	    }
+	    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:47:32
 		int actionMasked = ev.getActionMasked();
 		if (mMultiTouchState) {
 			if (ev.getPointerCount() < 2) {
