@@ -20,6 +20,7 @@ import com.android.common.io.MoreCloseables;
 import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
 import com.android.contacts.activities.ViewPagerVisibilityListener;
+import com.android.contacts.util.Constants;
 import com.android.contacts.util.EmptyLoader;
 import com.android.contacts.voicemail.VoicemailStatusHelper;
 import com.android.contacts.voicemail.VoicemailStatusHelper.StatusMessage;
@@ -88,6 +89,9 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
     private boolean mCallLogFetched;
     private boolean mVoicemailStatusFetched;
 
+    //Added by gangzhou.qi at 2012-6-27 下午8:35:42
+    private int mTypeCall = Constants.CALL_TYPE_ALL;
+	//Ended by gangzhou.qi at 2012-6-27 下午8:35:42
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -249,13 +253,17 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
         if (mShowingVoicemailOnly) {
             mCallLogQueryHandler.fetchVoicemailOnly();
         } else {
-            mCallLogQueryHandler.fetchAllCalls();
+            mCallLogQueryHandler.fetchAllCallsForType(mTypeCall);
         }
     }
 
     public void startCallsQuery() {
         mAdapter.setLoading(true);
-        mCallLogQueryHandler.fetchAllCalls();
+        //Added by gangzhou.qi at 2012-6-27 下午8:36:40
+//        mCallLogQueryHandler.fetchAllCalls();
+        mCallLogQueryHandler.fetchAllCallsForType(mTypeCall);
+		//Ended by gangzhou.qi at 2012-6-27 下午8:36:40
+        
         if (mShowingVoicemailOnly) {
             mShowingVoicemailOnly = false;
             getActivity().invalidateOptionsMenu();
@@ -303,7 +311,7 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
                 return true;
 
             case R.id.show_all_calls:
-                mCallLogQueryHandler.fetchAllCalls();
+                mCallLogQueryHandler.fetchAllCallsForType(mTypeCall);
                 mShowingVoicemailOnly = false;
                 return true;
 
@@ -437,6 +445,11 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
         serviceIntent.setAction(CallLogNotificationsService.ACTION_UPDATE_NOTIFICATIONS);
         getActivity().startService(serviceIntent);
     }
-    
+    //Added by gangzhou.qi at 2012-6-27 下午8:16:07
+    public void fetchCallsForDType(int callType){
+    	    mTypeCall = callType;
+	    	refreshData();
+    }
+    //Ended by gangzhou.qi at 2012-6-27 下午8:16:07
 
 }

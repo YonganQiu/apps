@@ -18,7 +18,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/background_holo_light">
 
     <FrameLayout
         android:id="@+id/voicemail_status"
@@ -34,34 +35,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
     >
-        <RadioGroup 
-            android:orientation="vertical"
-            android:layout_width="200px"
-            android:layout_height="match_parent">
-            <RadioButton 
-                android:layout_width="match_parent"
-                android:layout_height="80px"
-                android:text="@string/type_all"/>
-            <RadioButton 
-                android:layout_width="match_parent"
-                android:layout_height="80px"
-                android:text="@string/type_incoming"/>
-            <RadioButton 
-                android:layout_width="match_parent"
-                android:layout_height="80px"
-                android:text="@string/type_outgoing"/>
-            <RadioButton 
-                android:layout_width="match_parent"
-                android:layout_height="80px"
-                android:text="@string/type_missed"/>
-        </RadioGroup>
+        
         <ListView android:id="@android:id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fadingEdge="none"
             android:scrollbarStyle="outsideOverlay"
             android:divider="@null"
-            android:background="@drawable/background_holo_light"
         />
         <TextView android:id="@android:id/empty"
             android:layout_width="match_parent"
@@ -70,7 +50,6 @@
             android:gravity="center"
             android:textColor="?android:attr/textColorSecondary"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:background="@drawable/background_holo_light"
         />
     </FrameLayout>
 </LinearLayout>

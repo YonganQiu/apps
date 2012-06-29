@@ -192,6 +192,10 @@ public class PeopleActivity extends ContactsActivity
     private TabPagerAdapter mTabPagerAdapter;
     private final TabPagerListener mTabPagerListener = new TabPagerListener();
 
+    //add JiangzhouQ 20120624
+    private final TouchEventDeliverListener mTouchEventDeliverListener = new TouchEventDeliverListener();
+    //end JiangzhouQ 20120624
+    
     private ContactDetailLayoutController mContactDetailLayoutController;
 
     private final Handler mHandler = new Handler();
@@ -396,6 +400,7 @@ public class PeopleActivity extends ContactsActivity
             mTabPagerAdapter = new TabPagerAdapter();
             mTabPager.setAdapter(mTabPagerAdapter);
             mTabPager.setOnPageChangeListener(mTabPagerListener);
+            mTabPager.setOnPageElementScrollListener(mTouchEventDeliverListener);
 
             final String FAVORITE_TAG = "tab-pager-favorite";
             final String GROUPS_TAG = "tab-pager-groups";
@@ -560,6 +565,7 @@ public class PeopleActivity extends ContactsActivity
         mActionBarAdapter.setListener(this);
         if (mTabPager != null) {
             mTabPager.setOnPageChangeListener(mTabPagerListener);
+            mTabPager.setOnPageElementScrollListener(mTouchEventDeliverListener);
         }
         // Current tab may have changed since the last onSaveInstanceState().  Make sure
         // the actual contents match the tab.
@@ -860,6 +866,23 @@ public class PeopleActivity extends ContactsActivity
         }
     }
 
+    //added JiangzhouQ 20120627
+    private class TouchEventDeliverListener implements ViewPager.OnTouchEventDeliverListener{
+    	@Override
+    	public boolean isTouchEventDelivered(){
+    		if(mDialerFragment.checkCalllogPullOut()){
+    			return true;
+    		}
+    		return false;
+    	}
+    	
+    	@Override
+    	public int getLeftDragger(){
+    		return mDialerFragment.getLeftDragger();
+    	}
+    }
+    
+    //ended JiangzhouQ 20120627
     private class TabPagerListener implements ViewPager.OnPageChangeListener {
         @Override
         public void onPageScrollStateChanged(int state) {
@@ -920,7 +943,7 @@ public class PeopleActivity extends ContactsActivity
 
         @Override
         public int getCount() {
-            return mTabPagerAdapterSearchMode ? 1 : 2;//TabState.values().length;
+            return mTabPagerAdapterSearchMode ? 1 : TabState.values().length;
         }
 
         /** Gets called when the number of items changes. */

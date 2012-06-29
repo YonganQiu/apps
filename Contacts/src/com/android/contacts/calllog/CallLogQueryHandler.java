@@ -17,6 +17,7 @@
 package com.android.contacts.calllog;
 
 import com.android.common.io.MoreCloseables;
+import com.android.contacts.util.Constants;
 import com.android.contacts.voicemail.VoicemailStatusHelperImpl;
 import com.google.android.collect.Lists;
 
@@ -62,6 +63,7 @@ import javax.annotation.concurrent.GuardedBy;
 
     /** The token for the query to fetch voicemail status messages. */
     private static final int QUERY_VOICEMAIL_STATUS_TOKEN = 58;
+
 
     /**
      * The time window from the current time within which an unread entry will be added to the new
@@ -142,10 +144,18 @@ import javax.annotation.concurrent.GuardedBy;
     public void fetchAllCalls() {
         cancelFetch();
         invalidate();
-        fetchCalls(QUERY_NEW_CALLS_TOKEN, true /*isNew*/, false /*voicemailOnly*/);
-        fetchCalls(QUERY_OLD_CALLS_TOKEN, false /*isNew*/, false /*voicemailOnly*/);
+        fetchCalls(QUERY_NEW_CALLS_TOKEN, true /*isNew*/, false /*voicemailOnly*/, Constants.CALL_TYPE_ALL);
+        fetchCalls(QUERY_OLD_CALLS_TOKEN, false /*isNew*/, false /*voicemailOnly*/, Constants.CALL_TYPE_ALL);
     }
 
+    //Added by gangzhou.qi at 2012-6-27 下午9:38:25
+    public void fetchAllCallsForType(int callType) {
+        cancelFetch();
+        invalidate();
+        fetchCalls(QUERY_NEW_CALLS_TOKEN, true /*isNew*/, false /*voicemailOnly*/, callType);
+        fetchCalls(QUERY_OLD_CALLS_TOKEN, false /*isNew*/, false /*voicemailOnly*/, callType);
+    }
+	//Ended by gangzhou.qi at 2012-6-27 下午9:38:25
     /**
      * Fetches the list of calls from the call log but include only the voicemail.
      * <p>
@@ -154,8 +164,8 @@ import javax.annotation.concurrent.GuardedBy;
     public void fetchVoicemailOnly() {
         cancelFetch();
         invalidate();
-        fetchCalls(QUERY_NEW_CALLS_TOKEN, true /*isNew*/, true /*voicemailOnly*/);
-        fetchCalls(QUERY_OLD_CALLS_TOKEN, false /*isNew*/, true /*voicemailOnly*/);
+        fetchCalls(QUERY_NEW_CALLS_TOKEN, true /*isNew*/, true /*voicemailOnly*/, Constants.CALL_TYPE_ALL);
+        fetchCalls(QUERY_OLD_CALLS_TOKEN, false /*isNew*/, true /*voicemailOnly*/, Constants.CALL_TYPE_ALL);
     }
 
 
@@ -163,14 +173,17 @@ import javax.annotation.concurrent.GuardedBy;
         startQuery(QUERY_VOICEMAIL_STATUS_TOKEN, null, Status.CONTENT_URI,
                 VoicemailStatusHelperImpl.PROJECTION, null, null, null);
     }
-
+    
+  
+    
     /** Fetches the list of calls in the call log, either the new one or the old ones. */
-    private void fetchCalls(int token, boolean isNew, boolean voicemailOnly) {
+    private void fetchCalls(int token, boolean isNew, boolean voicemailOnly , int callType) {
         // We need to check for NULL explicitly otherwise entries with where READ is NULL
         // may not match either the query or its negation.
         // We consider the calls that are not yet consumed (i.e. IS_READ = 0) as "new".
         String selection = String.format("%s IS NOT NULL AND %s = 0 AND %s > ?",
                 Calls.IS_READ, Calls.IS_READ, Calls.DATE);
+        String typeToSort = Integer.toString(Constants.CALL_TYPE_ALL);
         List<String> selectionArgs = Lists.newArrayList(
                 Long.toString(System.currentTimeMillis() - NEW_SECTION_TIME_WINDOW));
         if (!isNew) {
@@ -182,6 +195,24 @@ import javax.annotation.concurrent.GuardedBy;
             selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
             selectionArgs.add(Integer.toString(Calls.VOICEMAIL_TYPE));
         }
+        //Added by gangzhou.qi at 2012-6-27 下午8:40:09
+        switch(callType){
+	    case Constants.CALL_TYPE_IN:
+	    	typeToSort = Integer.toString(Calls.INCOMING_TYPE);
+	    	break;
+	    case Constants.CALL_TYPE_OUT:
+	    	typeToSort = Integer.toString(Calls.OUTGOING_TYPE);
+	    	break;
+	    case Constants.CALL_TYPE_MISSED:
+	    	typeToSort = Integer.toString(Calls.MISSED_TYPE);
+	    	break;
+         }
+        if(typeToSort != Integer.toString(Constants.CALL_TYPE_ALL)){
+        	
+        selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
+        selectionArgs.add(typeToSort);
+        }
+		//Ended by gangzhou.qi at 2012-6-27 下午8:40:09
         startQuery(token, null, Calls.CONTENT_URI_WITH_VOICEMAIL,
                 CallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
                 Calls.DEFAULT_SORT_ORDER);

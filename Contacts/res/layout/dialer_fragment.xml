@@ -1,8 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.android.contacts.view.SlipMenuRelativeLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:id="@+id/slip_menu_layout">
 
+        <RadioGroup 
+            android:orientation="vertical"
+            android:layout_width="200px"
+            android:layout_height="match_parent"
+            android:id="@+id/radio_group">
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_all"
+                android:id="@+id/type_all"/>
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_incoming"
+                android:id="@+id/type_incoming"/>/>
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_outgoing"
+                android:id="@+id/type_outgoing"/>/>
+            <RadioButton 
+                android:layout_width="match_parent"
+                android:layout_height="80px"
+                android:text="@string/type_missed"
+                android:id="@+id/type_missed"/>/>
+        </RadioGroup>
+	
     <RelativeLayout
         android:id="@+id/fragments"
         android:layout_width="match_parent"
@@ -35,12 +64,7 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <fragment
-            android:id="@+id/dialpad_fragment"
-            android:layout_width="match_parent"
-            android:layout_height="300dip"
-            android:layout_alignParentBottom="true"
-            class="com.android.contacts.dialpad.DialpadFragment" />
+
     </RelativeLayout>
 
     <LinearLayout
@@ -82,4 +106,10 @@
             android:src="@drawable/ic_ab_dialpad_holo_dark" />
     </LinearLayout>
 
-</RelativeLayout>
+        <fragment
+            android:id="@+id/dialpad_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="300dip"
+            android:layout_alignParentBottom="true"
+            class="com.android.contacts.dialpad.DialpadFragment" />
+</com.android.contacts.view.SlipMenuRelativeLayout>
