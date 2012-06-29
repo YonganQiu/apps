@@ -39,6 +39,7 @@ public class Constants {
     
     //begin: added by yunzhou.song
     public final static String ONE_KEY_DIAL_SETTING_SHARED_PREFS_NAME = "one.key.dial.setting";
+    public final static String IP_NUMBER_SETTING_SHARED_PREFS_NAME = "ip.number.setting";
     public static final String PERF_KEY_CONTACT_ID = "contact_id";
     public static final String PERF_KEY_PHONE_ID = "phone_id";
     public static final String PERF_KEY_NUMBER = "phone_number";

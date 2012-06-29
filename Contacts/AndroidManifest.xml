@@ -659,6 +659,15 @@
                <category android:name="android.intent.category.DEFAULT" />
            </intent-filter>
        </activity>
+       <activity
+           android:name=".activities.IpNumberSetting"
+           android:label="@string/ipNumberSetting"
+           android:icon="@drawable/ic_launcher_phone">
+           <intent-filter>
+               <action android:name="android.intent.action.IpNumberSetting" />
+               <category android:name="android.intent.category.DEFAULT" />
+           </intent-filter>
+       </activity>
        <!-- end: added by yunzhou.song -->
 
     </application>

@@ -20,6 +20,7 @@ import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
 import com.android.contacts.SpecialCharSequenceMgr;
 import com.android.contacts.activities.DialtactsActivity;
+import com.android.contacts.activities.IpNumberSetting;
 import com.android.contacts.activities.ViewPagerVisibilityListener;
 import com.android.contacts.activities.OneKeyDialSetting.PhoneItem;
 import com.android.contacts.util.Constants;
@@ -330,16 +331,18 @@ public class DialpadFragment extends Fragment
 
         // Check whether we should show the onscreen "Dial" button.
         mDialButton = mAdditionalButtonsRow.findViewById(R.id.dialButton);
+        mIpDialButton = mAdditionalButtonsRow.findViewById(R.id.ipDialButton);
 
         if (r.getBoolean(R.bool.config_show_onscreen_dial_button)) {
             mDialButton.setOnClickListener(this);
+            mIpDialButton.setOnClickListener(this);
         } else {
             mDialButton.setVisibility(View.GONE); // It's VISIBLE by default
             mDialButton = null;
+            mIpDialButton.setVisibility(View.GONE); // It's VISIBLE by default
+            mIpDialButton = null;
         }
 
-        mIpDialButton = mAdditionalButtonsRow.findViewById(R.id.ipDialButton);
-        
         mDelete = fragmentView.findViewById(R.id.deleteButton);
         mDelete.setOnClickListener(this);
         mDelete.setOnLongClickListener(this);
@@ -756,7 +759,7 @@ public class DialpadFragment extends Fragment
         switch (view.getId()) {
             case R.id.digits:
                 if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                    dialButtonPressed();
+                    dialButtonPressed(false);
                     return true;
                 }
                 break;
@@ -833,7 +836,12 @@ public class DialpadFragment extends Fragment
             }
             case R.id.dialButton: {
                 mHaptic.vibrate();  // Vibrate here too, just like we do for the regular keys
-                dialButtonPressed();
+                dialButtonPressed(false);
+                return;
+            }
+            case R.id.ipDialButton: {
+                mHaptic.vibrate();  // Vibrate here too, just like we do for the regular keys
+                dialButtonPressed(true);
                 return;
             }
 //            case R.id.searchButton: {
@@ -1105,7 +1113,7 @@ public class DialpadFragment extends Fragment
      * user needs to press the dial button again, to dial it (general
      * case described above).
      */
-    public void dialButtonPressed() {
+    public void dialButtonPressed(boolean isIpDial) {
         if (isDigitsEmpty()) { // No number entered.
             if (phoneIsCdma() && phoneIsOffhook()) {
                 // This is really CDMA specific. On GSM is it possible
@@ -1137,7 +1145,7 @@ public class DialpadFragment extends Fragment
                 }
             }
         } else {
-            final String number = mDigits.getText().toString();
+            String number = mDigits.getText().toString();
 
             // "persist.radio.otaspdial" is a temporary hack needed for one carrier's automated
             // test equipment.
@@ -1156,6 +1164,12 @@ public class DialpadFragment extends Fragment
                 // Clear the digits just in case.
                 mDigits.getText().clear();
             } else {
+                if(isIpDial) {
+                    String ipNumber = IpNumberSetting.getIpNumber(getActivity());
+                    if(ipNumber != null) {
+                        number = ipNumber + number;
+                    }
+                }
                 final Intent intent = newDialNumberIntent(number);
                 if (getActivity() instanceof DialtactsActivity) {
                     intent.putExtra(DialtactsActivity.EXTRA_CALL_ORIGIN,

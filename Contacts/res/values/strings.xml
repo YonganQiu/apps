@@ -1882,5 +1882,12 @@
     <string name="showFilterPhonesDescrip">Only display contacts that have phone number</string>
     <string name="menu_dialpad">Dialpad</string>
     <string name="menu_call_type">Call type</string>
+    <string name="app_name">TTT</string>
+    <string name="ipNumberSetting">IP 电话设置</string>
+    <string name="addIpNumber">添加 IP 号码</string>
+    <string name="deleteIpNumber">删除 IP 号码</string>
+    <string name="disableIpNumber">关闭</string>
+    <string name="deleteIpNumberMsg">删除 IP 号码 \"<xliff:g>%s</xliff:g>\"？</string>
+    <string name="repeatIpNumber">IP 号码 \"<xliff:g>%s</xliff:g>\" 已存在</string>
     <!-- end: added by yunzhou.song -->
 </resources>

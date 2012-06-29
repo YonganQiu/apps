@@ -15,6 +15,13 @@
     
     <!-- begin: added by yunzhou.song -->
     <PreferenceScreen
+        android:key="ip_number_setting"
+        android:title="@string/label_ip_number_setting"
+        android:persistent="false">
+
+        <intent android:action="android.intent.action.IpNumberSetting"/>
+    </PreferenceScreen>
+    <PreferenceScreen
         android:key="one_key_dial"
         android:title="@string/label_one_key_dial"
         android:persistent="false">

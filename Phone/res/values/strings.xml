@@ -1597,6 +1597,7 @@
     <string name="description_target_decline">Decline</string>
 
     <!-- begin: added by yunzhou.song -->
+    <string name="label_ip_number_setting">IP 电话设置</string>
     <string name="label_one_key_dial">Speed dialing</string>
     <string name="import_success_total"> contact import successfully!</string>
     <string name="import_failed"> contact import failed!</string>
