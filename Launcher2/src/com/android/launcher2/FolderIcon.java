@@ -495,7 +495,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 		}
 		float transX = offset + (index % 3) * 6f + scaledSize * (index % 3);
 		float totalScale = mBaselineIconScale * scale;
-		final int overlayAlpha = (int) (80 * (1 - r));
+		final int overlayAlpha = 0;
 
 		if (params == null) {
 			params = new PreviewItemDrawingParams(transX, transY, totalScale,
