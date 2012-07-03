@@ -44,6 +44,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewDebug;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LayoutAnimationController;
@@ -138,32 +139,6 @@ public class CellLayout extends ViewGroup {
   //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
     private boolean mIsShowPreviewBg;
     private Drawable mPreviewBg = new ColorDrawable(0x60FFFFFF);
-    private Drawable mHomeButton;
-    private Drawable mActiveHomeButton;
-    private Drawable mDeleteButton;
-    private boolean mIsHomePage = false;
-    private boolean mIsShowDelButton = true;
-  //}add by jingjiang.yu end    
-
-    // {added by zhong.chen 2012-6-28 for launcher user-defined
-    private float mOriginalX;
-    private float mOriginalY;
-    
-    public void setOriginalX(float originalX) {
-        mOriginalX = originalX;
-    }
-    public float getOriginalX() {
-        return mOriginalX;
-    }
-    
-    public void setOriginalY(float originalY) {
-        mOriginalY = originalY;
-    }
-    
-    public float getOriginalY() {
-        return mOriginalY;
-    }
-    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午2:39:06
 
     public CellLayout(Context context) {
         this(context, null);
@@ -288,12 +263,6 @@ public class CellLayout extends ViewGroup {
         mChildren = new CellLayoutChildren(context);
         mChildren.setCellDimensions(mCellWidth, mCellHeight, mWidthGap, mHeightGap);
         addView(mChildren);
-        
-      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-		mHomeButton = res.getDrawable(R.drawable.home_button_normal);
-		mActiveHomeButton = res.getDrawable(R.drawable.home_button_active);
-		mDeleteButton = res.getDrawable(R.drawable.ic_delete);
-      //}add by jingjiang.yu end
     }
 
     static int widthInPortrait(Resources r, int numCells) {
@@ -542,19 +511,6 @@ public class CellLayout extends ViewGroup {
             mOverScrollForegroundDrawable.draw(canvas);
             p.setXfermode(null);
         }
-      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-		if (mIsShowPreviewBg) {
-			if (mIsHomePage) {
-				mActiveHomeButton.draw(canvas);
-			} else {
-				mHomeButton.draw(canvas);
-			}
-
-			if (mIsShowDelButton) {
-				mDeleteButton.draw(canvas);
-			}
-		}
-      //}add by jingjiang.yu end
     }
 
     public void showFolderAccept(FolderRingAnimator fra) {
@@ -929,11 +885,11 @@ public class CellLayout extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         int count = getChildCount();
-        for (int i = 0; i < count; i++) {
-            View child = getChildAt(i);
-            child.layout(mPaddingLeft, mPaddingTop,
-                    r - l - mPaddingRight, b - t - mPaddingBottom);
-        }
+		for (int i = 0; i < count; i++) {
+			View child = getChildAt(i);
+			child.layout(mPaddingLeft, mPaddingTop, r - l - mPaddingRight, b
+					- t - mPaddingBottom);
+		}
     }
 
     @Override
@@ -942,10 +898,12 @@ public class CellLayout extends ViewGroup {
         mBackgroundRect.set(0, 0, w, h);
         mForegroundRect.set(mForegroundPadding, mForegroundPadding,
                 w - 2 * mForegroundPadding, h - 2 * mForegroundPadding);
-      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-        calculateHomeButtonRect(w, h);
-        calculateDelButtonRect(w, h);
-      //}add by jingjiang.yu end
+		// {modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		ViewParent parent = getParent();
+		if (parent instanceof Workspace) {
+			((Workspace) parent).setAddScreenButtonSize(w, h);
+		}
+		// }modify by jingjiang.yu end
     }
 
     @Override
@@ -1917,45 +1875,5 @@ out:            for (int i = x; i < x + spanX && i < xCount; i++) {
     public void setShowPreviewBackground(boolean isShow) {
     	mIsShowPreviewBg = isShow;
     }
-    
-	private void calculateHomeButtonRect(int width, int height) {
-		int buttonW = 300;
-		int buttonH = 300;
-
-		mHomeButton.setBounds(width / 2 - buttonW / 2, height - buttonH, width
-				/ 2 - buttonW / 2 + buttonW, height);
-		mActiveHomeButton.setBounds(width / 2 - buttonW / 2, height - buttonH,
-				width / 2 - buttonW / 2 + buttonW, height);
-	}
-
-	private void calculateDelButtonRect(int width, int height) {
-		int buttonW = 150;
-		int buttonH = 150;
-		mDeleteButton.setBounds(width - buttonW, 0, width, buttonH);
-	}
-	
-	public int getHomeButtonWidth() {
-		return mHomeButton.getBounds().width();
-	}
-
-	public int getHomeButtonHeight() {
-		return mHomeButton.getBounds().width();
-	}
-
-	public int getDelButtonWidth() {
-		return mDeleteButton.getBounds().width();
-	}
-
-	public int getDelButtonHeight() {
-		return mDeleteButton.getBounds().width();
-	}
-	
-	public void setIsHomePage(boolean isHomePage){
-		mIsHomePage = isHomePage;
-	}
-	
-	public void setIsShowDelButton(boolean isShowDelButton){
-		mIsShowDelButton = isShowDelButton;
-	}
   //}add by jingjiang.yu end
 }

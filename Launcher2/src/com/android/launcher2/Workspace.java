@@ -68,6 +68,7 @@ import android.util.Pair;
 import android.view.Display;
 import android.view.DragEvent;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -256,9 +257,9 @@ public class Workspace extends SmoothPagedView
     //}add by zhongheng.zheng end
     
   //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-	private static final int[] PREVIEW_LAYOUT = { 3, 3, 3 };
-	private float mPreviewScaleW;
-	private float mPreviewScaleH;
+	private final int[][] PREVIEW_LAYOUT = { { 1 }, { 2 }, { 1, 2 }, { 2, 2 },
+			{ 2, 1, 2 }, { 2, 2, 2 }, { 2, 3, 2 }, { 3, 2, 3 }, { 3, 3, 3 }, { 3, 3, 3 } };
+	private float mPreviewScale;
 	private static final int PREVIEW_COLSED = 1;
 	private static final int PREVIEW_OPEN = 2;
 	private static final int PREVIEW_OPENING = 3;
@@ -266,12 +267,9 @@ public class Workspace extends SmoothPagedView
 	private int mPreviewStatus = PREVIEW_COLSED;
 	private long mPreviewAnimStartTime;
 	private static final int PREVIEW_ANIM_DURATION = 300;
-	private static final int PREVIEW_X_SPAN = 20;
-	private static final int PREVIEW_Y_SPAN = 20;
-	private static final int PREVIEW_MARGIN_LEFT = 20;
-	private static final int PREVIEW_MARGIN_RIGHT = 20;
-	private static final int PREVIEW_MARGIN_TOP = 40;
-	private static final int PREVIEW_MARGIN_BOTTOM = 40;
+	private static final int PREVIEW_X_SPAN = 10;
+	private static final int PREVIEW_Y_SPAN = 10;
+	private static final int PREVIEW_MARGIN = 10;
 	private boolean mMultiTouchState;
 	private float mMultiTouchLastDistance = -1;
 	private int mLastClickedPreviewIndex = -1;
@@ -283,12 +281,20 @@ public class Workspace extends SmoothPagedView
 	private static final String WORKSPACE_SCREEN_COUNT_KEY = "workspace.screen.count.key";
 	private static final String WORKSPACE_DEFAULT_PAGE_KEY = "workspace.default.page.key";
 	private static final int MAX_SCREEN_COUNT = 9;
+	
+	private Drawable mHomeButton;
+	private Drawable mActiveHomeButton;
+	private Drawable mDeleteButton;
+	private ImageView mAddScreenButton ;
+	
+	private boolean mHasPerformedPreviewLongPress;
+	private CheckForPreviewLongPress mPendingCheckForPreviewLongPress;
   //}add by jingjiang.yu end
   
 	// {added by zhong.chen 2012-6-28 for launcher user-defined
     private static final int MIN_LENGTH_FOR_FLING = 60;
     private GestureDetector mGestureDetector;
-    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:35:38
+    // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
     /**
      * Used to inflate the Workspace from XML.
@@ -435,7 +441,7 @@ public class Workspace extends SmoothPagedView
         //if (getChildCount() > 0) {
         if (getPageCount() > 0) {
       //}modify by jingjiang.yu end
-            CellLayout cl = (CellLayout) mLauncher.getWorkspace().getChildAt(0);
+           CellLayout cl = (CellLayout) mLauncher.getWorkspace().getChildAt(0);
             RectF r = estimateItemPosition(cl, pendingItemInfo, 0, 0, hSpan, vSpan);
             size[0] = (int) r.width();
             size[1] = (int) r.height();
@@ -496,6 +502,11 @@ public class Workspace extends SmoothPagedView
      */
     protected void initWorkspace() {
     	//{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+		mHomeButton = getResources().getDrawable(R.drawable.home_button_normal);
+		mActiveHomeButton = getResources().getDrawable(
+				R.drawable.home_button_active);
+		mDeleteButton = getResources().getDrawable(R.drawable.ic_delete);
+    	mAddScreenButton = new ImageView(getContext());
 		addInitScreen();
 		setDataIsReady();
     	//}add by jingjiang.yu end
@@ -690,7 +701,12 @@ public class Workspace extends SmoothPagedView
      * Check if the point (x, y) hits a given page.
      */
     private boolean hitsPage(int index, float x, float y) {
-        final View page = getChildAt(index);
+    	//{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+    	if(index >= getPageCount() || index < 0){
+    		return false;
+    	}
+    	//}add by jingjiang.yu end
+    	 final View page = getChildAt(index);
         if (page != null) {
             float[] localXY = { x, y };
             mapPointFromSelfToChild(page, localXY);
@@ -758,7 +774,6 @@ public class Workspace extends SmoothPagedView
     	// {added by zhong.chen 2012-6-28 for launcher user-defined
     	mGestureDetector.onTouchEvent(ev);
     	// }added by zhong.chen 2012-6-28 for launcher user-defined end
-        // 下午3:47:17
 
     	if(ev.getPointerCount() >= 2){
     		mMultiTouchState = true;
@@ -782,7 +797,7 @@ public class Workspace extends SmoothPagedView
         case MotionEvent.ACTION_POINTER_UP:
         case MotionEvent.ACTION_UP:
             if (mTouchState == TOUCH_STATE_REST) {
-                final CellLayout currentPage = (CellLayout) getChildAt(mCurrentPage);
+            	  final CellLayout currentPage = (CellLayout) getChildAt(mCurrentPage);
                 if (!currentPage.lastDownOnOccupiedCell()) {
                     onWallpaperTap(ev);
                 }
@@ -1349,21 +1364,18 @@ public class Workspace extends SmoothPagedView
         }
         if (!isSwitchingState() && !isInOverscroll) {
             ((CellLayout) getChildAt(0)).resetOverscrollTransforms();
-          //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
-            //((CellLayout) getChildAt(getChildCount() - 1)).resetOverscrollTransforms();
             ((CellLayout) getChildAt(getPageCount() - 1)).resetOverscrollTransforms();
-          //}modify by jingjiang.yu end
         }
         invalidate();
     }
 
     private void screenScrolledStandardUI(int screenCenter) {
         if (mOverScrollX < 0 || mOverScrollX > mMaxScrollX) {
-        	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
-            //int index = mOverScrollX < 0 ? 0 : getChildCount() - 1;
-        	  int index = mOverScrollX < 0 ? 0 : getPageCount() - 1;
-          //}modify by jingjiang.yu end
-            CellLayout cl = (CellLayout) getChildAt(index);
+			// {modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+			// int index = mOverScrollX < 0 ? 0 : getChildCount() - 1;
+			  int index = mOverScrollX < 0 ? 0 : getPageCount() - 1;
+			// }modify by jingjiang.yu end
+			  CellLayout cl = (CellLayout) getChildAt(index);
             float scrollProgress = getScrollProgress(screenCenter, cl, index);
             cl.setOverScrollAmount(Math.abs(scrollProgress), index == 0);
             float rotation = - WORKSPACE_OVERSCROLL_ROTATION * scrollProgress;
@@ -1379,11 +1391,8 @@ public class Workspace extends SmoothPagedView
             }
             // We don't want to mess with the translations during transitions
             if (!isSwitchingState()) {
-                ((CellLayout) getChildAt(0)).resetOverscrollTransforms();
-              //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
-               // ((CellLayout) getChildAt(getChildCount() - 1)).resetOverscrollTransforms();
+            	  ((CellLayout) getChildAt(0)).resetOverscrollTransforms();
                 ((CellLayout) getChildAt(getPageCount() - 1)).resetOverscrollTransforms();
-              //}modify by jingjiang.yu end
             }
         }
     }
@@ -1480,10 +1489,10 @@ public class Workspace extends SmoothPagedView
             final int rightScreen = mTempVisiblePagesRange[1];
             if (leftScreen != -1 && rightScreen != -1) {
                 for (int i = leftScreen; i <= rightScreen; i++) {
-                    ViewGroup page = (ViewGroup) getPageAt(i);
+                    ViewGroup page = (ViewGroup) getChildAt(i);
                     if (page.getVisibility() == VISIBLE &&
                             page.getAlpha() > ViewConfiguration.ALPHA_THRESHOLD) {
-                        ((ViewGroup)getPageAt(i)).setChildrenLayersEnabled(true);
+                        ((ViewGroup)getChildAt(i)).setChildrenLayersEnabled(true);
                     }
                 }
             }
@@ -1538,8 +1547,22 @@ public class Workspace extends SmoothPagedView
             final int paddingTop = mPaddingTop + offset;
             final int paddingBottom = mPaddingBottom + offset;
 
+          //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+            /**
             final CellLayout leftPage = (CellLayout) getChildAt(mCurrentPage - 1);
             final CellLayout rightPage = (CellLayout) getChildAt(mCurrentPage + 1);
+            **/
+			int leftPageIndex = mCurrentPage - 1;
+			int rightPageIndex = mCurrentPage + 1;
+			CellLayout leftPage = null;
+			CellLayout rightPage = null;
+			if (leftPageIndex >= 0 && leftPageIndex < getPageCount()) {
+				leftPage = (CellLayout) getChildAt(leftPageIndex);
+			}
+			if (rightPageIndex >= 0 && rightPageIndex < getPageCount()) {
+				rightPage = (CellLayout) getChildAt(rightPageIndex);
+			}
+          //}modify by jingjiang.yu end
 
             if (leftPage != null && leftPage.getIsDragOverlapping()) {
                 final Drawable d = getResources().getDrawable(R.drawable.page_hover_left_holo);
@@ -1641,7 +1664,7 @@ public class Workspace extends SmoothPagedView
             // the enabling to dispatchDraw
             if (!enableChildrenLayers) {
                 for (int i = 0; i < getPageCount(); i++) {
-                    ((ViewGroup)getChildAt(i)).setChildrenLayersEnabled(false);
+                	((ViewGroup)getChildAt(i)).setChildrenLayersEnabled(false);
                 }
             }
         }
@@ -1767,9 +1790,9 @@ public class Workspace extends SmoothPagedView
     private void initAnimationArrays() {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
         //final int childCount = getChildCount();
+        //if (mOldTranslationXs != null) return;
     	final int childCount = getPageCount();
       //}modify by jingjiang.yu end
-        if (mOldTranslationXs != null) return;
         mOldTranslationXs = new float[childCount];
         mOldTranslationYs = new float[childCount];
         mOldScaleXs = new float[childCount];
@@ -1824,14 +1847,12 @@ public class Workspace extends SmoothPagedView
         // {added by zhong.chen 2012-6-28 for launcher user-defined
         final boolean oldStateIsUserDefined = (oldState == State.USER_DEFINED);
         // }added by zhong.chen 2012-6-28 for launcher user-defined end
-        // 下午3:50:09
         mState = state;
         final boolean stateIsNormal = (state == State.NORMAL);
         final boolean stateIsSpringLoaded = (state == State.SPRING_LOADED);
         // {added by zhong.chen 2012-6-28 for launcher user-defined
         final boolean stateIsUserDefined = (state == State.USER_DEFINED);
         // }added by zhong.chen 2012-6-28 for launcher user-defined end
-        // 下午3:50:24
         final boolean stateIsSmall = (state == State.SMALL);
         float finalScaleFactor = 1.0f;
         float finalBackgroundAlpha = stateIsSpringLoaded ? 1.0f : 0f;
@@ -1859,7 +1880,7 @@ public class Workspace extends SmoothPagedView
               //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
           //for (int i = 0; i < getChildCount(); i++) {
         	for (int i = 0; i < getPageCount(); i++) {
-        	//}modify by jingjiang.yu end
+        	   //}modify by jingjiang.yu end
             final CellLayout cl = (CellLayout) getChildAt(i);
             float rotation = 0f;
             float initialAlpha = cl.getAlpha();
@@ -1916,7 +1937,6 @@ public class Workspace extends SmoothPagedView
                 cl.setBackgroundDrawable(null);
             } 
             // }added by zhong.chen 2012-6-28 for launcher user-defined end
-            // 下午3:51:43
 
             mOldAlphas[i] = initialAlpha;
             mNewAlphas[i] = finalAlpha;
@@ -1967,7 +1987,7 @@ public class Workspace extends SmoothPagedView
                     if (!mFadeInAdjacentScreens && stateIsNormal && oldStateIsSmall) {
                     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
                         //for (int i = 0; i < getChildCount(); i++) {
-                    	   for (int i = 0; i < getPageCount(); i++) {
+                    	   for (int i = 0; i < getPageCount(); i++) {           
                      //}modify by jingjiang.yu end
                             final CellLayout cl = (CellLayout) getChildAt(i);
                             cl.setAlpha(1f);
@@ -2031,7 +2051,6 @@ public class Workspace extends SmoothPagedView
                 mAnimator.playTogether(animWithInterpolator, rotationAnim);
             }
             // }modified by zhong.chen 2012-6-28 for launcher user-defined end
-            // 下午3:52:40 
             
             mAnimator.setStartDelay(delay);
             // If we call this when we're not animated, onAnimationEnd is never called on
@@ -2594,7 +2613,7 @@ public class Workspace extends SmoothPagedView
 
     public void resetFinalScrollForPageChange(int screen) {
         if (screen >= 0) {
-            CellLayout cl = (CellLayout) getChildAt(screen);
+        	  CellLayout cl = (CellLayout) getChildAt(screen);
             setScrollX(mSavedScrollX);
             cl.setTranslationX(mSavedTranslationX);
             cl.setRotationY(mSavedRotationY);
@@ -2908,7 +2927,7 @@ public class Workspace extends SmoothPagedView
         float smallestDistSoFar = Float.MAX_VALUE;
 
         for (int i = 0; i < screenCount; i++) {
-            CellLayout cl = (CellLayout) getChildAt(i);
+        	 CellLayout cl = (CellLayout) getChildAt(i);
 
             final float[] touchXy = {originX, originY};
             // Transform the touch coordinates to the CellLayout's local coordinates
@@ -3370,7 +3389,7 @@ public class Workspace extends SmoothPagedView
      * screen while a scroll is in progress.
      */
     public CellLayout getCurrentDropLayout() {
-        return (CellLayout) getChildAt(mNextPage == INVALID_PAGE ? mCurrentPage : mNextPage);
+    	return (CellLayout) getChildAt(mNextPage == INVALID_PAGE ? mCurrentPage : mNextPage);
     }
 
     /**
@@ -3437,7 +3456,7 @@ public class Workspace extends SmoothPagedView
             if (mLauncher.isHotseatLayout(target)) {
                 cellLayout = mLauncher.getHotseat().getLayout();
             } else {
-                cellLayout = (CellLayout) getChildAt(mDragInfo.screen);
+            	cellLayout = (CellLayout) getChildAt(mDragInfo.screen);
             }
             cellLayout.onDropChild(mDragInfo.cell);
         }
@@ -3496,13 +3515,13 @@ public class Workspace extends SmoothPagedView
             mInScrollArea = true;
 
             final int page = mCurrentPage + (direction == DragController.SCROLL_LEFT ? -1 : 1);
-          //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-			if (page >= getPageCount()) {
-				cancelFolderCreation();
-				return result;
+          //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+            //final CellLayout layout = (CellLayout) getChildAt(page);
+			CellLayout layout = null;
+			if (page >= 0 && page < getPageCount()) {
+				layout = (CellLayout) getChildAt(page);
 			}
-          //}add by jingjiang.yu end
-            final CellLayout layout = (CellLayout) getChildAt(page);
+          //}modify by jingjiang.yu end
             cancelFolderCreation();
 
             if (layout != null) {
@@ -3578,7 +3597,7 @@ public class Workspace extends SmoothPagedView
         int screenCount = getPageCount();
       //}modify by jingjiang.yu end
         for (int screen = 0; screen < screenCount; screen++) {
-            layouts.add(((CellLayout) getChildAt(screen)));
+        	layouts.add(((CellLayout) getChildAt(screen)));
         }
         if (mLauncher.getHotseat() != null) {
             layouts.add(mLauncher.getHotseat().getLayout());
@@ -3597,7 +3616,7 @@ public class Workspace extends SmoothPagedView
         int screenCount = getPageCount();
       //}modify by jingjiang.yu end
         for (int screen = 0; screen < screenCount; screen++) {
-            childrenLayouts.add(((CellLayout) getChildAt(screen)).getChildrenLayout());
+        	childrenLayouts.add(((CellLayout) getChildAt(screen)).getChildrenLayout());
         }
         if (mLauncher.getHotseat() != null) {
             childrenLayouts.add(mLauncher.getHotseat().getLayout().getChildrenLayout());
@@ -3785,7 +3804,7 @@ public class Workspace extends SmoothPagedView
                 setCurrentPage(mDefaultPage);
             }
         }
-        getChildAt(mDefaultPage).requestFocus();
+       getChildAt(mDefaultPage).requestFocus();
     }
 
     @Override
@@ -3870,8 +3889,7 @@ public class Workspace extends SmoothPagedView
 
 		float left = 0;
 		float top = 0;
-		float scaleW = 0;
-		float scaleH = 0;
+		float scale = 0;
 		long currentTime = SystemClock.uptimeMillis() - mPreviewAnimStartTime;
 
 		RectF scaledRect = getScaledChild(child);
@@ -3881,31 +3899,59 @@ public class Workspace extends SmoothPagedView
 					PREVIEW_ANIM_DURATION);
 			top = easeOut(currentTime, child.getTop(), scaledRect.top,
 					PREVIEW_ANIM_DURATION);
-			scaleW = easeOut(currentTime, 1.0f, mPreviewScaleW,
-					PREVIEW_ANIM_DURATION);
-			scaleH = easeOut(currentTime, 1.0f, mPreviewScaleH,
+			scale = easeOut(currentTime, 1.0f, mPreviewScale,
 					PREVIEW_ANIM_DURATION);
 		} else if (mPreviewStatus == PREVIEW_CLOSING) {
 			left = easeOut(currentTime, scaledRect.left, child.getLeft(),
 					PREVIEW_ANIM_DURATION);
 			top = easeOut(currentTime, scaledRect.top, child.getTop(),
 					PREVIEW_ANIM_DURATION);
-			scaleW = easeOut(currentTime, mPreviewScaleW, 1.0f,
-					PREVIEW_ANIM_DURATION);
-			scaleH = easeOut(currentTime, mPreviewScaleH, 1.0f,
+			scale = easeOut(currentTime, mPreviewScale, 1.0f,
 					PREVIEW_ANIM_DURATION);
 		} else if (mPreviewStatus == PREVIEW_OPEN) {
 			left = scaledRect.left;
 			top = scaledRect.top;
-			scaleW = mPreviewScaleW;
-			scaleH = mPreviewScaleH;
+			scale = mPreviewScale;
 		}
 		canvas.save();
 		canvas.translate(left, top);
-		canvas.scale(scaleW, scaleH);
+		canvas.scale(scale, scale);
 		child.draw(canvas);
 		canvas.restore();
+		
+		int childIndex = 0;
+		for (int i = 0; i < getChildCount(); i++) {
+			if (getChildAt(i) == child) {
+				childIndex = i;
+				break;
+			}
+		}
+		if (isPreviewShow() && childIndex < getPageCount()) {
+			scaledRect.set(left, top, left + child.getWidth() * scale, top
+					+ child.getHeight() * scale);
 
+			RectF homeButtonRect = getHomeButtonRect(scaledRect);
+			if (childIndex == mDefaultPage) {
+				mActiveHomeButton.setBounds((int) homeButtonRect.left,
+						(int) homeButtonRect.top, (int) homeButtonRect.right,
+						(int) homeButtonRect.bottom);
+				mActiveHomeButton.draw(canvas);
+			} else {
+				mHomeButton.setBounds((int) homeButtonRect.left,
+						(int) homeButtonRect.top, (int) homeButtonRect.right,
+						(int) homeButtonRect.bottom);
+				mHomeButton.draw(canvas);
+			}
+
+			if (getPageCount() > 1) {
+				RectF delButtonRect = getDelButtonRect(scaledRect);
+				mDeleteButton.setBounds(Math.round(delButtonRect.left),
+						Math.round(delButtonRect.top),
+						Math.round(delButtonRect.right),
+						Math.round(delButtonRect.bottom));
+				mDeleteButton.draw(canvas);
+			}
+		}
 		return true;
 	}
 
@@ -3922,27 +3968,29 @@ public class Workspace extends SmoothPagedView
 
 	private void calculatePreviewScale() {
 		int maxPreviewColumns = 0;
+		int distPost = getChildCount() - 1;
+		if (distPost >= PREVIEW_LAYOUT.length) {
+			distPost = PREVIEW_LAYOUT.length - 1;
+		}
 
-		int PreviewRows = PREVIEW_LAYOUT.length;
+		int PreviewRows = PREVIEW_LAYOUT[distPost].length;
 		for (int rows = 0; rows < PreviewRows; rows++) {
-			if (PREVIEW_LAYOUT[rows] > maxPreviewColumns) {
-				maxPreviewColumns = PREVIEW_LAYOUT[rows];
+			if (PREVIEW_LAYOUT[distPost][rows] > maxPreviewColumns) {
+				maxPreviewColumns = PREVIEW_LAYOUT[distPost][rows];
 			}
 		}
-		float previewHeight = (getMeasuredHeight() - PREVIEW_MARGIN_TOP
-				- PREVIEW_MARGIN_BOTTOM - PREVIEW_Y_SPAN * (PreviewRows - 1))
+		float previewHeight = (getMeasuredHeight() - PREVIEW_Y_SPAN
+				* (PreviewRows - 1) - PREVIEW_MARGIN * 2)
 				/ PreviewRows;
-		float previewWidth = (getMeasuredWidth() - PREVIEW_MARGIN_LEFT
-				- PREVIEW_MARGIN_RIGHT - PREVIEW_X_SPAN
-				* (maxPreviewColumns - 1))
+		float previewWidth = (getMeasuredWidth() - PREVIEW_X_SPAN
+				* (maxPreviewColumns - 1) - PREVIEW_MARGIN * 2)
 				/ maxPreviewColumns;
-		mPreviewScaleW = previewWidth / getChildAt(0).getWidth();
-		mPreviewScaleH = previewHeight / getChildAt(0).getHeight();
-		if (mPreviewScaleW >= 1) {
-			mPreviewScaleW = 0.8f;
-		}
-		if (mPreviewScaleH >= 1) {
-			mPreviewScaleH = 0.8f;
+		View child = getChildAt(0);
+		float scaleW = previewWidth / child.getWidth();
+		float scaleH = previewHeight / child.getHeight();
+		mPreviewScale = scaleW > scaleH ? scaleH : scaleW;
+		if (mPreviewScale >= 1) {
+			mPreviewScale = 0.8f;
 		}
 	}
 
@@ -3950,18 +3998,22 @@ public class Workspace extends SmoothPagedView
 		float xpos = getScrollX();
 		float ypos = 0;
 		int childPos = 0;
+		int distPost = getChildCount() -1;
+		if (distPost >= PREVIEW_LAYOUT.length) {
+			distPost = PREVIEW_LAYOUT.length - 1;
+		}
 
-		float previewWidth = child.getWidth() * mPreviewScaleW;
-		float previewHeight = child.getHeight() * mPreviewScaleH;
+		float previewWidth = child.getWidth() * mPreviewScale;
+		float previewHeight = child.getHeight() * mPreviewScale;
 
 		final float topMargin = (getHeight() - previewHeight
-				* PREVIEW_LAYOUT.length - PREVIEW_Y_SPAN
-				* (PREVIEW_LAYOUT.length - 1)) / 2;
-		for (int rows = 0; rows < PREVIEW_LAYOUT.length; rows++) {
+				* PREVIEW_LAYOUT[distPost].length - PREVIEW_Y_SPAN
+				* (PREVIEW_LAYOUT[distPost].length - 1)) / 2;
+		for (int rows = 0; rows < PREVIEW_LAYOUT[distPost].length; rows++) {
 			final float leftMargin = (getWidth() - previewWidth
-					* PREVIEW_LAYOUT[rows] - PREVIEW_X_SPAN
-					* (PREVIEW_LAYOUT[rows] - 1)) / 2;
-			for (int columns = 0; columns < PREVIEW_LAYOUT[rows]; columns++) {
+					* PREVIEW_LAYOUT[distPost][rows] - PREVIEW_X_SPAN
+					* (PREVIEW_LAYOUT[distPost][rows] - 1)) / 2;
+			for (int columns = 0; columns < PREVIEW_LAYOUT[distPost][rows]; columns++) {
 				if (childPos > getChildCount() - 1) {
 					break;
 				}
@@ -4016,10 +4068,12 @@ public class Workspace extends SmoothPagedView
 			float y = ev.getY();
 			switch (actionMasked) {
 			case MotionEvent.ACTION_DOWN:
+				clearPreviewTouchData();
 				mLastClickedPreviewIndex = findClickedPreview(x, y);
 				mPreviewLastMotionX = x;
 				mPreviewLastMotionY = y;
 				mPreviewProcessedDown = true;
+				checkForPreviewLongClick(mLastClickedPreviewIndex);
 				break;
 			case MotionEvent.ACTION_MOVE:
 				if (!mPreviewProcessedDown) {
@@ -4029,16 +4083,21 @@ public class Workspace extends SmoothPagedView
 				final int yDiff = (int) Math.abs(y - mPreviewLastMotionY);
 				if (xDiff > mTouchSlop || yDiff > mTouchSlop) {
 					mPreviewIsMove = true;
+					removePreviewLongPressCallback();
 				}
 
 				break;
 			case MotionEvent.ACTION_UP:
+				if (!mHasPerformedPreviewLongPress) {
+					removePreviewLongPressCallback();
+				}
 				if (!mPreviewProcessedDown || mPreviewIsMove
-						|| mLastClickedPreviewIndex == -1) {
+						|| mLastClickedPreviewIndex == -1
+						|| mHasPerformedPreviewLongPress) {
 					clearPreviewTouchData();
 					return true;
 				}
-
+				
 				int clickedPreviewIndex = findClickedPreview(x, y);
 				if (clickedPreviewIndex == mLastClickedPreviewIndex) {
 					if (clickedPreviewIndex == getChildCount() - 1) {
@@ -4059,6 +4118,9 @@ public class Workspace extends SmoothPagedView
 				clearPreviewTouchData();
 				break;
 			case MotionEvent.ACTION_CANCEL:
+				if (!mHasPerformedPreviewLongPress) {
+					removePreviewLongPressCallback();
+				}
 				clearPreviewTouchData();
 				return true;
 			}
@@ -4072,18 +4134,58 @@ public class Workspace extends SmoothPagedView
 		return super.onTouchEvent(ev);
 	}
 	
+	
+	private void checkForPreviewLongClick(int clickedPreviewIndex) {
+		mHasPerformedPreviewLongPress = false;
+
+		removePreviewLongPressCallback();
+		mPendingCheckForPreviewLongPress = new CheckForPreviewLongPress();
+		mPendingCheckForPreviewLongPress.rememberWindowAttachCount();
+		mPendingCheckForPreviewLongPress
+				.setChilkedPreviewIndex(clickedPreviewIndex);
+		postDelayed(mPendingCheckForPreviewLongPress,
+				ViewConfiguration.getLongPressTimeout());
+	}
+	
+    private void removePreviewLongPressCallback() {
+        if (mPendingCheckForPreviewLongPress != null) {
+          removeCallbacks(mPendingCheckForPreviewLongPress);
+        }
+    }
+	class CheckForPreviewLongPress implements Runnable {
+		private int mOriginalWindowAttachCount;
+		private int mClickedPreviewIndex;
+
+		public void run() {
+			if (mOriginalWindowAttachCount == getWindowAttachCount()) {
+				mHasPerformedPreviewLongPress = true;
+				if (mClickedPreviewIndex >= 0
+						&& mClickedPreviewIndex < getPageCount()) {
+					performPreviewLongClick(mClickedPreviewIndex);
+				}
+			}
+		}
+
+		public void rememberWindowAttachCount() {
+			mOriginalWindowAttachCount = getWindowAttachCount();
+		}
+
+		public void setChilkedPreviewIndex(int clickedPreviewIndex) {
+			mClickedPreviewIndex = clickedPreviewIndex;
+		}
+	}
+    
+	private void performPreviewLongClick(int clickedPreviewIndex) {
+		performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
+				HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+		
+	}
+	
 	private boolean checkIsClickedHomeButton(int previewIndex, float x, float y) {
 		CellLayout cell = (CellLayout) getChildAt(previewIndex);
 		RectF previewRect = getScaledChild(cell);
-		float homeButtonWidth = cell.getHomeButtonWidth() * mPreviewScaleW;
-		float homeButtonHeight = cell.getHomeButtonHeight() * mPreviewScaleH;
-		RectF homeButtonRect = new RectF();
-		homeButtonRect.set(previewRect.left
-				+ (previewRect.right - previewRect.left) / 2 - homeButtonWidth
-				/ 2, previewRect.bottom - homeButtonHeight, previewRect.left
-				+ (previewRect.right - previewRect.left) / 2 + homeButtonWidth
-				/ 2, previewRect.bottom);
-		if(homeButtonRect.contains(x + getScrollX(), y + getScrollY())){
+		RectF homeButtonRect = getHomeButtonRect(previewRect);
+		if (homeButtonRect.contains(x + getScrollX(), y + getScrollY())) {
 			return true;
 		}
 
@@ -4093,16 +4195,34 @@ public class Workspace extends SmoothPagedView
 	private boolean checkIsClickedDelButton(int previewIndex, float x, float y) {
 		CellLayout cell = (CellLayout) getChildAt(previewIndex);
 		RectF previewRect = getScaledChild(cell);
-		float delButtonWidth = cell.getDelButtonWidth() * mPreviewScaleW;
-		float delButtonHeight = cell.getDelButtonHeight() * mPreviewScaleH;
-		RectF delButtonRect = new RectF();
-		delButtonRect.set(previewRect.right - delButtonWidth, previewRect.top,
-				previewRect.right, previewRect.top + delButtonHeight);
+		RectF delButtonRect = getDelButtonRect(previewRect);
 		if (delButtonRect.contains(x + getScrollX(), y + getScrollY())) {
 			return true;
 		}
 
 		return false;
+	}
+	
+	private RectF getHomeButtonRect(RectF previewRect){
+		float homeButtonWidth = mHomeButton.getIntrinsicWidth();
+		float homeButtonHeight = mHomeButton.getIntrinsicHeight();
+		RectF homeButtonRectF = new RectF();
+		homeButtonRectF.set(previewRect.left
+				+ (previewRect.right - previewRect.left) / 2 - homeButtonWidth
+				/ 2, previewRect.bottom - homeButtonHeight, previewRect.left
+				+ (previewRect.right - previewRect.left) / 2 + homeButtonWidth
+				/ 2, previewRect.bottom);
+		return homeButtonRectF;
+	}
+	
+	private RectF getDelButtonRect(RectF previewRect){
+		float delButtonWidth = mDeleteButton.getIntrinsicWidth();
+		float delButtonHeight = mDeleteButton.getIntrinsicHeight();
+		RectF delButtonRectF = new RectF();
+		delButtonRectF.set(previewRect.right - delButtonWidth, previewRect.top,
+				previewRect.right, previewRect.top + delButtonHeight);
+		
+		return delButtonRectF;
 	}
 
 	private void clearPreviewTouchData() {
@@ -4212,14 +4332,12 @@ public class Workspace extends SmoothPagedView
 
 		setHomePage(--mDefaultPage);
 		mScreenCount--;
-		if (newPageCount == 1) {
-			CellLayout child = (CellLayout) getChildAt(0);
-			child.setIsShowDelButton(false);
-		}
 		
 		if(newPageCount < MAX_SCREEN_COUNT){
-			getChildAt(newPageCount).setVisibility(View.VISIBLE);
+			mAddScreenButton.setVisibility(View.VISIBLE);
 		}
+		
+		calculatePreviewScale();
 		
 		invalidate();
 		
@@ -4243,25 +4361,20 @@ public class Workspace extends SmoothPagedView
 			return;
 		}
 
-		if (pageCount == 1) {
-			CellLayout child = (CellLayout) getChildAt(0);
-			child.setIsShowDelButton(true);
-		}
 
 		CellLayout cl = (CellLayout) LayoutInflater.from(getContext()).inflate(
 				R.layout.workspace_screen, this, false);
 		cl.setOnInterceptTouchListener(this);
 		cl.setClickable(true);
 		cl.enableHardwareLayers();
-		cl.setIsHomePage(false);
-		cl.setIsShowDelButton(true);
-		addView(cl, getPageCount(), new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.MATCH_PARENT));
+		addView(cl, pageCount);
 		pageCount++;
 		mScreenCount++;
 		if (pageCount >= MAX_SCREEN_COUNT) {
-			getChildAt(pageCount).setVisibility(View.GONE);
+			mAddScreenButton.setVisibility(View.GONE);
 		}
+		
+		calculatePreviewScale();
 		
 		invalidate();
 		
@@ -4289,15 +4402,6 @@ public class Workspace extends SmoothPagedView
 			homePage = 0;
 		} else if (homePage >= getPageCount()) {
 			homePage = getPageCount() - 1;
-		}
-
-		for (int i = 0; i < getPageCount(); i++) {
-			CellLayout cell = (CellLayout) getChildAt(i);
-			if (homePage == i) {
-				cell.setIsHomePage(true);
-			} else {
-				cell.setIsHomePage(false);
-			}
 		}
 
 		if (mDefaultPage != homePage) {
@@ -4332,21 +4436,15 @@ public class Workspace extends SmoothPagedView
 			cl.setOnInterceptTouchListener(this);
 			cl.setClickable(true);
 			cl.enableHardwareLayers();
-			cl.setIsHomePage(mDefaultPage == i);
-			cl.setIsShowDelButton(mScreenCount > 1);
-			addView(cl, new LayoutParams(LayoutParams.MATCH_PARENT,
-					LayoutParams.MATCH_PARENT));
+			addView(cl);
 
 		}
 
-		ImageView addScreenButton = new ImageView(getContext());
-		addScreenButton.setImageDrawable(new ColorDrawable(0xFFFFFFFF));
-
+		mAddScreenButton.setImageDrawable(new ColorDrawable(0xF0FFFFFF));
 		if (mScreenCount >= MAX_SCREEN_COUNT) {
-			addScreenButton.setVisibility(View.GONE);
+			mAddScreenButton.setVisibility(View.GONE);
 		}
-		addView(addScreenButton, new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.MATCH_PARENT));
+		addView(mAddScreenButton);
 	}
 	
 	int getPageCount() {
@@ -4355,6 +4453,13 @@ public class Workspace extends SmoothPagedView
 			pageCount = 0;
 		}
 		return pageCount;
+	}
+	
+	public void setAddScreenButtonSize(int width,int height){
+		mAddScreenButton.setMaxWidth(width);
+		mAddScreenButton.setMaxHeight(height);
+		mAddScreenButton.setMinimumWidth(width);
+		mAddScreenButton.setMinimumHeight(height);
 	}
   //}add by jingjiang.yu end
 }
