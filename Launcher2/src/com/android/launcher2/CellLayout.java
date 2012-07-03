@@ -139,6 +139,27 @@ public class CellLayout extends ViewGroup {
   //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
     private boolean mIsShowPreviewBg;
     private Drawable mPreviewBg = new ColorDrawable(0x60FFFFFF);
+  //}add by jingjiang.yu end    
+
+    // {added by zhong.chen 2012-6-28 for launcher user-defined
+    private float mOriginalX;
+    private float mOriginalY;
+    
+    public void setOriginalX(float originalX) {
+        mOriginalX = originalX;
+    }
+    public float getOriginalX() {
+        return mOriginalX;
+    }
+    
+    public void setOriginalY(float originalY) {
+        mOriginalY = originalY;
+    }
+    
+    public float getOriginalY() {
+        return mOriginalY;
+    }
+    // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
     public CellLayout(Context context) {
         this(context, null);
