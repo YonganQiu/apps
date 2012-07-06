@@ -1,8 +1,7 @@
 package com.android.contacts.list;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,8 +17,8 @@ public class SimplePhoneNumberCache {
 	
 	private ArrayList<PhoneNumberRefInfo> mPhoneNumberRefInfos = 
 			new ArrayList<PhoneNumberRefInfo>();
-	private ArrayList<Long> mResultCache = 
-			new ArrayList<Long>();
+	private HashMap<Long, String> mResultCache = 
+			new HashMap<Long, String>();
 
 	private Object mLock = new Object();
 	
@@ -44,8 +43,8 @@ public class SimplePhoneNumberCache {
 		}
 	}
 	
-	public ArrayList<Long> search(ArrayList<PhoneNumberRefInfo> infos, String key) {
-		ArrayList<Long> result = mResultCache;
+	public HashMap<Long, String> search(ArrayList<PhoneNumberRefInfo> infos, String key) {
+		HashMap<Long, String> result = mResultCache;
 		result.clear();
 		
 		if (TextUtils.isEmpty(key)) {
@@ -64,24 +63,26 @@ public class SimplePhoneNumberCache {
 		
 		//setup pattern.
 		String lettersPatternString = createLetterPatternFromKey(key);
-		String dightsPatternString = createDightsPatternFromKey(key);
+		String keyWithoutBlank = removeAll(key, ' ');
+		//String dightsPatternString = createDightsPatternFromKey(key);
 		Log.i(TAG, "search: letters pattern is " + lettersPatternString);
-		Log.i(TAG, "search: dights pattern is " + dightsPatternString);
+		//Log.i(TAG, "search: dights pattern is " + dightsPatternString);
 		
 		Pattern lettersPattern = Pattern.compile(lettersPatternString);
 		Matcher lettersMatcher = lettersPattern.matcher("");
-		Pattern dightsPattern = Pattern.compile(dightsPatternString);
-		Matcher dightsMatcher = dightsPattern.matcher("");
-		boolean found;
+		//Pattern dightsPattern = Pattern.compile(dightsPatternString);
+		//Matcher dightsMatcher = dightsPattern.matcher("");
+		String group;
 		for (PhoneNumberRefInfo info : infos) {
 			Log.i(TAG, "search: handling " + info.mSortKey + ", number " + info.mNumber + ", id " + info.mDataId);
 			lettersMatcher.reset(info.mSortKey);
-			found = lettersMatcher.find();
-			if (!found) {
-				found = dightsMatcher.reset(info.mNumber).find();
-			}
-			if (found) {
-				result.add(info.mDataId);
+			if (lettersMatcher.find()) {
+				group = lettersMatcher.group();
+				Log.i(TAG, "matcher string: " + group);
+				result.put(info.mDataId, group);
+			} else if (onlyDightsAndPlus(info.mNumber).contains(keyWithoutBlank)) {
+				Log.i(TAG, "matcher string: " + keyWithoutBlank);
+				result.put(info.mDataId, keyWithoutBlank);
 			}
 		}
 		
@@ -91,14 +92,27 @@ public class SimplePhoneNumberCache {
 	}
 	
 	public String createLetterPatternFromKey(String key) {
-		StringBuilder builder = new StringBuilder("([a-z]*[^a-z]*\\s)?");
+		StringBuilder builder = new StringBuilder();
+		//remove all blank ' '.
+		key = removeAll(key, ' ');
+		//keep the first '+'.
+		if (key.startsWith("+")) {
+			builder.append("\\+");
+		}
+
 		char[] s = key.toLowerCase().toCharArray();
-		for (char c : s) {
+		for (int i = 0; i < s.length; i++) {
+			char c = s[i];
 			if (c >= '0' && c <= '9') { //just number is legal.
-				builder.append('[').append(NUMBER_TO_LETTER[c - '0']).append("]([a-z]*[^a-z]*\\s)?");
+				if (i == 0) {
+					builder.append("\\b");
+				} else {
+					builder.append("([a-z0-9]*[^a-z0-9]*\\s+)?");
+				}
+				builder.append('[').append(NUMBER_TO_LETTER[c - '0']).append(']');
 			}
 		}
-		//builder.append(".*");
+		builder.append("([a-z0-9]*[^a-z0-9]*)?");
 		return builder.toString();
 	}
 	
@@ -114,6 +128,34 @@ public class SimplePhoneNumberCache {
 		return builder.toString();
 	}
 	
+	public static String removeAll(String from, char charToRemove) {
+		int i = 0;
+		int j = 0;
+		char[] s = new char[from.length()];
+		while (i < from.length()) {
+			if (from.charAt(i) != charToRemove) {
+				s[j++] = from.charAt(i);
+			}
+			i++;
+		}
+		return new String(s, 0, j);
+	}
+
+	public static String onlyDightsAndPlus(String oriNumber) {
+		int i = 0;
+		int j = 0;
+		char[] s = new char[oriNumber.length()];
+		char c;
+		while (i < oriNumber.length()) {
+			c = oriNumber.charAt(i);
+			if (c >= '0' && c <= '9' || c == '+') {
+				s[j++] = oriNumber.charAt(i);
+			}
+			i++;
+		}
+		return new String(s, 0, j);
+	}
+
 /*	public void reset() {
 		if (mPhoneNumberRefInfos.size() > 0) {
 			mPhoneNumberRefInfos.clear();

@@ -23,6 +23,7 @@ import com.android.contacts.PhoneCallDetailsHelper;
 import com.android.contacts.PhoneCallDetailsViews;
 import com.android.contacts.R;
 import com.android.contacts.calllog.SimpleCallLogQueryHandler.SimpleCallLogQuery;
+import com.android.contacts.format.PrefixHighlighter;
 import com.android.contacts.util.ExpirableCache;
 import com.android.contacts.util.UriUtils;
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +32,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -70,6 +72,8 @@ import libcore.util.Objects;
     /** Helper to parse and process phone numbers. */
     private PhoneNumberHelper mPhoneNumberHelper;
 
+    private PrefixHighlighter mPrefixHighligher;
+
     /** Listener for the secondary action in the list, either call or play. */
     private final View.OnClickListener mActionListener = new View.OnClickListener() {
         @Override
@@ -105,6 +109,11 @@ import libcore.util.Objects;
 
     public void setLoading(boolean loading) {
         mLoading = loading;
+    }
+
+    private String mMatch;
+    public void setMatch(String match) {
+        mMatch = match;	
     }
 
     @Override
@@ -145,12 +154,28 @@ import libcore.util.Objects;
         TextView numberView = (TextView) view.findViewById(R.id.number);
 
         final String number = c.getString(SimpleCallLogQuery.NUMBER);
+        final String name = new String(number);
+        int first = -1, last = -1;
+        boolean nameSet = false;
         
         // Store away the voicemail information so we can play it directly.
         if (!TextUtils.isEmpty(number)) {
             // Store away the number so we can call it directly if you click on the call icon.
             primaryView.setTag(
                     IntentProvider.getReturnCallIntentProvider(number));
+            if (!TextUtils.isEmpty(mMatch)) {
+                first = name.indexOf(mMatch);
+                if (first >= 0) {
+                    last = first + mMatch.length() - 1;
+                    if (mPrefixHighligher == null) {
+                        mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
+                    }
+                    nameView.setText(mPrefixHighligher.apply(name, first, last + 1));
+                    nameSet = true;
+                }
+                
+
+            }
         } else {
             // No action enabled.
             primaryView.setTag(null);
@@ -162,7 +187,9 @@ import libcore.util.Objects;
             // TODO
         }
 
-        nameView.setText(number);
+        if (!nameSet) {
+            nameView.setText(name);
+        }
         numberView.setText(number);
         setPhoto(badgeView, 0, null);
     }

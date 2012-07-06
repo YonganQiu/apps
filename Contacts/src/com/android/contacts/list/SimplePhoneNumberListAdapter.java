@@ -19,6 +19,9 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.media.HanziToPinyin;
+import android.media.HanziToPinyin.Token;
 import android.net.Uri;
 import android.net.Uri.Builder;
 import android.os.Parcelable;
@@ -44,10 +47,13 @@ import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.editor.AggregationSuggestionEngine.RawContact;
+import com.android.contacts.format.PrefixHighlighter;
 import com.android.contacts.list.SimplePhoneNumberListAdapter.OnItemActionListener;
 
 import com.android.contacts.R;
@@ -173,12 +179,19 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
     }
     private long mDirectoryId;
     private boolean mDarkTheme = false;
+    
+    private HashMap<Long, String> mId2Match;
+    
+    public void setId2Match(HashMap<Long, String> map) {
+        mId2Match = map;
+        Log.i(TAG, "mId2Match " + mId2Match);
+    }
     //}yongan.qiu
     
     public void configureLoader(CursorLoader loader, long directoryId) {
         configureLoader(loader, directoryId, null);
     }
-    public void configureLoader(CursorLoader loader, long directoryId, ArrayList<Long> ids) {
+    public void configureLoader(CursorLoader loader, long directoryId, Set<Long> ids) {
         Uri uri;
         
         //{yongan.qiu
@@ -231,7 +244,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
     }
 
     private void configureSelectionWithContactIds(
-            CursorLoader loader, long directoryId, ContactListFilter filter, ArrayList<Long> ids) {
+            CursorLoader loader, long directoryId, ContactListFilter filter, Set<Long> ids) {
         if (ids == null) throw new IllegalArgumentException("Contact ids should not be null.");
         if (filter == null || directoryId != Directory.DEFAULT) {
             return;
@@ -372,13 +385,17 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
 
     @Override
     public void bindView(View itemView, Context context, Cursor cursor) {
-
+        String match = null;
+        if (mId2Match != null) {
+            match = mId2Match.get(cursor.getLong(PhoneQuery.PHONE_ID));
+        }
+        Log.i(TAG, "match " + match);
         itemView.findViewById(R.id.phone_number_item).setTag(new Integer(cursor.getPosition()));
-        bindName(itemView, cursor);
+        boolean nameMatched = bindName(itemView, cursor, match);
         bindQuickContact(itemView, cursor, PhoneQuery.PHONE_PHOTO_ID,
                 PhoneQuery.PHONE_CONTACT_ID, PhoneQuery.PHONE_LOOKUP_KEY);
         bindLabel(itemView, context, cursor);
-        bindNumber(itemView, cursor);
+        bindNumber(itemView, cursor, nameMatched ? null : match);
     }
 
     protected void bindQuickContact(final View view,
@@ -417,21 +434,116 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         }
         ((TextView) view.findViewById(R.id.label)).setText(label);
     }
-
-    protected void bindName(final View view, Cursor cursor) {
+    private PrefixHighlighter mPrefixHighligher;
+    protected boolean bindName(final View view, Cursor cursor, String match) {
+        TextView nameField = (TextView) view.findViewById(R.id.name);
         String name = cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME);
+        Log.i(TAG, "name = " + name + " ,match = " + match);
         if (TextUtils.isEmpty(name)) {
             name = mUnknownNameText.toString();
+        } else if (!TextUtils.isEmpty(match)) {
+            int index, first = -1, last = -1;
+            //name = toPinYin(name);
+            char[] s = name.toCharArray();
+            int l = s.length;
+            char c = s[0];
+            
+            int i = 0;
+            index = match.indexOf(c);
+            if (index >= 0) {
+                first = last = i;
+                match = match.substring(index + 1);
+            } else {
+                for (i = 1; i < l && !TextUtils.isEmpty(match); i++) {
+                    c = s[i];
+                    index = match.indexOf(c);
+                    if (index >= 0) {
+                        if (first < 0) {
+                            first = i;
+                        }
+                        last = i;
+                        match = match.substring(index + 1);
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (first >= 0 && last >= 0) {
+                    //match success
+                    if (mPrefixHighligher == null) {
+                        mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
+                    }
+                    Log.i(TAG, "bindName: first " + first + ", last " + last);
+                    nameField.setText(mPrefixHighligher.apply(name, first, last + 1));
+                    return true;
+                }
+            }
+            Log.i(TAG, "bindName: first " + first + ", last " + last);
         }
-        ((TextView) view.findViewById(R.id.name)).setText(name);
+        nameField.setText(name);
+        return false;
     }
 
-    protected void bindNumber(final View view, Cursor cursor) {
-        String name = cursor.getString(PhoneQuery.PHONE_NUMBER);
-        if (TextUtils.isEmpty(name)) {
-            name = mUnknownNameText.toString();
+    HanziToPinyin mHanziToPinyin;
+    private String toPinYin(String input) {
+        if (TextUtils.isEmpty(input)) {
+            return "";
         }
-        ((TextView) view.findViewById(R.id.number)).setText(name);
+        if (mHanziToPinyin == null) {
+            mHanziToPinyin = HanziToPinyin.getInstance();
+        }
+        ArrayList<Token> tokens = mHanziToPinyin.get(input);
+        StringBuilder output = new StringBuilder();
+        if (tokens != null && tokens.size() > 0) {
+            for (Token token : tokens) {
+                output.append(token.target);
+            }
+        }
+        return output.toString();
+    }
+    protected boolean bindNumber(final View view, Cursor cursor, String match) {
+        TextView numberField = (TextView) view.findViewById(R.id.number);
+        String number = cursor.getString(PhoneQuery.PHONE_NUMBER);
+        Log.i(TAG, "number = " + number + " ,match = " + match);
+        if (TextUtils.isEmpty(number)) {
+            number = mUnknownNameText.toString();
+        } else if (!TextUtils.isEmpty(match)) {
+            int index, first = -1, last = -1;
+            char[] s = number.toCharArray();
+            int oriLength = s.length;
+            char[] shortNumber = new char[oriLength];
+            int[] indexes = new int[oriLength];
+            char c;
+            int i, j = 0;
+            for (i = 0; i < oriLength; i++) {
+                c = s[i];
+                if ((c >= '0' && c <= '9') || c == '+') {
+                    shortNumber[j] = c;
+                    indexes[j++] = i;
+                }
+            }
+            String shortNumberString = new String(shortNumber, 0, j);
+            Log.i(TAG, "bindNumber: shortNumber = " + shortNumberString);
+            first = shortNumberString.indexOf(match);
+            if (first >= 0) {
+                last = first + match.length() - 1;
+            }
+            if (first >= 0 && last >= 0) {
+                Log.i(TAG, "bindNumber 1: first " + first + ", last " + last);
+                first = indexes[first];
+                last = indexes[last];
+                //match success
+                if (mPrefixHighligher == null) {
+                    mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
+                }
+                Log.i(TAG, "bindNumber 2: first " + first + ", last " + last);
+                numberField.setText(mPrefixHighligher.apply(number, first, last + 1));
+                return true;
+            }
+            Log.i(TAG, "bindNumber: first " + first + ", last " + last);
+        }
+        numberField.setText(number);
+        return false;
     }
 
     protected void bindPhoto(final View view, Cursor cursor) {

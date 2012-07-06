@@ -16,6 +16,7 @@
 package com.android.contacts.list;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.android.common.io.MoreCloseables;
@@ -107,7 +108,7 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         public void onContactSelected(Uri contactUri);
     }
 
-    private ArrayList<Long> mResult;
+    private HashMap<Long, String> mResult;
     private boolean mInSearchMode = false;
     private boolean mFirstEnterSearchMode = false;
     //TODO
@@ -116,7 +117,9 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         public CursorLoader onCreateLoader(int id, Bundle args) {
             if (DEBUG) Log.d(TAG, "ResultContactsLoaderListener#onCreateLoader");
             CursorLoader loader = new CursorLoader(getActivity(), null, null, null, null, null);
-            mAllContactsAdapter.configureLoader(loader, Directory.DEFAULT, mResult);
+            mAllContactsAdapter.configureLoader(loader, Directory.DEFAULT, (mResult == null) ? null : mResult.keySet());
+
+            mAllContactsAdapter.setId2Match(mResult);
             mResult = null;
             return loader;
         }
@@ -181,7 +184,7 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         mSearchTask = new SearchTask();
         mSearchTask.execute(mQueryString);
     }
-    class SearchTask extends AsyncTask<String, Void, ArrayList<Long>> {
+    class SearchTask extends AsyncTask<String, Void, HashMap<Long, String>> {
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
@@ -189,7 +192,7 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
 		}
 
 		@Override
-		protected void onPostExecute(ArrayList<Long> result) {
+		protected void onPostExecute(HashMap<Long, String> result) {
             Log.i(TAG, "onPostExecute().");
             mResult = result;
             //start result query.
@@ -210,7 +213,7 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
 		}
 
 		@Override
-		protected ArrayList<Long> doInBackground(String... params) {
+		protected HashMap<Long, String> doInBackground(String... params) {
 			Log.i(TAG, "doInBackground().");
 			String query = params[0];
 			Log.i(TAG, "query is " + query);
@@ -610,6 +613,7 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         }
         mCallLogAdapter.setLoading(false);
         mCallLogAdapter.changeCursor(cursor);
+        mCallLogAdapter.setMatch(mCallLogQueryHandler.getQueryString());
 
         mCallLogFetched = true;
         destroyEmptyLoaderIfAllDataFetched();

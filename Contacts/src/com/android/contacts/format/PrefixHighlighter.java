@@ -63,4 +63,20 @@ public class PrefixHighlighter {
             return text;
         }
     }
+
+    //{Added by yongan.qiu on 2012.6.27 begin. For highlight(alias #highlight).
+    public CharSequence apply(CharSequence text, int start, int end) {
+        if (start >= 0 && start <= end && end <= text.length()) {
+            if (mPrefixColorSpan == null) {
+                mPrefixColorSpan = new ForegroundColorSpan(mPrefixHighlightColor);
+            }
+
+            SpannableString result = new SpannableString(text);
+            result.setSpan(mPrefixColorSpan, start, end, 0);
+            return result;
+        } else {
+            return text;
+        }
+    }
+    //}Added by yongan.qiu end.
 }

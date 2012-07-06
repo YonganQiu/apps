@@ -128,7 +128,10 @@ import javax.annotation.concurrent.GuardedBy;
 
     String mQueryString;
     public void setQueryString(String queryString) {
-    	mQueryString = queryString;
+        mQueryString = queryString;
+    }
+    public String getQueryString() {
+        return mQueryString;
     }
 
     /** Cancel any pending fetch request. */
