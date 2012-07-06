@@ -74,9 +74,6 @@ public class SimplePhoneNumberCache {
 		Matcher dightsMatcher = dightsPattern.matcher("");
 		boolean found;
 		for (PhoneNumberRefInfo info : infos) {
-			// TODO
-			if (info.mDataId == 105) continue;
-			
 			Log.i(TAG, "search: handling " + info.mSortKey + ", number " + info.mNumber + ", id " + info.mDataId);
 			lettersMatcher.reset(info.mSortKey);
 			found = lettersMatcher.find();
@@ -93,19 +90,19 @@ public class SimplePhoneNumberCache {
 		return result;
 	}
 	
-	private String createLetterPatternFromKey(String key) {
-		StringBuilder builder = new StringBuilder(".*");
+	public String createLetterPatternFromKey(String key) {
+		StringBuilder builder = new StringBuilder("([a-z]*[^a-z]*\\s)?");
 		char[] s = key.toLowerCase().toCharArray();
 		for (char c : s) {
 			if (c >= '0' && c <= '9') { //just number is legal.
-				builder.append('[').append(NUMBER_TO_LETTER[c - '0']).append("].*");
+				builder.append('[').append(NUMBER_TO_LETTER[c - '0']).append("]([a-z]*[^a-z]*\\s)?");
 			}
 		}
 		//builder.append(".*");
 		return builder.toString();
 	}
 	
-	private String createDightsPatternFromKey(String key) {
+	public String createDightsPatternFromKey(String key) {
 		StringBuilder builder = new StringBuilder(".*");
 		char[] s = key.toLowerCase().toCharArray();
 		for (char c : s) {

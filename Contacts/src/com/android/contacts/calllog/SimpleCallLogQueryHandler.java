@@ -30,9 +30,11 @@ import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteFullException;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.CallLog;
 import android.provider.CallLog.Calls;
 import android.provider.VoicemailContract.Status;
 import android.text.TextUtils;
@@ -107,17 +109,20 @@ import javax.annotation.concurrent.GuardedBy;
     public void fetchAllUnknownCalls() {
         cancelFetch();
         invalidate();
-        String selection = String.format("(%s IS NULL OR %s = 0) AND %s > 100",
+        String selection = String.format("(%s IS NULL OR %s = 0) AND %s > ?",
                 Calls.CACHED_NUMBER_TYPE, Calls.CACHED_NUMBER_TYPE, Calls.DATE);
         List<String> selectionArgs = Lists.newArrayList(
                 Long.toString(System.currentTimeMillis() - NEW_SECTION_TIME_WINDOW));
         if (!TextUtils.isEmpty(mQueryString)) {
             selection = String.format("%s AND %s LIKE '%%%s%%'", selection, Calls.NUMBER, mQueryString);
         }
-        //selection = String.format("(%s)) GROUP BY ((%s", selection, Calls.NUMBER);
+        //selection = String.format("%s) GROUP BY (%s", selection, Calls.NUMBER);
         Log.i(TAG, selection);
-        startQuery(QUERY_ALL_UNKNOWN_CALLS_TOKEN, null, Calls.CONTENT_URI_WITH_VOICEMAIL,
-                SimpleCallLogQuery._PROJECTION, selection, /*selectionArgs.toArray(EMPTY_STRING_ARRAY)*/null,
+        Uri uri = Uri.parse("content://call_log/calls/group_by_number").buildUpon()
+                .appendQueryParameter(CallLog.Calls.ALLOW_VOICEMAILS_PARAM_KEY, "true")
+                .build();
+        startQuery(QUERY_ALL_UNKNOWN_CALLS_TOKEN, null, /*Calls.CONTENT_URI_WITH_VOICEMAIL*/uri,
+                SimpleCallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
                 Calls.DEFAULT_SORT_ORDER);
     }
 

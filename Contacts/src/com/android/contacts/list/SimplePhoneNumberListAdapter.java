@@ -31,20 +31,26 @@ import android.provider.ContactsContract.Directory;
 import android.provider.ContactsContract.RawContacts;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.editor.AggregationSuggestionEngine.RawContact;
+import com.android.contacts.list.SimplePhoneNumberListAdapter.OnItemActionListener;
 
+import com.android.contacts.R;
 /**
  * A cursor adapter for the {@link Phone#CONTENT_TYPE} content type.
  */
@@ -96,8 +102,6 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
 
     private final CharSequence mUnknownNameText;
 
-    private ContactListItemView.PhotoPosition mPhotoPosition;
-    
     public SimplePhoneNumberListAdapter(Context context, Cursor cursor) {
     	super(context, cursor);
         //begin: added by yunzhou.song
@@ -336,18 +340,6 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
     }
 
-    //{yongan.qiu
-    /*protected static Uri buildSectionIndexerUri(Uri uri) {
-        return uri.buildUpon()
-                .appendQueryParameter(ContactCounts.ADDRESS_BOOK_INDEX_EXTRAS, "true").build();
-    }
-
-    @Override
-    public String getContactDisplayName(int position) {
-        return ((Cursor) getItem(position)).getString(PhoneQuery.PHONE_DISPLAY_NAME);
-    }*/
-    //}yongan.qiu
-
     public Uri getDataUri(int position) {
         Cursor cursor = ((Cursor)getItem(position));
         if (cursor != null) {
@@ -359,50 +351,44 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         }
     }
 
+    OnClickListener mActionListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			if (mOnItemActionListener != null) {
+				int position = (Integer) v.getTag();
+				mOnItemActionListener.onItemAction(position);
+			}
+		}
+	};
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        final ContactListItemView view = new ContactListItemView(context, null);
-        view.setUnknownNameText(mUnknownNameText);
-        view.setQuickContactEnabled(/*isQuickContactEnabled()*/true);
-        view.setPhotoPosition(mPhotoPosition);
-        //begin: added by yunzhou.song
-        view.setActivatedStateSupported(true);
-        //end: added by yunzhou.song
+        LayoutInflater inflater =
+                (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View view = inflater.inflate(R.layout.simple_phone_number_list_item, parent, false);
+        view.findViewById(R.id.phone_number_item).setOnClickListener(mActionListener);
         return view;
     }
 
     @Override
     public void bindView(View itemView, Context context, Cursor cursor) {
-        ContactListItemView view = (ContactListItemView)itemView;
 
-        boolean isFirstEntry = true;
-        boolean showBottomDivider = true;
-        final long currentContactId = cursor.getLong(PhoneQuery.PHONE_CONTACT_ID);
-        if (isFirstEntry) {
-            bindName(view, cursor);
-            if (/*isQuickContactEnabled()*/true) {
-                bindQuickContact(view, cursor, PhoneQuery.PHONE_PHOTO_ID,
-                        PhoneQuery.PHONE_CONTACT_ID, PhoneQuery.PHONE_LOOKUP_KEY);
-            } else {
-                bindPhoto(view, cursor);
-            }
-        } else {
-            unbindName(view);
-
-            view.removePhotoView(true, false);
-        }
-        bindPhoneNumber(view, context, cursor);
-        view.setDividerVisible(showBottomDivider);
+        itemView.findViewById(R.id.phone_number_item).setTag(new Integer(cursor.getPosition()));
+        bindName(itemView, cursor);
+        bindQuickContact(itemView, cursor, PhoneQuery.PHONE_PHOTO_ID,
+                PhoneQuery.PHONE_CONTACT_ID, PhoneQuery.PHONE_LOOKUP_KEY);
+        bindLabel(itemView, context, cursor);
+        bindNumber(itemView, cursor);
     }
 
-    protected void bindQuickContact(final ContactListItemView view,
+    protected void bindQuickContact(final View view,
             Cursor cursor, int photoIdColumn, int contactIdColumn, int lookUpKeyColumn) {
         long photoId = 0;
         if (!cursor.isNull(photoIdColumn)) {
             photoId = cursor.getLong(photoIdColumn);
         }
 
-        QuickContactBadge quickContact = view.getQuickContact();
+        QuickContactBadge quickContact = (QuickContactBadge) view.findViewById(R.id.quick_contact_badge);
         quickContact.assignContactUri(
                 getContactUri(cursor, contactIdColumn, lookUpKeyColumn));
         getPhotoLoader().loadPhoto(quickContact, photoId, false, mDarkTheme);
@@ -420,7 +406,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         return uri;
     }
 
-    protected void bindPhoneNumber(ContactListItemView view, Context context, Cursor cursor) {
+    protected void bindLabel(View view, Context context, Cursor cursor) {
         CharSequence label = null;
         if (!cursor.isNull(PhoneQuery.PHONE_TYPE)) {
             final int type = cursor.getInt(PhoneQuery.PHONE_TYPE);
@@ -429,46 +415,43 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
             // TODO cache
             label = Phone.getTypeLabel(context.getResources(), type, customLabel);
         }
-        view.setLabel(label);
-        view.showData(cursor, PhoneQuery.PHONE_NUMBER);
+        ((TextView) view.findViewById(R.id.label)).setText(label);
     }
 
-    //{yongan.qiu
-   /* protected void bindSectionHeaderAndDivider(final ContactListItemView view, int position) {
-        if (isSectionHeaderDisplayEnabled()false) {
-            Placement placement = getItemPlacementInSection(position);
-            view.setSectionHeader(placement.firstInSection ? placement.sectionHeader : null);
-            view.setDividerVisible(!placement.lastInSection);
-        } else {
-            view.setSectionHeader(null);
-            view.setDividerVisible(true);
+    protected void bindName(final View view, Cursor cursor) {
+        String name = cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME);
+        if (TextUtils.isEmpty(name)) {
+            name = mUnknownNameText.toString();
         }
-    }*/
-    //}yongan.qiu
-
-    protected void bindName(final ContactListItemView view, Cursor cursor) {
-        view.showDisplayName(cursor, PhoneQuery.PHONE_DISPLAY_NAME, getContactNameDisplayOrder());
-        // Note: we don't show phonetic names any more (see issue 5265330)
+        ((TextView) view.findViewById(R.id.name)).setText(name);
     }
 
-    protected void unbindName(final ContactListItemView view) {
-        view.hideDisplayName();
+    protected void bindNumber(final View view, Cursor cursor) {
+        String name = cursor.getString(PhoneQuery.PHONE_NUMBER);
+        if (TextUtils.isEmpty(name)) {
+            name = mUnknownNameText.toString();
+        }
+        ((TextView) view.findViewById(R.id.number)).setText(name);
     }
 
-    protected void bindPhoto(final ContactListItemView view, Cursor cursor) {
+    protected void bindPhoto(final View view, Cursor cursor) {
         long photoId = 0;
         if (!cursor.isNull(PhoneQuery.PHONE_PHOTO_ID)) {
             photoId = cursor.getLong(PhoneQuery.PHONE_PHOTO_ID);
         }
 
-        getPhotoLoader().loadPhoto(view.getPhotoView(), photoId, false, false);
+        ImageView photo = (ImageView) view.findViewById(R.id.quick_contact_badge);
+        getPhotoLoader().loadPhoto(photo, photoId, false, false);
     }
 
-    public void setPhotoPosition(ContactListItemView.PhotoPosition photoPosition) {
-        mPhotoPosition = photoPosition;
+    OnItemActionListener mOnItemActionListener;
+
+    interface OnItemActionListener {
+        void onItemAction(int position);
     }
 
-    public ContactListItemView.PhotoPosition getPhotoPosition() {
-        return mPhotoPosition;
+    public void setOnItemActionListener(OnItemActionListener listener) {
+        mOnItemActionListener = listener;
     }
+
 }

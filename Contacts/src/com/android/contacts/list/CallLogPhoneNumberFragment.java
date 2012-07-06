@@ -31,6 +31,7 @@ import com.android.contacts.calllog.ClearCallLogDialog;
 import com.android.contacts.calllog.ContactInfoHelper;
 import com.android.contacts.calllog.SimpleCallLogAdapter;
 import com.google.common.annotations.VisibleForTesting;
+import com.android.contacts.list.SimplePhoneNumberListAdapter.OnItemActionListener;
 import com.android.contacts.preference.ContactsPreferences;
 import com.android.contacts.util.AccountFilterUtil;
 import com.android.contacts.util.EmptyLoader;
@@ -85,7 +86,8 @@ import android.widget.TextView;
  * {@link SimplePhoneNumberListAdapter} into one unified list using {@link CallLogPhoneNumberMergedAdapter}.
  * A contact filter header is also inserted between those adapters' results.
  */
-public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVisibilityListener, OnItemClickListener, 
+public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVisibilityListener, 
+        SimplePhoneNumberListAdapter.OnItemActionListener, 
         SimpleCallLogQueryHandler.Listener, SimpleCallLogAdapter.CallFetcher {
     private static final String TAG = CallLogPhoneNumberFragment.class.getSimpleName();
     private static final boolean DEBUG = true;
@@ -158,11 +160,9 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
             } else {
             	Log.i(TAG, "cursor is null!!!");
             }
-            
-            //{yongan.qiu
+
             mSimplePhoneNumberCache.loadPhoneNumberRefInfos(data);
-            //}yongan.qiu
-            
+
             startSearchTask(mQueryString, true);
         }
 
@@ -334,8 +334,8 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         final View listLayout = inflater.inflate(R.layout.call_log_phone_number_fragment, container, false);
 
         mListView = (ListView) listLayout.findViewById(R.id.list);
-        mListView.setItemsCanFocus(true);
-        mListView.setOnItemClickListener(this);
+        //mListView.setItemsCanFocus(true);
+        //mListView.setOnItemClickListener(this);
         mListView.setVerticalScrollBarEnabled(false);
         mListView.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_RIGHT);
         mListView.setScrollBarStyle(ListView.SCROLLBARS_OUTSIDE_OVERLAY);
@@ -400,8 +400,8 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         // Setup the "all" adapter manually. See also the setup logic in ContactEntryListFragment.
         mAllContactsAdapter = new SimplePhoneNumberListAdapter(context, null);
         mAllContactsAdapter.setPhotoLoader(ContactPhotoManager.getInstance(context));
-        // Put photos on left for consistency with "frequent" contacts section.
-        mAllContactsAdapter.setPhotoPosition(ContactListItemView.PhotoPosition.LEFT);
+        
+        mAllContactsAdapter.setOnItemActionListener(this);
 
         if (mFilter != null) {
             mAllContactsAdapter.setContactFilter(mFilter);
@@ -458,20 +458,20 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
      * This is only effective for elements provided by {@link #mCallLogAdapter}.
      * {@link #mCallLogAdapter} has its own logic for click events.
      */
-    @Override
+    /*@Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        final int contactTileAdapterCount = mCallLogAdapter.getCount();
-        if (position <= contactTileAdapterCount) {
+        final int callLogAdapterCount = mCallLogAdapter.getCount();
+        if (position <= callLogAdapterCount) {
             //TODO
-            /*Log.e(TAG, "onItemClick() event for unexpected position. "
-                    + "The position " + position + " is before \"all\" section. Ignored.");*/
+            Log.e(TAG, "onItemClick() event for unexpected position. "
+                    + "The position " + position + " is before \"all\" section. Ignored.");
         } else {
             final int localPosition = position - mCallLogAdapter.getCount() - 1;
             if (mListener != null) {
                 mListener.onContactSelected(mAllContactsAdapter.getDataUri(localPosition));
             }
         }
-    }
+    }*/
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -562,15 +562,6 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         getLoaderManager().restartLoader(LOADER_ID_ALL_CONTACTS, null, mAllContactsLoaderListener);
     }
 
-/*    private void updateFilterHeaderView() {
-        final ContactListFilter filter = getFilter();
-        if (mAccountFilterHeader == null || mAllContactsAdapter == null || filter == null) {
-            return;
-        }
-        AccountFilterUtil.updateAccountFilterTitleForPhone(
-                mAccountFilterHeader, filter, mAllContactsAdapter.isLoading(), true);
-    }
-*/
     public ContactListFilter getFilter() {
         return mFilter;
     }
@@ -590,7 +581,6 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         if (mAllContactsAdapter != null) {
             mAllContactsAdapter.setContactFilter(mFilter);
             requestReloadAllContacts();
-            //updateFilterHeaderView();
         }
     }
 
@@ -606,10 +596,8 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
 
     private SimpleCallLogAdapter mCallLogAdapter;
     private SimpleCallLogQueryHandler mCallLogQueryHandler;
-    
-    //{yongan.qiu
+
     SimplePhoneNumberCache mSimplePhoneNumberCache;
-    //}yongan.qiu
 
     private boolean mEmptyLoaderRunning;
     private boolean mCallLogFetched;
@@ -622,15 +610,12 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         }
         mCallLogAdapter.setLoading(false);
         mCallLogAdapter.changeCursor(cursor);
-        
-        // This will update the state of the "Clear call log" menu item.
-        //getActivity().invalidateOptionsMenu();
+
         mCallLogFetched = true;
         destroyEmptyLoaderIfAllDataFetched();
         
         //{
         if (DEBUG) Log.d(TAG, "ContactTileLoaderListener#onLoadFinished");
-        //mCallLogAdapter.setContactCursor(cursor);
 
         if (mAllContactsForceReload) {
             mAllContactsAdapter.onDataReload();
@@ -647,11 +632,6 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         mAllContactsForceReload = false;
         mSearchFromResultNeeded = false;
         mAllContactsLoaderStarted = true;
-
-        // Show the filter header with "loading" state.
-        //updateFilterHeaderView();
-        //mAccountFilterHeader.setVisibility(View.VISIBLE);
-        //}
     }
 
     private void destroyEmptyLoaderIfAllDataFetched() {
@@ -659,17 +639,6 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
             mEmptyLoaderRunning = false;
             getLoaderManager().destroyLoader(EMPTY_LOADER_ID);
         }
-    }
-
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        /*String currentCountryIso = ContactsUtils.getCurrentCountryIso(getActivity());
-        mCallLogAdapter = new CallLogAdapter(getActivity(), this,
-                new ContactInfoHelper(getActivity(), currentCountryIso));
-        mListView.setAdapter(mCallLogAdapter);
-        mListView.setItemsCanFocus(true);*/
     }
 
     @Override
@@ -693,49 +662,6 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
         mCallLogAdapter.setLoading(true);
         mCallLogQueryHandler.fetchAllUnknownCalls();
     }
-/*
-    public void callSelectedEntry() {
-        int position = mListView.getSelectedItemPosition();
-        if (position < 0) {
-            // In touch mode you may often not have something selected, so
-            // just call the first entry to make sure that [send] [send] calls the
-            // most recent entry.
-            position = 0;
-        }
-        final Cursor cursor = (Cursor)mCallLogAdapter.getItem(position);
-        if (cursor != null) {
-            String number = cursor.getString(CallLogQuery.NUMBER);
-            if (TextUtils.isEmpty(number)
-                    || number.equals(CallerInfo.UNKNOWN_NUMBER)
-                    || number.equals(CallerInfo.PRIVATE_NUMBER)
-                    || number.equals(CallerInfo.PAYPHONE_NUMBER)) {
-                // This number can't be called, do nothing
-                return;
-            }
-            Intent intent;
-            // If "number" is really a SIP address, construct a sip: URI.
-            if (PhoneNumberUtils.isUriNumber(number)) {
-                intent = new Intent(Intent.ACTION_CALL_PRIVILEGED,
-                                    Uri.fromParts("sip", number, null));
-            } else {
-                // We're calling a regular PSTN phone number.
-                // Construct a tel: URI, but do some other possible cleanup first.
-                int callType = cursor.getInt(CallLogQuery.CALL_TYPE);
-                if (!number.startsWith("+") &&
-                       (callType == Calls.INCOMING_TYPE
-                                || callType == Calls.MISSED_TYPE)) {
-                    // If the caller-id matches a contact with a better qualified number, use it
-                    String countryIso = cursor.getString(CallLogQuery.COUNTRY_ISO);
-                    number = mCallLogAdapter.getBetterNumberFromContacts(number, countryIso);
-                }
-                intent = new Intent(Intent.ACTION_CALL_PRIVILEGED,
-                                    Uri.fromParts("tel", number, null));
-            }
-            intent.setFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            startActivity(intent);
-        }
-    }*/
 
     @VisibleForTesting
     SimpleCallLogAdapter getAdapter() {
@@ -753,5 +679,14 @@ public class CallLogPhoneNumberFragment extends Fragment implements ViewPagerVis
     private void refreshData() {
         startCallsQuery();
     }
+
+	@Override
+	public void onItemAction(int position) {
+		// TODO Auto-generated method stub
+		if (mListener != null) {
+			mListener.onContactSelected(mAllContactsAdapter
+					.getDataUri(position));
+		}
+	}
 
 }
