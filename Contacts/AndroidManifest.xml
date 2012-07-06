@@ -621,6 +621,15 @@
             android:exported="false"/>
         
 		<!-- begin : JiangzhouQ 2012.03.01 -->
+		<receiver android:name=".sim.SIMReadReceiver"
+            android:label="@string/social_widget_label" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                    android:resource="@xml/social_widget_info" />
+        </receiver>
+        
 		<activity android:name=".activities.SIMContactSelectionActivity"
 			android:label="@string/contactsList"
 			android:theme="@style/ContactPickerTheme"
