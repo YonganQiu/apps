@@ -615,4 +615,14 @@
     <string name="num_9">"9"</string>
     <string name="showFilterPhonesDescrip">"仅显示有电话号码的联系人"</string>
     <!-- end: added by yunzhou.song -->
+
+    <!-- Added by yongan.qiu begin. -->
+    <string name="select_all">全选</string>
+    <string name="select_none">全不选</string>
+
+    <string name="account_type_local">手机</string>
+    <string name="account_type_sim">SIM卡</string>
+
+    <!-- Added by yongan.qiu end. -->
+
 </resources>

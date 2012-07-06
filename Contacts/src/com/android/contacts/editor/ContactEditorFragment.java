@@ -29,12 +29,16 @@ import com.android.contacts.model.AccountType;
 import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.model.EntityDelta;
+import com.android.contacts.model.SimAccountType;
 import com.android.contacts.model.EntityDelta.ValuesDelta;
 import com.android.contacts.model.EntityDeltaList;
 import com.android.contacts.model.EntityModifier;
 import com.android.contacts.model.GoogleAccountType;
 import com.android.contacts.util.AccountsListAdapter;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsAndAccountsMergeAdapter;
+import com.android.contacts.util.InternalsListAdapter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -544,7 +548,12 @@ public class ContactEditorFragment extends Fragment implements
 
         // If there is no default account or the accounts have changed such that we need to
         // prompt the user again, then launch the account prompt.
-        if (mEditorUtils.shouldShowAccountChangedNotification()) {
+        //{Modified by yongan.qiu on 2012-7-4 begin./TODO
+        //old:
+        //if (mEditorUtils.shouldShowAccountChangedNotification()) {
+        if (true) {
+        //new:
+        //}Modified by yongan.qiu end.
             Intent intent = new Intent(mContext, ContactEditorAccountsChangedActivity.class);
             mStatus = Status.SUB_ACTIVITY;
             startActivityForResult(intent, REQUEST_CODE_ACCOUNTS_CHANGED);
@@ -656,9 +665,22 @@ public class ContactEditorFragment extends Fragment implements
 
         // Ensure we have some default fields (if the account type does not support a field,
         // ensureKind will not add it, so it is safe to add e.g. Event)
-        EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
+        //{Modified by yongan.qiu on 2012-7-5 begin.
+        //old:
+        /*EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
         EntityModifier.ensureKindExists(insert, newAccountType, Email.CONTENT_ITEM_TYPE);
-        EntityModifier.ensureKindExists(insert, newAccountType, Organization.CONTENT_ITEM_TYPE);
+        EntityModifier.ensureKindExists(insert, newAccountType, Organization.CONTENT_ITEM_TYPE);*/
+        //new:
+        if (newAccountType instanceof SimAccountType) {
+            EntityModifier.ensureKindExists(insert, newAccountType, SimAccountType.MIMETYPE_NAME);
+            EntityModifier.ensureKindExists(insert, newAccountType, SimAccountType.MIMETYPE_NUMBER);
+        } else {
+            EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
+            EntityModifier.ensureKindExists(insert, newAccountType, Email.CONTENT_ITEM_TYPE);
+            EntityModifier.ensureKindExists(insert, newAccountType, Organization.CONTENT_ITEM_TYPE);
+        }
+        //}Modified by yongan.qiu end.
+
         //begin: remarked by yunzhou.song
         //EntityModifier.ensureKindExists(insert, newAccountType, Event.CONTENT_ITEM_TYPE);
         //EntityModifier.ensureKindExists(insert, newAccountType, StructuredPostal.CONTENT_ITEM_TYPE);
@@ -714,8 +736,14 @@ public class ContactEditorFragment extends Fragment implements
                         mContent, false);
             }
             if (Intent.ACTION_INSERT.equals(mAction) && numRawContacts == 1) {
+                //{Modified by yongan.qiu on 2012-7-6 begin.
+                //old:
+                /*final List<AccountWithDataSet> accounts =
+                        AccountTypeManager.getInstance(mContext).getAccounts(true);*/
+                //new:
                 final List<AccountWithDataSet> accounts =
-                        AccountTypeManager.getInstance(mContext).getAccounts(true);
+                        AccountTypeManager.getInstance(mContext).getInternalsAndAccounts(true);
+                //}Modified by yongan.qiu end.
                 if (accounts.size() > 1 && !mNewLocalProfile) {
                     addAccountSwitcher(mState.get(0), editor);
                 } else {
@@ -828,9 +856,21 @@ public class ContactEditorFragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 final ListPopupWindow popup = new ListPopupWindow(mContext, null);
-                final AccountsListAdapter adapter =
+                //{Modified by yongan.qiu on 2012-7-6 begin.
+                //old:
+                /*final AccountsListAdapter adapter =
+                        new AccountsListAdapter(mContext,
+                        AccountListFilter.ACCOUNTS_CONTACT_WRITABLE, currentAccount);*/
+                //new:
+                final AccountsListAdapter accountsAdapter =
                         new AccountsListAdapter(mContext,
                         AccountListFilter.ACCOUNTS_CONTACT_WRITABLE, currentAccount);
+                final InternalsListAdapter internalsAdapter =
+                        new InternalsListAdapter(mContext,
+                        InternalListFilter.INTERNALS_CONTACT_WRITABLE, currentAccount);
+                final InternalsAndAccountsMergeAdapter adapter = 
+                        new InternalsAndAccountsMergeAdapter(internalsAdapter, accountsAdapter);
+                //}Modified by yongan.qiu end.
                 popup.setWidth(anchorView.getWidth());
                 popup.setAnchorView(anchorView);
                 popup.setAdapter(adapter);

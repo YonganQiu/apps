@@ -37,6 +37,7 @@ import com.android.contacts.model.EntityDelta.ValuesDelta;
 import com.android.contacts.model.EntityDeltaList;
 import com.android.contacts.model.EntityModifier;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 import com.android.contacts.util.Constants;
 import com.android.contacts.util.DataStatus;
 import com.android.contacts.util.DateUtils;
@@ -2045,8 +2046,14 @@ public class ContactDetailFragment extends Fragment implements FragmentKeyListen
                     break;
                 }
                 case Directory.EXPORT_SUPPORT_ANY_ACCOUNT: {
+                    //{Modified by yongan.qiu on 2012-7-6 begin.
+                    //old:
+                    /*final List<AccountWithDataSet> accounts =
+                            AccountTypeManager.getInstance(mContext).getAccounts(true);*/
+                    //new:
                     final List<AccountWithDataSet> accounts =
-                            AccountTypeManager.getInstance(mContext).getAccounts(true);
+                            AccountTypeManager.getInstance(mContext).getInternalsAndAccounts(true);
+                    //}Modified by yongan.qiu end.
                     if (accounts.isEmpty()) {
                         createCopy(null);
                         return;  // Don't show a dialog.
@@ -2061,6 +2068,9 @@ public class ContactDetailFragment extends Fragment implements FragmentKeyListen
 
                     SelectAccountDialogFragment.show(getFragmentManager(),
                             ContactDetailFragment.this, R.string.dialog_new_contact_account,
+                            //{Added by yongan.qiu on 2012-7-6 begin.
+                            InternalListFilter.INTERNALS_CONTACT_WRITABLE,
+                            //}Added by yongan.qiu end.
                             AccountListFilter.ACCOUNTS_CONTACT_WRITABLE, null);
                     break;
                 }

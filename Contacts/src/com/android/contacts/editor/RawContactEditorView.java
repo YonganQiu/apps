@@ -22,6 +22,7 @@ import com.android.contacts.model.AccountType;
 import com.android.contacts.model.AccountType.EditType;
 import com.android.contacts.model.DataKind;
 import com.android.contacts.model.EntityDelta;
+import com.android.contacts.model.SimAccountType;
 import com.android.contacts.model.EntityDelta.ValuesDelta;
 import com.android.contacts.model.EntityModifier;
 import com.android.internal.util.Objects;
@@ -305,6 +306,15 @@ public class RawContactEditorView extends BaseRawContactEditorView {
 
         updatePhoneticNameVisibility();
 
+        //{Added by yongan.qiu on 2012-7-5 begin.
+        //update structured name editor visibility.
+        boolean hasStructuredNameEditor = type.getKindForMimetype(StructuredName.CONTENT_ITEM_TYPE) != null;
+        if (!hasStructuredNameEditor) {
+            mName.setVisibility(View.GONE);
+        }
+        updatePhotoStubVisibility();
+        //}Added by yongan.qiu end.
+
         addToDefaultGroupIfNeeded();
 
         mAddFieldButton.setEnabled(isEnabled());
@@ -402,6 +412,17 @@ public class RawContactEditorView extends BaseRawContactEditorView {
             mPhoneticName.setVisibility(View.GONE);
         }
     }
+
+    //{Added by yongan.qiu on 2012-7-5 begin.
+    private void updatePhotoStubVisibility() {
+        View photoStub = findViewById(R.id.stub_photo);
+        if (!hasPhotoEditor()) {
+            photoStub.setVisibility(View.GONE);
+        } else {
+            photoStub.setVisibility(View.VISIBLE);
+        }
+    }
+	//}Added by yongan.qiu end.
 
     @Override
     public long getRawContactId() {

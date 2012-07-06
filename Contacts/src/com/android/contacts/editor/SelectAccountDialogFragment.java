@@ -19,6 +19,9 @@ package com.android.contacts.editor;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.util.AccountsListAdapter;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsAndAccountsMergeAdapter;
+import com.android.contacts.util.InternalsListAdapter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -37,7 +40,13 @@ public final class SelectAccountDialogFragment extends DialogFragment {
     public static final String TAG = "SelectAccountDialogFragment";
 
     private static final String KEY_TITLE_RES_ID = "title_res_id";
-    private static final String KEY_LIST_FILTER = "list_filter";
+    //{Modified by yongan.qiu on 2012-7-6 begin.
+    //old:
+    /*private static final String KEY_LIST_FILTER = "list_filter";*/
+    //new:
+    private static final String KEY_INTERNAL_LIST_FILTER = "internal_list_filter";
+    private static final String KEY_ACCOUNT_LIST_FILTER = "account_list_filter";
+    //}Modified by yongan.qiu end.
     private static final String KEY_EXTRA_ARGS = "extra_args";
 
     public SelectAccountDialogFragment() { // All fragments must have a public default constructor.
@@ -56,10 +65,20 @@ public final class SelectAccountDialogFragment extends DialogFragment {
      */
     public static <F extends Fragment & Listener> void show(FragmentManager fragmentManager,
             F targetFragment, int titleResourceId,
+            //{Added by yongan.qiu on 2012-7-6 begin.
+            InternalListFilter internalListFilter,
+            //}Added by yongan.qiu end.
             AccountListFilter accountListFilter, Bundle extraArgs) {
         final Bundle args = new Bundle();
         args.putInt(KEY_TITLE_RES_ID, titleResourceId);
-        args.putSerializable(KEY_LIST_FILTER, accountListFilter);
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //old:
+        /*args.putSerializable(KEY_LIST_FILTER, accountListFilter);*/
+        //new:
+        args.putSerializable(KEY_INTERNAL_LIST_FILTER, internalListFilter);
+        args.putSerializable(KEY_ACCOUNT_LIST_FILTER, accountListFilter);
+        //}Modified by yongan.qiu end.
+
         args.putBundle(KEY_EXTRA_ARGS, (extraArgs == null) ? Bundle.EMPTY : extraArgs);
 
         final SelectAccountDialogFragment instance = new SelectAccountDialogFragment();
@@ -73,9 +92,19 @@ public final class SelectAccountDialogFragment extends DialogFragment {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         final Bundle args = getArguments();
 
-        final AccountListFilter filter = (AccountListFilter) args.getSerializable(KEY_LIST_FILTER);
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //old:
+        /*final AccountListFilter filter = (AccountListFilter) args.getSerializable(KEY_LIST_FILTER);
         final AccountsListAdapter accountAdapter = new AccountsListAdapter(builder.getContext(),
-                filter);
+                filter);*/
+        //new:
+        final InternalListFilter internalFilter = (InternalListFilter) args.getSerializable(KEY_INTERNAL_LIST_FILTER);
+        final AccountListFilter accountFilter = (AccountListFilter) args.getSerializable(KEY_ACCOUNT_LIST_FILTER);
+        final InternalsListAdapter internalAdapter = new InternalsListAdapter(builder.getContext(), internalFilter);
+        final AccountsListAdapter accountAdapter = new AccountsListAdapter(builder.getContext(),
+                accountFilter);
+        final InternalsAndAccountsMergeAdapter mergeAdapter = new InternalsAndAccountsMergeAdapter(internalAdapter, accountAdapter);
+        //}Modified by yongan.qiu end.
 
         final DialogInterface.OnClickListener clickListener =
                 new DialogInterface.OnClickListener() {
@@ -83,12 +112,22 @@ public final class SelectAccountDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
 
-                onAccountSelected(accountAdapter.getItem(which));
+                //{Modified by yongan.qiu on 2012-7-6 begin.
+                //old:
+                /*onAccountSelected(accountAdapter.getItem(which));*/
+                //new:
+                onAccountSelected(mergeAdapter.getItem(which));
+                //}Modified by yongan.qiu end.
             }
         };
 
         builder.setTitle(args.getInt(KEY_TITLE_RES_ID));
-        builder.setSingleChoiceItems(accountAdapter, 0, clickListener);
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //old:
+       /*builder.setSingleChoiceItems(accountAdapter, 0, clickListener);*/
+        //new:
+        builder.setSingleChoiceItems(mergeAdapter, 0, clickListener);
+        //}Modified by yongan.qiu end.
         final AlertDialog result = builder.create();
         return result;
     }

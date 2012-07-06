@@ -1890,4 +1890,14 @@
     <string name="deleteIpNumberMsg">删除 IP 号码 \"<xliff:g>%s</xliff:g>\"？</string>
     <string name="repeatIpNumber">IP 号码 \"<xliff:g>%s</xliff:g>\" 已存在</string>
     <!-- end: added by yunzhou.song -->
+
+    <!-- Added by yongan.qiu begin. -->
+    <string name="select_all">Select all</string>
+    <string name="select_none">Select none</string>
+
+    <string name="account_type_local">Phone</string>
+    <string name="account_type_sim">Sim card</string>
+
+    <!-- Added by yongan.qiu end. -->
+
 </resources>

@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import com.android.contacts.list.SimplePhoneNumberListAdapter.PhoneQuery;
 
 import android.database.Cursor;
+import android.media.HanziToPinyin;
+import android.media.HanziToPinyin.Token;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -15,10 +17,8 @@ public class SimplePhoneNumberCache {
 	
 	private static final String TAG = SimplePhoneNumberCache.class.getSimpleName();
 	
-	private ArrayList<PhoneNumberRefInfo> mPhoneNumberRefInfos = 
-			new ArrayList<PhoneNumberRefInfo>();
-	private HashMap<Long, String> mResultCache = 
-			new HashMap<Long, String>();
+	private ArrayList<PhoneNumberRefInfo> mPhoneNumberRefInfos = new ArrayList<PhoneNumberRefInfo>();
+	private HashMap<Long, String> mResultCache = new HashMap<Long, String>();
 
 	private Object mLock = new Object();
 	
@@ -75,7 +75,7 @@ public class SimplePhoneNumberCache {
 		String group;
 		for (PhoneNumberRefInfo info : infos) {
 			Log.i(TAG, "search: handling " + info.mSortKey + ", number " + info.mNumber + ", id " + info.mDataId);
-			lettersMatcher.reset(info.mSortKey);
+			lettersMatcher.reset(toPinYin(info.mSortKey));
 			if (lettersMatcher.find()) {
 				group = lettersMatcher.group();
 				Log.i(TAG, "matcher string: " + group);
@@ -91,6 +91,25 @@ public class SimplePhoneNumberCache {
 		return result;
 	}
 	
+    HanziToPinyin mHanziToPinyin;
+    private String toPinYin(String input) {
+        if (TextUtils.isEmpty(input)) {
+            return "";
+        }
+        if (mHanziToPinyin == null) {
+            mHanziToPinyin = HanziToPinyin.getInstance();
+        }
+        ArrayList<Token> tokens = mHanziToPinyin.get(input);
+        StringBuilder output = new StringBuilder();
+        if (tokens != null && tokens.size() > 0) {
+            for (Token token : tokens) {
+                output.append(token.target.toLowerCase()).append(' ');
+            }
+        }
+        Log.i(TAG, "toPinYin(): input(" + input + "), output(" + output.toString() + ")");
+        return output.toString();
+    }
+
 	public String createLetterPatternFromKey(String key) {
 		StringBuilder builder = new StringBuilder();
 		//remove all blank ' '.
@@ -103,16 +122,23 @@ public class SimplePhoneNumberCache {
 		char[] s = key.toLowerCase().toCharArray();
 		for (int i = 0; i < s.length; i++) {
 			char c = s[i];
-			if (c >= '0' && c <= '9') { //just number is legal.
+			if (c >= '0' && c <= '9') {
 				if (i == 0) {
 					builder.append("\\b");
 				} else {
 					builder.append("([a-z0-9]*[^a-z0-9]*\\s+)?");
 				}
 				builder.append('[').append(NUMBER_TO_LETTER[c - '0']).append(']');
+			} else if ("*#".indexOf(c) >= 0) {
+				if (i == 0) {
+					builder.append("\\b");
+				} else {
+					builder.append("([a-z0-9]*[^a-z0-9]*\\s+)?");
+				}
+				builder.append("\\").append(c);
 			}
 		}
-		builder.append("([a-z0-9]*[^a-z0-9]*)?");
+		//builder.append("([a-z0-9]*[^a-z0-9]*)?");
 		return builder.toString();
 	}
 	
@@ -190,7 +216,7 @@ public class SimplePhoneNumberCache {
 			return;
 		}
 		do {
-			addInCache(cursor.getString(PhoneQuery.PHONE_SORT_KEY).toLowerCase(), 
+			addInCache(cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME).toLowerCase(), 
 					cursor.getString(PhoneQuery.PHONE_NUMBER), 
 					cursor.getLong(PhoneQuery.PHONE_ID));
 		} while (cursor.moveToNext());

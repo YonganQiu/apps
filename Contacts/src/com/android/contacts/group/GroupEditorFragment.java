@@ -31,6 +31,7 @@ import com.android.contacts.model.AccountType;
 import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 import com.android.contacts.util.Constants;
 import com.android.internal.util.Objects;
 
@@ -330,8 +331,14 @@ public class GroupEditorFragment extends Fragment implements SelectAccountDialog
     }
 
     private void selectAccountAndCreateGroup() {
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //old:
+        //final List<AccountWithDataSet> accounts =
+        //        AccountTypeManager.getInstance(mContext).getAccounts(true /* writeable */);
+        //new:
         final List<AccountWithDataSet> accounts =
-                AccountTypeManager.getInstance(mContext).getAccounts(true /* writeable */);
+                AccountTypeManager.getInstance(mContext).getInternalsAndAccounts(true /* writeable */);
+        //}Modified by yongan.qiu end.
         // No Accounts available
         if (accounts.isEmpty()) {
             Log.e(TAG, "No accounts were found.");
@@ -353,7 +360,13 @@ public class GroupEditorFragment extends Fragment implements SelectAccountDialog
 
         mStatus = Status.SELECTING_ACCOUNT;
         SelectAccountDialogFragment.show(getFragmentManager(), this,
-                R.string.dialog_new_group_account, AccountListFilter.ACCOUNTS_GROUP_WRITABLE,
+                //{Modified by yongan.qiu on 2012-7-6 begin.
+                //old:
+                /*R.string.dialog_new_group_account, AccountListFilter.ACCOUNTS_GROUP_WRITABLE,*/
+                //new:
+                R.string.dialog_new_group_account, InternalListFilter.INTERNALS_GROUP_WRITABLE,
+                AccountListFilter.ACCOUNTS_GROUP_WRITABLE,
+                //}Modified by yongan.qiu end.
                 null);
     }
 

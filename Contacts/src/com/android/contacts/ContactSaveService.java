@@ -470,7 +470,7 @@ public class ContactSaveService extends IntentService {
 
         //{Added by yongan.qiu on 2012.4.25 begin. (bug 245076)
         values.put(Groups.SOURCE_ID, label);
-        //{Added by yongan.qiu on 2012.4.25 begin.
+        //{Added by yongan.qiu on 2012.4.25 end.
 
         final ContentResolver resolver = getContentResolver();
 

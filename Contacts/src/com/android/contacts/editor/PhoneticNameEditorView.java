@@ -213,6 +213,12 @@ public class PhoneticNameEditorView extends TextFieldsEditorView {
     public boolean hasData() {
         ValuesDelta entry = getEntry();
 
+        //{Added by yongan.qiu on 2012-7-5 begin.
+        if (entry == null) {
+            return false;
+        }
+        //}Added by yongan.qiu end.
+
         String family = entry.getAsString(StructuredName.PHONETIC_FAMILY_NAME);
         String middle = entry.getAsString(StructuredName.PHONETIC_MIDDLE_NAME);
         String given = entry.getAsString(StructuredName.PHONETIC_GIVEN_NAME);

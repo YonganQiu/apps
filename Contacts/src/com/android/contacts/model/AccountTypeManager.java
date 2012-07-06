@@ -73,6 +73,11 @@ public abstract class AccountTypeManager {
 
     public static final String ACCOUNT_TYPE_SERVICE = "contactAccountTypes";
 
+    //{Added by yongan.qiu on 2012-7-4 begin.
+    public static final String ACCOUNT_TYPE_LOCAL = "local";
+    public static final String ACCOUNT_TYPE_SIM = "sim";
+    //}Added by yongan.qiu end.
+
     /**
      * Requests the singleton instance of {@link AccountTypeManager} with data bound from
      * the available authenticators. This method can safely be called from the UI thread.
@@ -91,6 +96,16 @@ public abstract class AccountTypeManager {
     public static synchronized AccountTypeManager createAccountTypeManager(Context context) {
         return new AccountTypeManagerImpl(context);
     }
+
+    //{Added by yongan.qiu on 2012-7-5 begin.
+    public abstract AccountWithDataSet getUnsuppressibleAccount();
+
+    public abstract List<AccountWithDataSet> getInternalsAndAccounts(boolean contactWritableOnly);
+
+    public abstract List<AccountWithDataSet> getInternals(boolean contactWritableOnly);
+
+    public abstract List<AccountWithDataSet> getGroupWritableInternals();
+    //}Added by yongan.qiu end.
 
     /**
      * Returns the list of all accounts (if contactWritableOnly is false) or just the list of
@@ -181,6 +196,11 @@ class AccountTypeManagerImpl extends AccountTypeManager
 
     private AccountType mFallbackAccountType;
 
+    //{Added by yongan.qiu on 2012-7-5 begin.
+    private AccountWithDataSet mUnsuppressibleAccount;
+    private List<AccountWithDataSet> mInternals;
+    private List<AccountWithDataSet> mGroupWritableInternals;
+    //}Added by yongan.qiu end.
     private List<AccountWithDataSet> mAccounts = Lists.newArrayList();
     private List<AccountWithDataSet> mContactWritableAccounts = Lists.newArrayList();
     private List<AccountWithDataSet> mGroupWritableAccounts = Lists.newArrayList();
@@ -559,6 +579,53 @@ class AccountTypeManagerImpl extends AccountTypeManager
         return null;
     }
 
+    //{Added by yongan.qiu on 2012-7-4 begin.
+    public static final String ACCOUNT_NAME_LOCAL_DEFAULT = "local1";
+    public static final String ACCOUNT_NAME_SIM_DEFAULT = "sim1";
+    //}Added by yongan.qiu end.
+
+    //{Added by yongan.qiu on 2012-7-5 begin.
+    @Override
+    public AccountWithDataSet getUnsuppressibleAccount() {
+        //TODO
+        if (mUnsuppressibleAccount == null) {
+            getInternals(true);
+        }
+        return mUnsuppressibleAccount;
+    }
+
+    @Override
+    public List<AccountWithDataSet> getInternalsAndAccounts(boolean contactWritableOnly) {
+        List<AccountWithDataSet> all = Lists.newArrayList();
+        all.addAll(getInternals(contactWritableOnly));
+        all.addAll(getAccounts(contactWritableOnly));
+        return all;
+    }
+
+    @Override
+    public List<AccountWithDataSet> getInternals(boolean contactWritableOnly) {
+        //TODO handle contactWritableOnly.
+        if (mInternals == null) {
+            mInternals = Lists.newArrayList();
+            mUnsuppressibleAccount = new AccountWithDataSet(ACCOUNT_NAME_LOCAL_DEFAULT, ACCOUNT_TYPE_LOCAL, null);
+            mInternals.add(mUnsuppressibleAccount);
+            mGroupWritableInternals = Lists.newArrayList();
+            mGroupWritableInternals.add(mUnsuppressibleAccount);
+            AccountWithDataSet sim = new AccountWithDataSet(ACCOUNT_NAME_SIM_DEFAULT, ACCOUNT_TYPE_SIM, null);
+            mInternals.add(sim);
+        }
+        return mInternals;
+    }
+
+    public List<AccountWithDataSet> getGroupWritableInternals() {
+        //TODO mGroupWritableInternals should be initialized via loading.
+        if (mGroupWritableInternals == null) {
+            getInternals(true);
+        }
+        return mGroupWritableInternals;
+    }
+    //}Added by yongan.qiu end.
+
     /**
      * Return list of all known, contact writable {@link AccountWithDataSet}'s.
      */
@@ -613,7 +680,23 @@ class AccountTypeManagerImpl extends AccountTypeManager
         ensureAccountsLoaded();
         synchronized (this) {
             AccountType type = mAccountTypesWithDataSets.get(accountTypeWithDataSet);
-            return type != null ? type : mFallbackAccountType;
+            //{Modified by yongan.qiu on 2012-7-4 begin.
+            //old:
+            //return type != null ? type : mFallbackAccountType;
+            //new:
+            if (type != null) {
+                return type;
+            }
+            if (ACCOUNT_TYPE_LOCAL.equals(accountTypeWithDataSet.accountType)) {
+                return new LocalAccountType(mContext);
+            } else if (ACCOUNT_TYPE_SIM.equals(accountTypeWithDataSet.accountType)) {
+                return new SimAccountType(mContext);
+            } else {
+                //can not go to here
+                return mFallbackAccountType;
+            }
+            //}Modified by yongan.qiu end.
+
         }
     }
 

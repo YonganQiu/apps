@@ -15,6 +15,14 @@
 -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Added by yongan.qiu on 2012.7.4 begin, for adding select all or select none action. -->
+    <item android:id="@+id/select_all_or_none"
+          android:title="@string/select_all"
+          android:icon="@drawable/ic_menu_select_all_holo_dark"
+          android:showAsAction="always|withText" />
+    <!-- Added by yongan.qiu end. -->
+
     <item android:id="@+id/delete"
           android:title="@string/delete"
           android:icon="@drawable/ic_menu_trash_holo_dark"

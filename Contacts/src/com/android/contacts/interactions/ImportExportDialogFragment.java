@@ -23,6 +23,7 @@ import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.util.AccountSelectionUtil;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 import com.android.contacts.util.Constants;
 import com.android.contacts.vcard.ExportVCardActivity;
 
@@ -199,7 +200,12 @@ public class ImportExportDialogFragment extends DialogFragment
         // - just one account -> use the account without asking the user
         // - no account -> use phone-local storage without asking the user
         final AccountTypeManager accountTypes = AccountTypeManager.getInstance(getActivity());
-        final List<AccountWithDataSet> accountList = accountTypes.getAccounts(true);
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //old:
+        /*final List<AccountWithDataSet> accountList = accountTypes.getAccounts(true);*/
+        //new:
+        final List<AccountWithDataSet> accountList = accountTypes.getInternalsAndAccounts(true);
+        //}Modified by yongan.qiu end.
         final int size = accountList.size();
         if (size > 1) {
             // Send over to the account selector
@@ -208,6 +214,9 @@ public class ImportExportDialogFragment extends DialogFragment
             SelectAccountDialogFragment.show(
                     getFragmentManager(), this,
                     R.string.dialog_new_contact_account,
+                    //{Added by yongan.qiu on 2012-7-6 begin.
+                    InternalListFilter.INTERNALS_CONTACT_WRITABLE,
+                    //}Added by yongan.qiu end.
                     AccountListFilter.ACCOUNTS_CONTACT_WRITABLE, args);
 
             // In this case, because this DialogFragment is used as a target fragment to

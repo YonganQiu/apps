@@ -921,6 +921,11 @@ public class EntityModifier {
             Arrays.asList(Organization.CONTENT_ITEM_TYPE,
                     Note.CONTENT_ITEM_TYPE,
                     Photo.CONTENT_ITEM_TYPE,
+                    //{Added by yongan.qiu on 2012-7-6 begin.
+                    //For SIM card item type.
+                    SimAccountType.MIMETYPE_NAME,
+                    SimAccountType.MIMETYPE_NUMBER,
+                    //}Added by yongan.qiu end.
                     GroupMembership.CONTENT_ITEM_TYPE));
     // CommonColumns.TYPE cannot be accessed as it is protected interface, so use
     // Phone.TYPE instead.
@@ -1008,8 +1013,18 @@ public class EntityModifier {
     /** @hide Public only for testing. */
     public static void migrateStructuredName(
             Context context, EntityDelta oldState, EntityDelta newState, DataKind newDataKind) {
-        final ContentValues values =
-                oldState.getPrimaryEntry(StructuredName.CONTENT_ITEM_TYPE).getAfter();
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //In case this mimetype does not exist in oldState.
+        //old:
+        /*final ContentValues values =
+                oldState.getPrimaryEntry(StructuredName.CONTENT_ITEM_TYPE).getAfter();*/
+        //new:
+        final ValuesDelta delta = oldState.getPrimaryEntry(StructuredName.CONTENT_ITEM_TYPE);
+        if (delta == null) {
+            return;
+        }
+        final ContentValues values = delta.getAfter();
+        //}Modified by yongan.qiu end.
         if (values == null) {
             return;
         }

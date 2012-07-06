@@ -92,7 +92,14 @@ public class ContactEditorUtils {
     }
 
     private List<AccountWithDataSet> getWritableAccounts() {
-        return mAccountTypes.getAccounts(true);
+        //{Modified by yongan.qiu on 2012-7-5 begin.
+        //old:
+        /*return mAccountTypes.getAccounts(true);*/
+        //new:
+        List<AccountWithDataSet> allAccounts = new ArrayList<AccountWithDataSet>(mAccountTypes.getAccounts(true));
+        allAccounts.addAll(mAccountTypes.getInternals(true));
+        return allAccounts;
+        //}Modified by yongan.qiu end.
     }
 
     /**
@@ -130,6 +137,13 @@ public class ContactEditorUtils {
         }
         editor.apply();
     }
+
+    //{Added by yongan.qiu on 2012-7-5 begin.
+    public boolean isInternalAccount(AccountWithDataSet defaultAccount) {
+        return AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(defaultAccount.type)
+                || AccountTypeManager.ACCOUNT_TYPE_SIM.equals(defaultAccount.type);
+    }
+    //}Added by yongan.qiu end.
 
     /**
      * @return the default account saved with {@link #saveDefaultAndAllAccounts}.

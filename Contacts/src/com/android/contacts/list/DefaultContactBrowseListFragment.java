@@ -334,6 +334,11 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
     	private TextView mSelectedConvCount;
     	private View mMultiSelectActionBarView;
     	private HashSet<Uri> mSelectedUriSet;
+    	
+    	//{Added by yongan.qiu on 2012.7.4 begin.
+    	private boolean mAllSelected;
+    	private MenuItem mSelectAllOrNone;
+    	//}Added by yongan.qiu end.
 
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
@@ -354,6 +359,20 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
 				}
 			}
 
+			//{Added by yongan.qiu on 2012.7.4 begin.
+			mAllSelected = (listView.getCheckedItemCount() == itemCount);
+			if (mSelectAllOrNone != null) {
+				if (mAllSelected) {
+					mSelectAllOrNone.setIcon(R.drawable.ic_menu_select_none_holo_dark);
+					mSelectAllOrNone.setTitle(R.string.select_none);
+				} else {
+					mSelectAllOrNone.setIcon(R.drawable.ic_menu_select_all_holo_dark);
+					mSelectAllOrNone.setTitle(R.string.select_all);
+
+				}
+			}
+			//}Added by yongan.qiu end.
+			
 			return true;
 		}
 		
@@ -362,6 +381,14 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
 			MenuInflater inflater = new MenuInflater(getContext());
 			inflater.inflate(R.menu.contact_multi_select_menu, menu);
 
+			//{Added by yongan.qiu on 2012.7.4 begin.
+			mSelectAllOrNone = menu.findItem(R.id.select_all_or_none);
+			if (mSelectAllOrNone != null && mAllSelected) {
+				mSelectAllOrNone.setIcon(R.drawable.ic_menu_select_none_holo_dark);
+				mSelectAllOrNone.setTitle(R.string.select_none);
+			}
+			//}Added by yongan.qiu end.
+			
 			mMultiSelectActionBarView = (ViewGroup) LayoutInflater.from(
 					getContext()).inflate(
 					R.layout.contact_multi_select_actionbar, null);
@@ -388,6 +415,26 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
 				}
 				mode.finish();
 				break;
+			//{Added by yongan.qiu on 2012.7.4 begin.
+			case R.id.select_all_or_none:
+				ListView listView = getListView();
+				if (mAllSelected) {
+					//clear all
+					listView.clearChoices();
+					mode.finish();
+				} else {
+					ContactListAdapter adapter = getAdapter();
+					SparseBooleanArray a = listView.getCheckedItemPositions();
+					int itemCount = listView.getAdapter().getCount();
+					int headerViewsCount = listView.getHeaderViewsCount();
+					for (int i = headerViewsCount; i < itemCount; i++) {
+						if (!a.get(i)) {
+							listView.setItemChecked(i, true);
+						}
+					}
+				}
+				break;
+			//}Added by yongan.qiu end.
 			default:
 				break;
 			}
@@ -408,11 +455,31 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
 			} else {
 				mSelectedUriSet.remove(uri);
 			}
+			
+			//{Added by yongan.qiu on 2012.7.4 begin.
+			boolean oldState = mAllSelected;
+			mAllSelected = (listView.getCheckedItemCount() == getAdapter().getCount());
+			if (mSelectAllOrNone != null && oldState != mAllSelected) {
+				if (mAllSelected) {
+					mSelectAllOrNone.setIcon(R.drawable.ic_menu_select_none_holo_dark);
+					mSelectAllOrNone.setTitle(R.string.select_none);
+				} else {
+					mSelectAllOrNone.setIcon(R.drawable.ic_menu_select_all_holo_dark);
+					mSelectAllOrNone.setTitle(R.string.select_all);
+
+				}
+			}
+			//}Added by yongan.qiu end.
 		}
 		
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
 			mSelectedUriSet.clear();
+			
+			//{Added by yongan.qiu on 2012.7.4 begin.
+			mAllSelected = false;
+			//}Added by yongan.qiu end.
+
 		}
 	}
     //end: added by yunzhou.song

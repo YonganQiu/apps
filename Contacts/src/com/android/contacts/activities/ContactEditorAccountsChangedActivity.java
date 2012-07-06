@@ -30,10 +30,14 @@ import android.widget.TextView;
 
 import com.android.contacts.R;
 import com.android.contacts.editor.ContactEditorUtils;
+import com.android.contacts.model.AccountType;
 import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.util.AccountsListAdapter;
+import com.android.contacts.util.InternalsAndAccountsMergeAdapter;
+import com.android.contacts.util.InternalsListAdapter;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 
 import java.util.List;
 
@@ -51,16 +55,28 @@ public class ContactEditorAccountsChangedActivity extends Activity {
 
     private static final int SUBACTIVITY_ADD_NEW_ACCOUNT = 1;
 
+    //{Added by yongan.qiu on 2012-7-4 begin.
+    private InternalsAndAccountsMergeAdapter mMergeAccountListAdapter;
+    private InternalsListAdapter mInternalListAdapter;
+    //}Added by yongan.qiu end.
     private AccountsListAdapter mAccountListAdapter;
     private ContactEditorUtils mEditorUtils;
 
     private final OnItemClickListener mAccountListItemClickListener = new OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            if (mAccountListAdapter == null) {
+            //{Modified by yongan.qiu on 2012-7-4 begin.
+            //old:
+            /*if (mAccountListAdapter == null) {
                 return;
             }
-            saveAccountAndReturnResult(mAccountListAdapter.getItem(position));
+            saveAccountAndReturnResult(mAccountListAdapter.getItem(position));*/
+            //new:
+            if (mMergeAccountListAdapter == null) {
+                return;
+            }
+            saveAccountAndReturnResult(mMergeAccountListAdapter.getItem(position));
+            //}Modified by yongan.qiu end.
         }
     };
 
@@ -84,7 +100,10 @@ public class ContactEditorAccountsChangedActivity extends Activity {
             throw new IllegalStateException("Cannot have a negative number of accounts");
         }
 
-        if (numAccounts >= 2) {
+        //{Modified by yongan.qiu on 2012.7.4 begin.
+        //For adding local account. (alias:ACCOUNT)
+        //old:
+        /*if (numAccounts >= 2) {
             // When the user has 2+ writable accounts, show a list of accounts so the user can pick
             // which account to create a contact in.
             setContentView(R.layout.contact_editor_accounts_changed_activity_with_picker);
@@ -157,7 +176,29 @@ public class ContactEditorAccountsChangedActivity extends Activity {
             // this app afterwards.
             rightButton.setText(getString(R.string.add_account));
             rightButton.setOnClickListener(mAddAccountClickListener);
+        }*/
+        //new:
+        setContentView(R.layout.contact_editor_accounts_changed_activity_with_picker);
+
+        final TextView textView = (TextView) findViewById(R.id.text);
+        textView.setText(getString(R.string.contact_editor_prompt_multiple_accounts));
+
+        final Button button = (Button) findViewById(R.id.add_account_button);
+        button.setText(getString(R.string.add_new_account));
+        button.setOnClickListener(mAddAccountClickListener);
+
+        final ListView accountListView = (ListView) findViewById(R.id.account_list);
+        mInternalListAdapter = new InternalsListAdapter(this, InternalListFilter.INTERNALS_CONTACT_WRITABLE);
+
+        if (numAccounts > 0) {
+            mAccountListAdapter = new AccountsListAdapter(this,
+                    AccountListFilter.ACCOUNTS_CONTACT_WRITABLE);
         }
+
+        mMergeAccountListAdapter = new InternalsAndAccountsMergeAdapter(mInternalListAdapter, mAccountListAdapter);
+        accountListView.setAdapter(mMergeAccountListAdapter);
+        accountListView.setOnItemClickListener(mAccountListItemClickListener);
+        //}Modified by yongan.qiu end.
     }
 
     @Override

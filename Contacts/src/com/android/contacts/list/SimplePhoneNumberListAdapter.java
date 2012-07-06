@@ -20,8 +20,6 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.media.HanziToPinyin;
-import android.media.HanziToPinyin.Token;
 import android.net.Uri;
 import android.net.Uri.Builder;
 import android.os.Parcelable;
@@ -55,6 +53,8 @@ import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.editor.AggregationSuggestionEngine.RawContact;
 import com.android.contacts.format.PrefixHighlighter;
 import com.android.contacts.list.SimplePhoneNumberListAdapter.OnItemActionListener;
+import com.android.contacts.util.SimpleHanziToPinyin;
+import com.android.contacts.util.SimpleHanziToPinyin.Token;
 
 import com.android.contacts.R;
 /**
@@ -388,6 +388,12 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         String match = null;
         if (mId2Match != null) {
             match = mId2Match.get(cursor.getLong(PhoneQuery.PHONE_ID));
+            if (match != null) {
+                match = match.trim();
+            }
+            if (!TextUtils.isEmpty(match)) {
+                match.toLowerCase();
+            }
         }
         Log.i(TAG, "match " + match);
         itemView.findViewById(R.id.phone_number_item).setTag(new Integer(cursor.getPosition()));
@@ -438,56 +444,118 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
     protected boolean bindName(final View view, Cursor cursor, String match) {
         TextView nameField = (TextView) view.findViewById(R.id.name);
         String name = cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME);
-        Log.i(TAG, "name = " + name + " ,match = " + match);
+        Log.i(TAG, "bindName(). name = " + name + " ,match = " + match);
         if (TextUtils.isEmpty(name)) {
             name = mUnknownNameText.toString();
         } else if (!TextUtils.isEmpty(match)) {
-            int index, first = -1, last = -1;
-            //name = toPinYin(name);
-            char[] s = name.toCharArray();
-            int l = s.length;
-            char c = s[0];
-            
+            /*int index, first = -1, last = -1;
+            ArrayList<Token> s = toPinYin(name);
+            //char[] s = name.toCharArray();
+            int l = s.size();
+            String c = s.get(0).target.toLowerCase();
+            Log.i(TAG, "char " + 0 + " = " + c);
             int i = 0;
             index = match.indexOf(c);
             if (index >= 0) {
                 first = last = i;
                 match = match.substring(index + 1);
-            } else {
-                for (i = 1; i < l && !TextUtils.isEmpty(match); i++) {
-                    c = s[i];
-                    index = match.indexOf(c);
-                    if (index >= 0) {
-                        if (first < 0) {
-                            first = i;
-                        }
-                        last = i;
-                        match = match.substring(index + 1);
-                    } else {
-                        break;
+            }
+            for (i = 1; i < l && !TextUtils.isEmpty(match); i++) {
+                c = s.get(i).target.toLowerCase();
+                Log.i(TAG, "char " + i + " = " + c);
+                index = match.indexOf(c);
+                if (index >= 0) {
+                    if (first < 0) {
+                        first = i;
                     }
-                }
-                
-                if (first >= 0 && last >= 0) {
-                    //match success
-                    if (mPrefixHighligher == null) {
-                        mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
-                    }
-                    Log.i(TAG, "bindName: first " + first + ", last " + last);
-                    nameField.setText(mPrefixHighligher.apply(name, first, last + 1));
-                    return true;
+                    last = i;
+                    match = match.substring(index + 1);
+                } else {
+                    break;
                 }
             }
-            Log.i(TAG, "bindName: first " + first + ", last " + last);
+            
+            if (first >= 0 && last >= 0) {
+                //match success
+                if (mPrefixHighligher == null) {
+                    mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
+                }
+                Log.i(TAG, "bindName: first " + first + ", last " + last);
+                nameField.setText(mPrefixHighligher.apply(name, first, last + 1));
+                return true;
+            }
+
+            Log.i(TAG, "bindName: first " + first + ", last " + last);*/
+
+            if (mHanziToPinyin == null) {
+                mHanziToPinyin = SimpleHanziToPinyin.getInstance();
+            }
+            ArrayList<Token> tokens = mHanziToPinyin.get(name);
+            StringBuilder output = new StringBuilder();
+            if (tokens != null && tokens.size() > 0) {
+                int oriLength = tokens.size();
+                int[] indexes = new int[oriLength];
+                Token token;
+                for (int i = 0; i < oriLength; i++) {
+                    token = tokens.get(i);
+                    output.append(token.target.toLowerCase()).append(' ');
+                    indexes[i] = output.length() - 1;
+                    Log.i(TAG, "bindName(). indexes " + i + " " + indexes[i] + ", first index "
+                            + token.firstIndexOfSourceInOriInput + ", last index " + token.lastIndexOfSourceInOriInput);
+                }
+                String newName = output.toString();
+                Log.i(TAG, "bindName(). newName = " + newName);
+                int first = newName.indexOf(match);
+                int last = -1;
+                if (first >= 0) {
+                    last = first + match.length() - 1;
+                }
+                Log.i(TAG, "bindName()1. first " + first + ", last " + last);
+                if (first >= 0 && last >= 0) {
+                    boolean firstFound = false;
+                    boolean lastFound = false;
+                    for (int i = 0; i < oriLength; i++) {
+                        if (!firstFound) {
+                            if (indexes[i] >= first) {
+                                first = tokens.get(i).firstIndexOfSourceInOriInput;
+                                firstFound = true;
+                                if (indexes[i] >= last) {
+                                    last = Math.max(tokens.get(i).firstIndexOfSourceInOriInput, tokens.get(i).lastIndexOfSourceInOriInput - Math.max(0, indexes[i] - last - 1));
+                                    lastFound = true;
+                                    break;
+                                }
+
+                            }
+                        } else {
+                            if (indexes[i] >= last) {
+                                last = Math.max(tokens.get(i).firstIndexOfSourceInOriInput, tokens.get(i).lastIndexOfSourceInOriInput - Math.max(0, indexes[i] - last - 1));
+                                lastFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (firstFound && lastFound) {
+                        //match success
+                        if (mPrefixHighligher == null) {
+                            mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
+                        }
+                        Log.i(TAG, "bindName()2. first " + first + ", last " + last);
+                        nameField.setText(mPrefixHighligher.apply(name, first, last + 1));
+                        return true;
+                    }
+                }
+            }
+            
+            
         }
         nameField.setText(name);
         return false;
     }
 
-    HanziToPinyin mHanziToPinyin;
-    private String toPinYin(String input) {
+    SimpleHanziToPinyin mHanziToPinyin;
+    /*private ArrayList<Token> toPinYin(String input) {
         if (TextUtils.isEmpty(input)) {
-            return "";
+            return null;
         }
         if (mHanziToPinyin == null) {
             mHanziToPinyin = HanziToPinyin.getInstance();
@@ -495,12 +563,23 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         ArrayList<Token> tokens = mHanziToPinyin.get(input);
         StringBuilder output = new StringBuilder();
         if (tokens != null && tokens.size() > 0) {
-            for (Token token : tokens) {
-                output.append(token.target);
+            int oriLength = tokens.size();
+            int[] indexes = new int[oriLength];
+            Token token;
+            for (int i = 0; i < oriLength; i++) {
+                token = tokens.get(i);
+                if (token.type == HanziToPinyin.Token.PINYIN) {
+                    output.append(' ');
+                }
+                output.append(token.target.toLowerCase());
+                if (token.type == HanziToPinyin.Token.PINYIN) {
+                    output.append(' ');
+                }
+                indexes[i] = output.length() - 1;
             }
         }
         return output.toString();
-    }
+    }*/
     protected boolean bindNumber(final View view, Cursor cursor, String match) {
         TextView numberField = (TextView) view.findViewById(R.id.number);
         String number = cursor.getString(PhoneQuery.PHONE_NUMBER);

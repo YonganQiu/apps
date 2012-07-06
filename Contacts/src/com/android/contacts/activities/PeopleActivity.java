@@ -63,7 +63,10 @@ import com.android.contacts.util.AccountFilterUtil;
 import com.android.contacts.util.AccountPromptUtils;
 import com.android.contacts.util.AccountSelectionUtil;
 import com.android.contacts.util.AccountsListAdapter;
+import com.android.contacts.util.InternalsAndAccountsMergeAdapter;
+import com.android.contacts.util.InternalsListAdapter;
 import com.android.contacts.util.AccountsListAdapter.AccountListFilter;
+import com.android.contacts.util.InternalsListAdapter.InternalListFilter;
 import com.android.contacts.util.Constants;
 import com.android.contacts.util.DialogManager;
 import com.android.contacts.util.PhoneCapabilityTester;
@@ -1776,7 +1779,10 @@ public class PeopleActivity extends ContactsActivity
     private void createNewGroupWithAccountDisambiguation() {
         final List<AccountWithDataSet> accounts =
                 AccountTypeManager.getInstance(this).getAccounts(true);
-        if (accounts.size() <= 1 || mAddGroupImageView == null) {
+        //{Modified by yongan.qiu on 2012-7-6 begin.
+        //This modification is redundant because in our device, mAddGroupImageView is always null.
+        //old:
+        /*if (accounts.size() <= 1 || mAddGroupImageView == null) {
             // No account to choose or no control to anchor the popup-menu to
             // ==> just go straight to the editor which will disambig if necessary
             final Intent intent = new Intent(this, GroupEditorActivity.class);
@@ -1804,7 +1810,39 @@ public class PeopleActivity extends ContactsActivity
                 intent.putExtra(Intents.Insert.DATA_SET, account.dataSet);
                 startActivityForResult(intent, SUBACTIVITY_NEW_GROUP);
             }
+        });*/
+        //new:
+        if (accounts.size() <= 1 || mAddGroupImageView == null) {
+            final Intent intent = new Intent(this, GroupEditorActivity.class);
+            intent.setAction(Intent.ACTION_INSERT);
+            startActivityForResult(intent, SUBACTIVITY_NEW_GROUP);
+            return;
+        }
+        final ListPopupWindow popup = new ListPopupWindow(this, null);
+        popup.setWidth(getResources().getDimensionPixelSize(R.dimen.account_selector_popup_width));
+        popup.setAnchorView(mAddGroupImageView);
+        final InternalsListAdapter internalListAdapter = new InternalsListAdapter(this, InternalListFilter.INTERNALS_GROUP_WRITABLE);
+        AccountsListAdapter accountListAdapter = null;
+        if (accounts.size() <= 1) {
+            accountListAdapter = new AccountsListAdapter(this,
+                    AccountListFilter.ACCOUNTS_GROUP_WRITABLE);
+        }
+        final InternalsAndAccountsMergeAdapter mergeAdapter = 
+                new InternalsAndAccountsMergeAdapter(internalListAdapter, accountListAdapter);
+        popup.setAdapter(mergeAdapter);
+        popup.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                popup.dismiss();
+                AccountWithDataSet account = mergeAdapter.getItem(position);
+                final Intent intent = new Intent(PeopleActivity.this, GroupEditorActivity.class);
+                intent.setAction(Intent.ACTION_INSERT);
+                intent.putExtra(Intents.Insert.ACCOUNT, account);
+                intent.putExtra(Intents.Insert.DATA_SET, account.dataSet);
+                startActivityForResult(intent, SUBACTIVITY_NEW_GROUP);
+            }
         });
+        //}Modified by yongan.qiu end.
         popup.setModal(true);
         popup.show();
     }
