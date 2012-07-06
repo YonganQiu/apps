@@ -277,14 +277,14 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        if (mShowOptionsMenu) {
+//        if (mShowOptionsMenu) {
             inflater.inflate(R.menu.call_log_options, menu);
-        }
+//        }
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if (mShowOptionsMenu) {
+//        if (mShowOptionsMenu) {
             final MenuItem itemDeleteAll = menu.findItem(R.id.delete_all);
             // Check if all the menu items are inflated correctly. As a shortcut, we assume all
             // menu items are ready if the first item is non-null.
@@ -295,7 +295,7 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
                 menu.findItem(R.id.show_all_calls).setVisible(
                         mVoicemailSourcesAvailable && mShowingVoicemailOnly);
             }
-        }
+//        }
     }
 
     @Override

@@ -31,6 +31,7 @@ import android.widget.TextView;
 public final class CallLogListItemViews {
     /** The quick contact badge for the contact. */
     public final QuickContactBadge quickContactView;
+    public final ImageView accountIcon;
     /** The primary action view of the entry. */
     public final View primaryActionView;
     /** The secondary action button on the entry. */
@@ -44,11 +45,12 @@ public final class CallLogListItemViews {
     /** The divider to be shown below items. */
     public final View bottomDivider;
 
-    private CallLogListItemViews(QuickContactBadge quickContactView, View primaryActionView,
+    private CallLogListItemViews(QuickContactBadge quickContactView,ImageView accountIcon, View primaryActionView,
             ImageView secondaryActionView, View dividerView,
             PhoneCallDetailsViews phoneCallDetailsViews,
             TextView listHeaderTextView, View bottomDivider) {
         this.quickContactView = quickContactView;
+        this.accountIcon = accountIcon;
         this.primaryActionView = primaryActionView;
         this.secondaryActionView = secondaryActionView;
         this.dividerView = dividerView;
@@ -60,6 +62,7 @@ public final class CallLogListItemViews {
     public static CallLogListItemViews fromView(View view) {
         return new CallLogListItemViews(
                 (QuickContactBadge) view.findViewById(R.id.quick_contact_photo),
+                (ImageView)view.findViewById(R.id.account_icon),
                 view.findViewById(R.id.primary_action_view),
                 (ImageView) view.findViewById(R.id.secondary_action_icon),
                 view.findViewById(R.id.divider),
@@ -71,6 +74,7 @@ public final class CallLogListItemViews {
     public static CallLogListItemViews createForTest(Context context) {
         return new CallLogListItemViews(
                 new QuickContactBadge(context),
+                new ImageView(context),
                 new View(context),
                 new ImageView(context),
                 new View(context),

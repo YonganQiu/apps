@@ -57,4 +57,7 @@ public class Constants {
     public static final int CALL_TYPE_OUT = 2;
     public static final int CALL_TYPE_MISSED = 3;
 	//Ended by gangzhou.qi at 2012-6-27 下午8:22:57
+    //Added by gangzhou.qi at 2012-7-5 上午9:59:42
+    public static final boolean TOTAL_DEBUG = true;
+	//Ended by gangzhou.qi at 2012-7-5 上午9:59:42
 }

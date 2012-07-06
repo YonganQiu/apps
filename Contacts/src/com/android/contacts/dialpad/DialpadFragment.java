@@ -651,8 +651,8 @@ public class DialpadFragment extends Fragment
         super.onCreateOptionsMenu(menu, inflater);
         if (mShowOptionsMenu && ViewConfiguration.get(getActivity()).hasPermanentMenuKey() &&
                 isLayoutReady() && mDialpadChooser != null) {
-            inflater.inflate(R.menu.dialpad_options, menu);
         }
+        inflater.inflate(R.menu.dialpad_options, menu);
     }
 
     @Override
@@ -660,8 +660,8 @@ public class DialpadFragment extends Fragment
         // Hardware menu key should be available and Views should already be ready.
         if (mShowOptionsMenu && ViewConfiguration.get(getActivity()).hasPermanentMenuKey() &&
                 isLayoutReady() && mDialpadChooser != null) {
-             setupMenuItems(menu);
         }
+        setupMenuItems(menu);
     }
 
     private void setupMenuItems(Menu menu) {
@@ -681,8 +681,9 @@ public class DialpadFragment extends Fragment
             // Call settings should be available via its parent Activity.
             callSettingsMenuItem.setVisible(false);
         } else {
-            callSettingsMenuItem.setVisible(true);
+            callSettingsMenuItem.setVisible(false);
             callSettingsMenuItem.setIntent(DialtactsActivity.getCallSettingsIntent());
+            
         }
 
         // We show "add to contacts", "2sec pause", and "add wait" menus only when the user is
@@ -697,7 +698,7 @@ public class DialpadFragment extends Fragment
 
             // Put the current digits string into an intent
             addToContactMenuItem.setIntent(getAddToContactIntent(digits));
-            addToContactMenuItem.setVisible(true);
+            addToContactMenuItem.setVisible(false);
 
             // Check out whether to show Pause & Wait option menu items
             int selectionStart;

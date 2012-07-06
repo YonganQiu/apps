@@ -22,9 +22,11 @@ import android.view.animation.Interpolator;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
 
+/**
+ * @author gangzhou.qi
+ *  2012.07
+ */
 public class SlipMenuRelativeLayout extends RelativeLayout{
-
-
 
 	private VelocityTracker mVelocityTracker;
 	private float mDownX;
@@ -41,6 +43,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
     ValueAnimator anim;
     private int mLeftTrigger = 0;
     private List<ParamsPosition> mParamsList = new LinkedList<ParamsPosition>();
+    
 	public SlipMenuRelativeLayout(Context context) {
 		super(context);
 		init();
@@ -185,6 +188,8 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 		return mIsPullOut;
 	}
 
+	//start the animator to pull out the paper.
+	//it can be called when you want to pull the paper by the way you want.
 	public void startAnimatorPullOut(){
 		anim = ValueAnimator.ofInt((int)getChildAt(1).getX(), (int)mLimitedDistance[0]);
 		anim.addUpdateListener(new AnimatorUpdateListener() {
@@ -202,7 +207,8 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 		mIsPullOut = true;
 	}
 
-
+	// start the animator to push in the paper.
+	// it can be called when you want to push the paper by the way you want.
 	public void startAnimatorPushIn(){
 		anim = ValueAnimator.ofInt((int)getChildAt(1).getX(), 0);
 		anim.addUpdateListener(new AnimatorUpdateListener() {
@@ -245,6 +251,8 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 		}
 	}
 	
+	//write down the position before onLayout()
+	//otherwise you will lose them and the position of the childs will be reset.
 	protected class ParamsPosition{
 		public int mLeft;
 		public int mTop;

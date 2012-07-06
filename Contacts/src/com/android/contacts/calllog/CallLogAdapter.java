@@ -21,20 +21,27 @@ import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.PhoneCallDetails;
 import com.android.contacts.PhoneCallDetailsHelper;
 import com.android.contacts.R;
+import com.android.contacts.model.AccountTypeManager;
+import com.android.contacts.model.AccountTypeWithDataSet;
+import com.android.contacts.util.Constants;
 import com.android.contacts.util.ExpirableCache;
 import com.android.contacts.util.UriUtils;
 import com.google.common.annotations.VisibleForTesting;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.CallLog.Calls;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.PhoneLookup;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,6 +56,11 @@ import libcore.util.Objects;
  */
 /*package*/ class CallLogAdapter extends GroupingListAdapter
         implements Runnable, ViewTreeObserver.OnPreDrawListener, CallLogGroupBuilder.GroupCreator {
+	
+	//Added by gangzhou.qi at 2012-7-5 下午5:01:29
+	private static final boolean DEBUG = true;
+	private static final String TAG = "CallLogAdapter";
+	//Ended by gangzhou.qi at 2012-7-5 下午5:01:29
     /** Interface used to initiate a refresh of the content. */
     public interface CallFetcher {
         public void fetchCalls();
@@ -95,6 +107,13 @@ import libcore.util.Objects;
     private final ContactInfoHelper mContactInfoHelper;
     private final CallFetcher mCallFetcher;
 
+    //Added by gangzhou.qi at 2012-7-5 下午5:02:49
+    private final ContentResolver mContentResolver;
+    private static final String accountQuerySelection = ContactsContract.RawContacts.DISPLAY_NAME_PRIMARY + "== ?";
+    private String [] accountQuerySelectionArgs = null;
+	private String accountType = null;
+	private String accountSet = null;
+    //Ended by gangzhou.qi at 2012-7-5 下午5:02:49
     /**
      * A cache of the contact details for the phone numbers in the call log.
      * <p>
@@ -249,6 +268,9 @@ import libcore.util.Objects;
                 new CallLogListItemHelper(
                         phoneCallDetailsHelper, mPhoneNumberHelper, resources);
         mCallLogGroupBuilder = new CallLogGroupBuilder(this);
+        //Added by gangzhou.qi at 2012-7-5 下午5:03:36
+        mContentResolver = mContext.getContentResolver();
+		//Ended by gangzhou.qi at 2012-7-5 下午5:03:36
     }
 
     /**
@@ -563,7 +585,7 @@ import libcore.util.Objects;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted);
-        setPhoto(views, photoId, lookupUri);
+        setPhoto(views, photoId, lookupUri , info.name);
 
         // Listen for the first draw
         if (mPreDrawListener == null) {
@@ -695,9 +717,34 @@ import libcore.util.Objects;
         return callTypes;
     }
 
-    private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri) {
+    private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri , String contactName) {
         views.quickContactView.assignContactUri(contactUri);
-        mContactPhotoManager.loadPhoto(views.quickContactView, photoId, false, false);
+        //Added by gangzhou.qi at 2012-7-5 下午4:05:41
+        accountQuerySelectionArgs = new String[]{contactName};
+		Cursor accountCur = null;
+    	accountCur = mContentResolver.query(ContactsContract.RawContacts.CONTENT_URI, null, accountQuerySelection, accountQuerySelectionArgs, null);
+    	if(accountCur.getCount() > 0){
+    		try {
+    	     	accountCur.moveToFirst();
+				accountType = accountCur.getString(accountCur.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE));
+				accountSet = accountCur.getString(accountCur.getColumnIndex(ContactsContract.RawContacts.DATA_SET));
+				Drawable draw = AccountTypeManager.getInstance(mContext).getAccountType(AccountTypeWithDataSet.get(accountType, accountSet)).getDisplayIcon(mContext);
+				views.accountIcon.setBackgroundDrawable(draw);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally{
+				accountCur.close();
+			}
+    	}
+    	
+        mContactPhotoManager.loadPhoto(views.quickContactView, photoId, false, false );
+    	
+        if (DEBUG && Constants.TOTAL_DEBUG) {
+        	Log.d(TAG, "contactName" + contactName);
+        	Log.d(TAG, "photoId" + photoId);
+        	Log.d(TAG, "accountype:" + accountType);
+        }
+        //Ended by gangzhou.qi at 2012-7-5 下午4:05:41
     }
 
     /**
