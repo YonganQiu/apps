@@ -17,6 +17,9 @@
 package com.android.launcher2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -289,6 +292,11 @@ public class Workspace extends SmoothPagedView
 	
 	private boolean mHasPerformedPreviewLongPress;
 	private CheckForPreviewLongPress mPendingCheckForPreviewLongPress;
+	private ArrayList<RectF> mPreviewRectList;
+	private ArrayList<PreviewInfo> mPreviewInfoList;
+	private boolean mPreviewDragging;
+	private long mPreviewDragAnimStartTime;
+	private boolean mPreviewDragAnimRunning;
   //}add by jingjiang.yu end
   
 	// {added by zhong.chen 2012-6-28 for launcher user-defined
@@ -1522,6 +1530,23 @@ public class Workspace extends SmoothPagedView
 			} else {
 				postInvalidate();
 			}
+			
+			if(mPreviewDragAnimRunning){
+				long currentDragTime;
+				if(mPreviewDragAnimStartTime == 0){
+					mPreviewDragAnimStartTime = SystemClock.uptimeMillis();
+					currentDragTime = 0;
+				}else{
+					currentDragTime = SystemClock.uptimeMillis()
+							- mPreviewDragAnimStartTime;
+				}
+				
+				if (currentDragTime >= PREVIEW_ANIM_DURATION) {
+					mPreviewDragAnimRunning = false;
+				} else {
+					postInvalidate();
+				}
+			}
 
 			final int count = getChildCount();
 			for (int i = 0; i < count; i++) {
@@ -2301,6 +2326,12 @@ public class Workspace extends SmoothPagedView
      * {@inheritDoc}
      */
     public boolean acceptDrop(DragObject d) {
+		// {add by jingjiang.yu at 2012.07.05 begin for scale preview.
+		if (d.dragInfo instanceof PreviewDragInfo) {
+			return false;
+		}
+		// }add by jingjiang.yu end
+    	
         // If it's an external drop (e.g. from All Apps), check if it should be accepted
         if (d.dragSource != this) {
             // Don't accept the drop if we're not over a screen at time of drop
@@ -2634,6 +2665,12 @@ public class Workspace extends SmoothPagedView
     }
 
     public void onDragEnter(DragObject d) {
+    	//{add by jingjiang.yu at 2012.07.05 begin for scale preview.
+		if (d.dragInfo instanceof PreviewDragInfo) {
+			onPreviewDragEnter(d);
+			return;
+		}
+    	//}add by jingjiang.yu end
         if (mDragTargetLayout != null) {
             mDragTargetLayout.setIsDragOverlapping(false);
             mDragTargetLayout.onDragExit();
@@ -2669,6 +2706,13 @@ public class Workspace extends SmoothPagedView
     }
 
     public void onDragExit(DragObject d) {
+		// {add by jingjiang.yu at 2012.07.05 begin for scale preview.
+		if (d.dragInfo instanceof PreviewDragInfo) {
+			onPreviewDragExit(d);
+			return;
+		}
+		// }add by jingjiang.yu end
+    	
         doDragExit(d);
     }
 
@@ -3004,6 +3048,13 @@ public class Workspace extends SmoothPagedView
     }
 
     public void onDragOver(DragObject d) {
+		// {add by jingjiang.yu at 2012.07.05 begin for scale preview.
+		if (d.dragInfo instanceof PreviewDragInfo) {
+			onPreviewDragOver(d);
+			return;
+		}
+		// }add by jingjiang.yu end
+    	
         // Skip drag over events while we are dragging over side pages
         if (mInScrollArea) return;
         if (mIsSwitchingState) return;
@@ -3438,6 +3489,12 @@ public class Workspace extends SmoothPagedView
      * Called at the end of a drag which originated on the workspace.
      */
     public void onDropCompleted(View target, DragObject d, boolean success) {
+    	//{add by jingjiang.yu at 2012.07.05 begin for scale preview.
+    	if(d.dragInfo instanceof PreviewDragInfo){
+    		onPreviewDropCompleted(target, d, success);
+    		return;
+    	}
+    	//}add by jingjiang.yu end
         if (success) {
             if (target != this) {
                 if (mDragInfo != null) {
@@ -3892,7 +3949,49 @@ public class Workspace extends SmoothPagedView
 		float scale = 0;
 		long currentTime = SystemClock.uptimeMillis() - mPreviewAnimStartTime;
 
-		RectF scaledRect = getScaledChild(child);
+		RectF scaledRect = null;
+		if (mPreviewDragging) {
+			int childIndex = -1;
+			for (int i = 0; i < getPageCount(); i++) {
+				if (getChildAt(i) == child) {
+					childIndex = i;
+					break;
+				}
+			}
+
+			if (childIndex == -1) {
+				Log.e(TAG,
+						"get childIndex by view is failed. when drawChild in preview dragging.childView:"
+								+ child);
+				scaledRect = getScaledChild(child);
+			} else {
+				PreviewInfo previewInfo = getPreviewInfoByActualIndex(
+						mPreviewInfoList, childIndex);
+				if (mPreviewDragAnimRunning) {
+					float leftForDrag = 0;
+					float topForDrag = 0;
+					long currentTimeForDrag = SystemClock.uptimeMillis()
+							- mPreviewDragAnimStartTime;
+					RectF fromRect = new RectF(
+							mPreviewRectList.get(previewInfo.fromIndex));
+					fromRect.offset(getScrollX(), 0);
+					RectF toRect = new RectF(mPreviewRectList.get(previewInfo.showIndex));
+					toRect.offset(getScrollX(), 0);
+					leftForDrag = easeOut(currentTimeForDrag, fromRect.left,
+							toRect.left, PREVIEW_ANIM_DURATION);
+					topForDrag = easeOut(currentTimeForDrag, fromRect.top,
+							toRect.top, PREVIEW_ANIM_DURATION);
+					scaledRect = fromRect;
+					scaledRect.offsetTo(leftForDrag, topForDrag);
+
+				} else {
+					scaledRect = new RectF(mPreviewRectList.get(previewInfo.showIndex));
+					scaledRect.offset(getScrollX(), 0);
+				}
+			}
+		} else {
+			scaledRect = getScaledChild(child);
+		}
 
 		if (mPreviewStatus == PREVIEW_OPENING) {
 			left = easeOut(currentTime, child.getLeft(), scaledRect.left,
@@ -4032,6 +4131,45 @@ public class Workspace extends SmoothPagedView
 			ypos += previewHeight + PREVIEW_Y_SPAN;
 		}
 		return new RectF();
+	}
+	
+	private ArrayList<RectF> getPreviewRectList() {
+		ArrayList<RectF> list = new ArrayList<RectF>();
+		float xpos = 0;
+		float ypos = 0;
+		int childPos = 0;
+		int distPost = getChildCount() - 1;
+		if (distPost >= PREVIEW_LAYOUT.length) {
+			distPost = PREVIEW_LAYOUT.length - 1;
+		}
+
+		float previewWidth = getChildAt(0).getWidth() * mPreviewScale;
+		float previewHeight = getChildAt(0).getHeight() * mPreviewScale;
+
+		final float topMargin = (getHeight() - previewHeight
+				* PREVIEW_LAYOUT[distPost].length - PREVIEW_Y_SPAN
+				* (PREVIEW_LAYOUT[distPost].length - 1)) / 2;
+		for (int rows = 0; rows < PREVIEW_LAYOUT[distPost].length; rows++) {
+			final float leftMargin = (getWidth() - previewWidth
+					* PREVIEW_LAYOUT[distPost][rows] - PREVIEW_X_SPAN
+					* (PREVIEW_LAYOUT[distPost][rows] - 1)) / 2;
+			for (int columns = 0; columns < PREVIEW_LAYOUT[distPost][rows]; columns++) {
+				if (childPos > getPageCount() - 1) {
+					break;
+				}
+				RectF rect = new RectF(leftMargin + xpos,
+						topMargin + ypos, leftMargin + xpos + previewWidth,
+						topMargin + ypos + previewHeight);
+				list.add(rect);
+
+				xpos += previewWidth + PREVIEW_X_SPAN;
+				childPos++;
+			}
+			xpos = 0;
+			ypos += previewHeight + PREVIEW_Y_SPAN;
+		}
+
+		return list;
 	}
 
 	@Override
@@ -4178,7 +4316,271 @@ public class Workspace extends SmoothPagedView
 	private void performPreviewLongClick(int clickedPreviewIndex) {
 		performHapticFeedback(HapticFeedbackConstants.LONG_PRESS,
 				HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+		ArrayList<RectF> RectList = getPreviewRectList();
+
+		CellLayout cell = (CellLayout) getChildAt(clickedPreviewIndex);
+		RectF cellRect = RectList.get(clickedPreviewIndex);
+		Bitmap b = createPreviewDragBitmap(cell, cellRect, clickedPreviewIndex);
+
+		PreviewDragInfo dragInfo = new PreviewDragInfo();
+		dragInfo.dragIndex = clickedPreviewIndex;
+		dragInfo.vacantIndex = clickedPreviewIndex;
+		mPreviewRectList = RectList;
+		mPreviewInfoList = new ArrayList<PreviewInfo>();
+		for (int i = 0; i < getPageCount(); i++) {
+			PreviewInfo previewInfo = new PreviewInfo();
+			previewInfo.actualIndex = previewInfo.showIndex = i;
+			mPreviewInfoList.add(previewInfo);
+		}
 		
+		if (mAddScreenButton.getVisibility() == View.VISIBLE) {
+			dragInfo.addButtonIsShowed = true;
+			mAddScreenButton.setVisibility(View.GONE);
+		} else {
+			dragInfo.addButtonIsShowed = false;
+		}
+		cell.setVisibility(View.GONE);
+		
+		mPreviewDragging = true;
+		mDragController.startDrag(b, Math.round(cellRect.left),
+				Math.round(cellRect.top), this, dragInfo,
+				DragController.DRAG_ACTION_MOVE, null, null);
+		b.recycle();
+	}
+	
+	private Bitmap createPreviewDragBitmap(CellLayout v, RectF viewRect,
+			int clickedPreviewIndex) {
+		Bitmap b = Bitmap.createBitmap(Math.round(viewRect.width()),
+				Math.round(viewRect.height()), Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas();
+		canvas.setBitmap(b);
+
+		canvas.save();
+		canvas.scale(mPreviewScale, mPreviewScale);
+		v.setChildrenLayersEnabled(false);
+		v.draw(canvas);
+		v.setChildrenLayersEnabled(true);
+		canvas.restore();
+
+		RectF dragViewRectF = new RectF(0, 0, viewRect.width(),
+				viewRect.height());
+		RectF homeButtonRect = getHomeButtonRect(dragViewRectF);
+		if (clickedPreviewIndex == mDefaultPage) {
+			mActiveHomeButton.setBounds((int) homeButtonRect.left,
+					(int) homeButtonRect.top, (int) homeButtonRect.right,
+					(int) homeButtonRect.bottom);
+			mActiveHomeButton.draw(canvas);
+		} else {
+			mHomeButton.setBounds((int) homeButtonRect.left,
+					(int) homeButtonRect.top, (int) homeButtonRect.right,
+					(int) homeButtonRect.bottom);
+			mHomeButton.draw(canvas);
+		}
+
+		if (getPageCount() > 1) {
+			RectF delButtonRect = getDelButtonRect(dragViewRectF);
+			mDeleteButton.setBounds(Math.round(delButtonRect.left),
+					Math.round(delButtonRect.top),
+					Math.round(delButtonRect.right),
+					Math.round(delButtonRect.bottom));
+			mDeleteButton.draw(canvas);
+		}
+
+		canvas.setBitmap(null);
+
+		return b;
+	}
+	
+	private void onPreviewDragEnter(DragObject dragObject) {
+	}
+
+	private void onPreviewDragOver(DragObject dragObject) {
+		PreviewDragInfo dragInfo = (PreviewDragInfo) dragObject.dragInfo;
+		int overIndex = -1;
+		for (int i = 0; i < mPreviewRectList.size(); i++) {
+			if (mPreviewRectList.get(i).contains(dragObject.x,
+					dragObject.y)) {
+				overIndex = i;
+				break;
+			}
+		}
+
+		if (overIndex == -1 || overIndex == dragInfo.vacantIndex) {
+			return;
+		}
+		
+		int beginMoveIndex = 0;
+		int endMoveIndex = 0;
+		PreviewInfo previewInfo = null;
+		if (overIndex < dragInfo.vacantIndex) {
+			beginMoveIndex = overIndex;
+			endMoveIndex = dragInfo.vacantIndex - 1;
+			ArrayList<PreviewInfo> movePreviewList = new ArrayList<PreviewInfo>();
+			for (int i = beginMoveIndex; i <= endMoveIndex; i++) {
+				previewInfo = getPreviewInfoByShowIndex(mPreviewInfoList, i);
+				if (previewInfo != null) {
+					movePreviewList.add(previewInfo);
+				}
+			}
+				
+			PreviewInfo dragPreview = getPreviewInfoByShowIndex(
+					mPreviewInfoList, dragInfo.vacantIndex);
+			for(PreviewInfo preview : mPreviewInfoList){
+				preview.fromIndex = preview.showIndex;
+				if(preview == dragPreview){
+					preview.showIndex = overIndex;
+				}else if(movePreviewList.contains(preview)){
+					preview.showIndex++;
+				}
+			}
+			
+			
+		} else if (overIndex > dragInfo.vacantIndex) {
+			beginMoveIndex = dragInfo.vacantIndex + 1;
+			endMoveIndex = overIndex;
+			ArrayList<PreviewInfo> movePreviewList = new ArrayList<PreviewInfo>();
+			for (int i = beginMoveIndex; i <= endMoveIndex; i++) {
+				previewInfo = getPreviewInfoByShowIndex(mPreviewInfoList, i);
+				if (previewInfo != null) {
+					movePreviewList.add(previewInfo);
+				}
+			}
+			
+			PreviewInfo dragPreview = getPreviewInfoByShowIndex(
+					mPreviewInfoList, dragInfo.vacantIndex);
+			for(PreviewInfo preview : mPreviewInfoList){
+				preview.fromIndex = preview.showIndex;
+				if(preview == dragPreview){
+					preview.showIndex = overIndex;
+				}else if(movePreviewList.contains(preview)){
+					preview.showIndex--;
+				}
+			}
+		}
+		
+		
+		dragInfo.vacantIndex = overIndex;
+		mPreviewDragAnimRunning = true;
+		mPreviewDragAnimStartTime = 0;
+		invalidate();
+	}
+	
+	private PreviewInfo getPreviewInfoByShowIndex(ArrayList<PreviewInfo> list,
+			int index) {
+		if (list == null || list.size() <= 0) {
+			Log.e(TAG,
+					"previewInfolist is null.when getPreviewInfoByShowIndex");
+			return null;
+		}
+
+		for (PreviewInfo previewInfo : list) {
+			if (previewInfo.showIndex == index) {
+				return previewInfo;
+			}
+		}
+		Log.e(TAG,
+				"don't find previewInfo.when getPreviewInfoByShowIndex. index:"
+						+ index);
+		return null;
+	}
+	
+	private PreviewInfo getPreviewInfoByActualIndex(
+			ArrayList<PreviewInfo> list, int index) {
+		if (list == null || list.size() <= 0) {
+			Log.e(TAG,
+					"previewInfolist is null.when getPreviewInfoByActualIndex");
+			return null;
+		}
+
+		for (PreviewInfo previewInfo : list) {
+			if (previewInfo.actualIndex == index) {
+				return previewInfo;
+			}
+		}
+		Log.e(TAG,
+				"don't find previewInfo.when getPreviewInfoByActualIndex. index:"
+						+ index);
+		return null;
+	}
+
+	private void onPreviewDragExit(DragObject dragObject) {
+		
+	}
+	
+	private void onPreviewDropCompleted(View target, DragObject d,
+			boolean success) {
+		boolean hasLocChangePreview = false;
+		int newHomePage = mDefaultPage;
+		for (PreviewInfo preview : mPreviewInfoList) {
+			if (preview.actualIndex != preview.showIndex) {
+				hasLocChangePreview = true;
+
+				CellLayoutChildren moveCell = ((CellLayout) getChildAt(preview.actualIndex))
+						.getChildrenLayout();
+				if (moveCell.getChildCount() > 0) {
+					for (int i = 0; i < moveCell.getChildCount(); i++) {
+						View cell = moveCell.getChildAt(i);
+						ItemInfo item = (ItemInfo) cell.getTag();
+						cell.setId(LauncherModel.getCellLayoutChildId(
+								item.container, preview.showIndex, item.cellX,
+								item.cellY, item.spanX, item.spanY));
+						LauncherModel.moveItemInDatabase(mLauncher, item,
+								item.container, preview.showIndex, item.cellX,
+								item.cellY);
+					}
+				}
+
+			}
+
+			if (mDefaultPage == preview.actualIndex) {
+				newHomePage = preview.showIndex;
+			}
+		}
+		
+		if (newHomePage != mDefaultPage) {
+			setHomePage(newHomePage);
+		}
+		
+		final PreviewDragInfo dragInfo = (PreviewDragInfo) d.dragInfo;
+		final View dragView = getChildAt(dragInfo.dragIndex);
+		RectF vacantRect = mPreviewRectList.get(dragInfo.vacantIndex);
+		int[] pos = new int[2];
+		pos[0] = (int)vacantRect.left;
+		pos[1] = (int)vacantRect.top;
+		
+		if (hasLocChangePreview) {
+			ArrayList<View> newChildViewList = new ArrayList<View>();
+			Collections.sort(mPreviewInfoList, new Comparator<PreviewInfo>() {
+				@Override
+				public int compare(PreviewInfo lhs, PreviewInfo rhs) {
+					return lhs.showIndex - rhs.showIndex;
+				}
+			});
+			for (PreviewInfo preview : mPreviewInfoList) {
+				newChildViewList.add(getChildAt(preview.actualIndex));
+			}
+			removeAllViewsInLayout();
+			for (View child : newChildViewList) {
+				addView(child);
+			}
+			addView(mAddScreenButton);
+		}
+		
+		mLauncher.getDragLayer().animatePreviewViewIntoPosition(d.dragView,
+				pos, new Runnable() {
+					@Override
+					public void run() {
+						dragView.setVisibility(VISIBLE);
+						if (dragInfo.addButtonIsShowed) {
+							mAddScreenButton.setVisibility(View.VISIBLE);
+						}
+					}
+				});
+		
+		
+		mPreviewDragging = false;
+		mPreviewRectList = null;
+		mPreviewInfoList = null;
 	}
 	
 	private boolean checkIsClickedHomeButton(int previewIndex, float x, float y) {
@@ -4460,6 +4862,32 @@ public class Workspace extends SmoothPagedView
 		mAddScreenButton.setMaxHeight(height);
 		mAddScreenButton.setMinimumWidth(width);
 		mAddScreenButton.setMinimumHeight(height);
+	}
+	
+	public static class PreviewDragInfo {
+		public int dragIndex;
+		public boolean addButtonIsShowed;
+		public int vacantIndex;
+	}
+	
+	public static class PreviewInfo {
+		public int actualIndex;
+		public int showIndex;
+		public int fromIndex;
+		
+		public String toString(){
+			StringBuilder strBuilder = new StringBuilder();
+			strBuilder.append(super.toString());
+			strBuilder.append("{actualIndex:");
+			strBuilder.append(actualIndex);
+			strBuilder.append(" showIndex:");
+			strBuilder.append(showIndex);
+			strBuilder.append(" fromIndex:");
+			strBuilder.append(fromIndex);
+			strBuilder.append("}");
+			
+			return strBuilder.toString();
+		}
 	}
   //}add by jingjiang.yu end
 }

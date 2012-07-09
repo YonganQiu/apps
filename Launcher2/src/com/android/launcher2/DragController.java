@@ -262,9 +262,17 @@ public class DragController {
         }
         mInputMethodManager.hideSoftInputFromWindow(mWindowToken, 0);
 
-        for (DragListener listener : mListeners) {
+      //{modify by jingjiang.yu at 2012.07.05 begin for scale preview.
+      /**  for (DragListener listener : mListeners) {
             listener.onDragStart(source, dragInfo, dragAction);
         }
+        **/
+		if (!(dragInfo instanceof Workspace.PreviewDragInfo)) {
+			for (DragListener listener : mListeners) {
+				listener.onDragStart(source, dragInfo, dragAction);
+			}
+		}
+      //}modify by jingjiang.yu end
 
         final int registrationX = mMotionDownX - dragLayerX;
         final int registrationY = mMotionDownY - dragLayerY;
@@ -388,9 +396,16 @@ public class DragController {
     private void endDrag() {
         if (mDragging) {
             mDragging = false;
-            for (DragListener listener : mListeners) {
+          //{modify by jingjiang.yu at 2012.07.05 begin for scale preview.
+           /** for (DragListener listener : mListeners) {
                 listener.onDragEnd();
-            }
+            }**/
+			if (!(mDragObject.dragInfo instanceof Workspace.PreviewDragInfo)) {
+				for (DragListener listener : mListeners) {
+					listener.onDragEnd();
+				}
+			}
+          //}modify by jingjiang.yu end
             if (mDragObject.dragView != null) {
                 mDragObject.dragView.remove();
                 mDragObject.dragView = null;
@@ -483,6 +498,12 @@ public class DragController {
             }
         }
         mLastDropTarget = dropTarget;
+        
+      //{add by jingjiang.yu at 2012.07.05 begin for scale preview.
+		if (mDragObject.dragInfo instanceof Workspace.PreviewDragInfo) {
+			return;
+		}
+      //}add by jingjiang.yu end
 
         // After a scroll, the touch point will still be in the scroll region.
         // Rather than scrolling immediately, require a bit of twiddling to scroll again

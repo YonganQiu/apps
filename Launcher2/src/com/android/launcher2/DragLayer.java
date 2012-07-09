@@ -422,6 +422,19 @@ public class DragLayer extends FrameLayout {
         animateViewIntoPosition(dragView, fromX, fromY, pos[0], pos[1], scale,
                 onFinishRunnable, true, -1);
     }
+    
+  //{add by jingjiang.yu at 2012.07.05 begin for scale preview.
+	public void animatePreviewViewIntoPosition(DragView dragView,
+			final int[] pos, Runnable onFinishRunnable) {
+		Rect r = new Rect();
+		getViewRectRelativeToSelf(dragView, r);
+		final int fromX = r.left;
+		final int fromY = r.top;
+
+		animateViewIntoPosition(dragView, fromX, fromY, pos[0], pos[1], 1.0f,
+				onFinishRunnable, false, -1);
+	}
+  //}add by jingjiang.yu end
 
     public void animateViewIntoPosition(DragView dragView, final View child,
             final Runnable onFinishAnimationRunnable) {
@@ -494,7 +507,10 @@ public class DragLayer extends FrameLayout {
         Rect from = new Rect(fromX, fromY, fromX +
                 view.getMeasuredWidth(), fromY + view.getMeasuredHeight());
         Rect to = new Rect(toX, toY, toX + view.getMeasuredWidth(), toY + view.getMeasuredHeight());
-        animateView(view, from, to, 1f, finalScale, duration, null, null, onCompleteRunnable, true);
+      //{modify by jingjiang.yu at 2012.07.05 begin for scale preview.
+        //animateView(view, from, to, 1f, finalScale, duration, null, null, onCompleteRunnable, true);
+        animateView(view, from, to, 1f, finalScale, duration, null, null, onCompleteRunnable, fadeOut);
+      //}modify by jingjiang.yu end
     }
 
     /**
