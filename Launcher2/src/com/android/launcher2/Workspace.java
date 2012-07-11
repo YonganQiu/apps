@@ -17,7 +17,6 @@
 package com.android.launcher2;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -1407,6 +1406,8 @@ public class Workspace extends SmoothPagedView
 
     @Override
     protected void screenScrolled(int screenCenter) {
+    	//{modify by jingjiang.yu at 2012.07.09 begin for screen scroll.
+    	/**
         if (LauncherApplication.isScreenLarge()) {
             // We don't call super.screenScrolled() here because we handle the adjacent pages alpha
             // ourselves (for efficiency), and there are no scrolling indicators to update.
@@ -1415,6 +1416,28 @@ public class Workspace extends SmoothPagedView
             super.screenScrolled(screenCenter);
             screenScrolledStandardUI(screenCenter);
         }
+        **/
+    	super.screenScrolled(screenCenter);
+    	ScreenScrollAnimation scrollAnim = new CubeScreenScrollAnimation();
+    	
+
+		for (int i = 0; i < getPageCount(); i++) {
+			View v = getPageAt(i);
+
+			float scrollProgress = getScrollProgress(screenCenter, v, i);
+			v.setCameraDistance(mDensity * CAMERA_DISTANCE);
+			if (i == 0 && scrollProgress < 0) {
+				 // Overscroll to the left
+				scrollAnim.leftScreenOverScroll(scrollProgress, v);
+			} else if (i == getPageCount() - 1 && scrollProgress > 0) {
+				// Overscroll to the right
+				scrollAnim.rightScreenOverScroll(scrollProgress, v);
+			} else {
+				scrollAnim.screenScroll(scrollProgress, v);
+			}
+		
+		}
+    	//}modify by jingjiang.yu end
     }
 
     @Override
@@ -4888,6 +4911,14 @@ public class Workspace extends SmoothPagedView
 			
 			return strBuilder.toString();
 		}
+	}
+	
+	public static interface ScreenScrollAnimation {
+		public void screenScroll(float scrollProgress, View v);
+
+		public void leftScreenOverScroll(float scrollProgress, View v);
+
+		public void rightScreenOverScroll(float scrollProgress, View v);
 	}
   //}add by jingjiang.yu end
 }
