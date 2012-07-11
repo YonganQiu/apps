@@ -16,15 +16,19 @@
 package com.android.contacts.list;
 
 import com.android.contacts.R;
+import com.android.contacts.model.AccountTypeManager;
+import com.android.contacts.model.AccountTypeWithDataSet;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.ContactCounts;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Directory;
+import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.SearchSnippetColumns;
 import android.text.TextUtils;
 import android.view.View;
@@ -102,6 +106,10 @@ public abstract class ContactListAdapter extends ContactEntryListAdapter {
     private String mSelectedContactLookupKey;
     private long mSelectedContactId;
 
+    //Begin by gangzhou.qi at 2012-7-10 下午4:42:15
+    private String accountType = null;
+	private String accountSet = null;
+	//Ended by gangzhou.qi at 2012-7-10 下午4:42:15
     public ContactListAdapter(Context context) {
         super(context);
 
@@ -224,6 +232,7 @@ public abstract class ContactListAdapter extends ContactEntryListAdapter {
 
         // Set the photo, if available
         long photoId = 0;
+		
         if (!cursor.isNull(ContactQuery.CONTACT_PHOTO_ID)) {
             photoId = cursor.getLong(ContactQuery.CONTACT_PHOTO_ID);
         }

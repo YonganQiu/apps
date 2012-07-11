@@ -20,6 +20,7 @@ import com.android.contacts.ContactPresenceIconUtil;
 import com.android.contacts.ContactStatusUtil;
 import com.android.contacts.R;
 import com.android.contacts.format.PrefixHighlighter;
+import com.android.contacts.widget.QuickContactBadgeWithAccount;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -131,8 +132,11 @@ public class ContactListItemView extends ViewGroup
 
     // The views inside the contact view
     private boolean mQuickContactEnabled = true;
-    private QuickContactBadge mQuickContact;
+    private QuickContactBadgeWithAccount mQuickContact;
     private ImageView mPhotoView;
+    //Begin by gangzhou.qi at 2012-7-10 下午4:46:48
+    private ImageView mAccountView;
+	//Ended by gangzhou.qi at 2012-7-10 下午4:46:48
     private TextView mNameTextView;
     private TextView mPhoneticNameTextView;
     private DontPressWithParentImageView mCallButton;
@@ -811,12 +815,12 @@ public class ContactListItemView extends ViewGroup
     /**
      * Returns the quick contact badge, creating it if necessary.
      */
-    public QuickContactBadge getQuickContact() {
+    public QuickContactBadgeWithAccount getQuickContact() {
         if (!mQuickContactEnabled) {
             throw new IllegalStateException("QuickContact is disabled for this view");
         }
         if (mQuickContact == null) {
-            mQuickContact = new QuickContactBadge(mContext, null, QUICK_CONTACT_BADGE_STYLE);
+            mQuickContact = new QuickContactBadgeWithAccount(mContext, null, QUICK_CONTACT_BADGE_STYLE);
             if (mNameTextView != null) {
                 mQuickContact.setContentDescription(mContext.getString(
                         R.string.description_quick_contact_for, mNameTextView.getText()));

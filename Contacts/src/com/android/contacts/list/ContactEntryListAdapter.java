@@ -17,12 +17,18 @@ package com.android.contacts.list;
 
 import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.R;
+import com.android.contacts.model.AccountTypeManager;
+import com.android.contacts.model.AccountTypeWithDataSet;
 import com.android.contacts.widget.IndexerListAdapter;
+import com.android.contacts.widget.QuickContactBadgeWithAccount;
 import com.android.contacts.widget.TextWithHighlightingFactory;
 
+import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -39,6 +45,8 @@ import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 import java.util.HashSet;
+
+import org.apache.http.entity.ContentProducer;
 
 /**
  * Common base class for various contact-related lists, e.g. contact list, phone number list
@@ -92,9 +100,20 @@ public abstract class ContactEntryListAdapter extends IndexerListAdapter {
     private String mContactsCount = "";
     private boolean mDarkTheme = false;
 
+    //Begin by gangzhou.qi at 2012-7-11 上午10:53:17
+    private final ContentResolver mContentResolver;
+    private String accountType = null;
+	private String accountSet = null;
+	 Drawable accountIconDraw = null;
+	 private String [] accountQuerySelectionArgs = null;
+	 private static final String accountQuerySelection = ContactsContract.RawContacts.CONTACT_ID + "== ?";
+	//Ended by gangzhou.qi at 2012-7-11 上午10:53:17
     public ContactEntryListAdapter(Context context) {
         super(context);
         addPartitions();
+        //Begin by gangzhou.qi at 2012-7-11 下午2:32:07
+        mContentResolver =  context.getContentResolver();
+        //Ended by gangzhou.qi at 2012-7-11 下午2:32:07
     }
 
     @Override
@@ -610,7 +629,37 @@ public abstract class ContactEntryListAdapter extends IndexerListAdapter {
             photoId = cursor.getLong(photoIdColumn);
         }
 
-        QuickContactBadge quickContact = view.getQuickContact();
+        //Begin by gangzhou.qi at 2012-7-11 上午10:53:05
+        
+		accountType = null;
+		accountSet = null;
+		accountIconDraw = null;
+       accountQuerySelectionArgs = new String[]{cursor.getString(0)};
+		Cursor accountCur = null;
+    	accountCur = mContentResolver.query(ContactsContract.RawContacts.CONTENT_URI, null, accountQuerySelection, accountQuerySelectionArgs, null);
+    	if(accountCur.getCount() > 0){
+    		try {
+    	     	accountCur.moveToFirst();
+				accountType = accountCur.getString(accountCur.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE));
+				accountSet = accountCur.getString(accountCur.getColumnIndex(ContactsContract.RawContacts.DATA_SET));
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally{
+				accountCur.close();
+			}
+    	}
+		
+		if(accountType != null){
+		  accountIconDraw = AccountTypeManager.getInstance(mContext).getAccountType(AccountTypeWithDataSet.get(accountType, accountSet)).getDisplayIcon(mContext);
+		}
+		Log.d(TAG, "accountIconDraw:" + accountIconDraw);
+		QuickContactBadgeWithAccount quickContact = view.getQuickContact();
+		
+		if(accountIconDraw != null){
+			quickContact.setAccountDrawable(accountIconDraw);
+		}
+		//Ended by gangzhou.qi at 2012-7-11 上午10:53:05
+		
         quickContact.assignContactUri(
                 getContactUri(partitionIndex, cursor, contactIdColumn, lookUpKeyColumn));
         getPhotoLoader().loadPhoto(quickContact, photoId, false, mDarkTheme);

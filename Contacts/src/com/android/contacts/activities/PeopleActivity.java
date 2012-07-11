@@ -59,6 +59,7 @@ import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.preference.ContactsPreferenceActivity;
 import com.android.contacts.preference.DisplayOptionsPreferenceFragment;
+import com.android.contacts.sim.SIMPrepareService;
 import com.android.contacts.util.AccountFilterUtil;
 import com.android.contacts.util.AccountPromptUtils;
 import com.android.contacts.util.AccountSelectionUtil;
@@ -1707,16 +1708,18 @@ public class PeopleActivity extends ContactsActivity
                 return true;
             }
             case R.id.menu_sim_contacts: {
-            	if(checkSimState() == 5 ){
-            		 Intent intent = new Intent("android.intent.action.SIMPICK");
-//           		 intent.setType("vnd.android.cursor.dir/phone");
-           		 intent.setType("vnd.android.cursor.dir/phone_v2");
-//           		 intent.setType("vnd.android.cursor.dir/person");
-//           		 intent.setType("vnd.android.cursor.dir/contact");
-           		 intent.putExtra("multiple_choice", true);
-           		 startActivityForResult(intent, 1);
-           		 return true;
-            	}
+            	startService(new Intent(this,SIMPrepareService.class));
+            	return true;
+//            	if(checkSimState() == 5 ){
+//            		 Intent intent = new Intent("android.intent.action.SIMPICK");
+////           		 intent.setType("vnd.android.cursor.dir/phone");
+//           		 intent.setType("vnd.android.cursor.dir/phone_v2");
+////           		 intent.setType("vnd.android.cursor.dir/person");
+////           		 intent.setType("vnd.android.cursor.dir/contact");
+//           		 intent.putExtra("multiple_choice", true);
+//           		 startActivityForResult(intent, 1);
+//           		 return true;
+//            	}
             }
             case R.id.menu_dialpad: {
             	mDialerFragment.setFragmentShow(R.id.dialpad_fragment,

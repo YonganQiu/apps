@@ -621,6 +621,9 @@
             android:exported="false"/>
         
 		<!-- begin : JiangzhouQ 2012.03.01 -->
+		 <service
+            android:name=".sim.SIMPrepareService"
+            android:exported="false"/>
 		<receiver android:name=".sim.SIMReadReceiver"
             android:label="@string/social_widget_label" >
             <intent-filter>

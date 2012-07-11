@@ -585,7 +585,11 @@ import libcore.util.Objects;
         // New items also use the highlighted version of the text.
         final boolean isHighlighted = isNew;
         mCallLogViewsHelper.setPhoneCallDetails(views, details, isHighlighted);
-        setPhoto(views, photoId, lookupUri , info.name);
+        if(info.name != null ){
+        	setPhoto(views, photoId, lookupUri , info.name);
+        }else{
+        	setPhoto(views, photoId, lookupUri , info.number);
+        }
 
         // Listen for the first draw
         if (mPreDrawListener == null) {
