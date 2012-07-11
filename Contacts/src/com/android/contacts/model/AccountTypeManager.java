@@ -76,6 +76,9 @@ public abstract class AccountTypeManager {
     //{Added by yongan.qiu on 2012-7-4 begin.
     public static final String ACCOUNT_TYPE_LOCAL = "local";
     public static final String ACCOUNT_TYPE_SIM = "sim";
+
+    public static final String ACCOUNT_NAME_LOCAL_DEFAULT = "local1";
+    public static final String ACCOUNT_NAME_SIM_DEFAULT = "sim1";
     //}Added by yongan.qiu end.
 
     /**
@@ -98,8 +101,6 @@ public abstract class AccountTypeManager {
     }
 
     //{Added by yongan.qiu on 2012-7-5 begin.
-    public abstract AccountWithDataSet getUnsuppressibleAccount();
-
     public abstract List<AccountWithDataSet> getInternalsAndAccounts(boolean contactWritableOnly);
 
     public abstract List<AccountWithDataSet> getInternals(boolean contactWritableOnly);
@@ -197,7 +198,6 @@ class AccountTypeManagerImpl extends AccountTypeManager
     private AccountType mFallbackAccountType;
 
     //{Added by yongan.qiu on 2012-7-5 begin.
-    private AccountWithDataSet mUnsuppressibleAccount;
     private List<AccountWithDataSet> mInternals;
     private List<AccountWithDataSet> mGroupWritableInternals;
     //}Added by yongan.qiu end.
@@ -579,21 +579,7 @@ class AccountTypeManagerImpl extends AccountTypeManager
         return null;
     }
 
-    //{Added by yongan.qiu on 2012-7-4 begin.
-    public static final String ACCOUNT_NAME_LOCAL_DEFAULT = "local1";
-    public static final String ACCOUNT_NAME_SIM_DEFAULT = "sim1";
-    //}Added by yongan.qiu end.
-
     //{Added by yongan.qiu on 2012-7-5 begin.
-    @Override
-    public AccountWithDataSet getUnsuppressibleAccount() {
-        //TODO
-        if (mUnsuppressibleAccount == null) {
-            getInternals(true);
-        }
-        return mUnsuppressibleAccount;
-    }
-
     @Override
     public List<AccountWithDataSet> getInternalsAndAccounts(boolean contactWritableOnly) {
         List<AccountWithDataSet> all = Lists.newArrayList();
@@ -607,10 +593,10 @@ class AccountTypeManagerImpl extends AccountTypeManager
         //TODO handle contactWritableOnly.
         if (mInternals == null) {
             mInternals = Lists.newArrayList();
-            mUnsuppressibleAccount = new AccountWithDataSet(ACCOUNT_NAME_LOCAL_DEFAULT, ACCOUNT_TYPE_LOCAL, null);
-            mInternals.add(mUnsuppressibleAccount);
+            AccountWithDataSet local = new AccountWithDataSet(ACCOUNT_NAME_LOCAL_DEFAULT, ACCOUNT_TYPE_LOCAL, null);
+            mInternals.add(local);
             mGroupWritableInternals = Lists.newArrayList();
-            mGroupWritableInternals.add(mUnsuppressibleAccount);
+            mGroupWritableInternals.add(local);
             AccountWithDataSet sim = new AccountWithDataSet(ACCOUNT_NAME_SIM_DEFAULT, ACCOUNT_TYPE_SIM, null);
             mInternals.add(sim);
         }

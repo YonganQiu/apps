@@ -58,4 +58,10 @@
          Note that the trailing space is important, and that to achieve it we have to wrap the
          string in double quotes. -->
     <string name="voicemail_from_column">"Voicemail from "</string>
+
+    <!-- Added by yongan.qiu on 2012-7-10 begin. -->
+    <string name="local_group_relatives">Family</string>
+    <string name="local_group_friends">Friends</string>
+    <string name="local_group_colleagues">Coworkers</string>
+    <!-- Added by yongan.qiu end. -->
 </resources>

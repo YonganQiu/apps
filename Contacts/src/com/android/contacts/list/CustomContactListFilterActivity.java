@@ -168,7 +168,12 @@ public class CustomContactListFilterActivity extends ContactsActivity
             final ContentResolver resolver = context.getContentResolver();
 
             final AccountSet accounts = new AccountSet();
-            for (AccountWithDataSet account : accountTypes.getAccounts(false)) {
+            //{Modified by yongan.qiu on 2012-7-9 begin.
+            //old:
+            /*for (AccountWithDataSet account : accountTypes.getAccounts(false)) {*/
+            //new:
+            for (AccountWithDataSet account : accountTypes.getInternalsAndAccounts(false)) {
+            //}Modified by yongan.qiu end.
                 final AccountType accountType = accountTypes.getAccountTypeForAccount(account);
                 if (accountType.isExtension() && !account.hasData(context)) {
                     // Extension with no data -- skip.
@@ -613,6 +618,10 @@ public class CustomContactListFilterActivity extends ContactsActivity
                         R.layout.custom_contact_list_filter_account, parent, false);
             }
 
+            //{Added by yongan.qiu on 2012-7-9 begin.
+            //TODO special test
+            final TextView text = (TextView)convertView.findViewById(R.id.main_text);
+            //}Added by yongan.qiu end.
             final TextView text1 = (TextView)convertView.findViewById(android.R.id.text1);
             final TextView text2 = (TextView)convertView.findViewById(android.R.id.text2);
 
@@ -621,9 +630,27 @@ public class CustomContactListFilterActivity extends ContactsActivity
             final AccountType accountType = mAccountTypes.getAccountType(
                     account.mType, account.mDataSet);
 
-            text1.setText(account.mName);
+            //{Modified by yongan.qiu on 2012-7-9 begin.
+            //TODO special test
+            //old:
+            /*text1.setText(account.mName);
             text1.setVisibility(account.mName == null ? View.GONE : View.VISIBLE);
-            text2.setText(accountType.getDisplayLabel(mContext));
+            text2.setText(accountType.getDisplayLabel(mContext));*/
+            //new:
+            if (AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(account.mType)
+                    || AccountTypeManager.ACCOUNT_TYPE_SIM.equals(account.mType)) {
+                text.setText(accountType.getDisplayLabel(mContext));
+                text.setVisibility(View.VISIBLE);
+                text1.setVisibility(View.GONE);
+                text2.setVisibility(View.GONE);
+            } else {
+                text.setVisibility(View.GONE);
+                text1.setText(account.mName);
+                text1.setVisibility(account.mName == null ? View.GONE : View.VISIBLE);
+                text2.setText(accountType.getDisplayLabel(mContext));
+                text2.setVisibility(View.VISIBLE);
+            }
+            //}Modified by yongan.qiu end.
 
             return convertView;
         }

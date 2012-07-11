@@ -238,12 +238,28 @@ public class RawContactEditorView extends BaseRawContactEditorView {
             if (StructuredName.CONTENT_ITEM_TYPE.equals(mimeType)) {
                 // Handle special case editor for structured name
                 final ValuesDelta primary = state.getPrimaryEntry(mimeType);
-                mName.setValues(
+                //{Modified by yongan.qiu on 2012-7-11 begin.
+                //old:
+                /*mName.setValues(
                         type.getKindForMimetype(DataKind.PSEUDO_MIME_TYPE_DISPLAY_NAME),
                         primary, state, false, vig);
                 mPhoneticName.setValues(
                         type.getKindForMimetype(DataKind.PSEUDO_MIME_TYPE_PHONETIC_NAME),
-                        primary, state, false, vig);
+                        primary, state, false, vig);*/
+                //new:
+                DataKind displayName = type.getKindForMimetype(DataKind.PSEUDO_MIME_TYPE_DISPLAY_NAME);
+                if (displayName != null) {
+                    mName.setValues(
+                            type.getKindForMimetype(DataKind.PSEUDO_MIME_TYPE_DISPLAY_NAME),
+                            primary, state, false, vig);
+                }
+                DataKind phoneticName = type.getKindForMimetype(DataKind.PSEUDO_MIME_TYPE_PHONETIC_NAME);
+                if (phoneticName != null) {
+                    mPhoneticName.setValues(
+                            type.getKindForMimetype(DataKind.PSEUDO_MIME_TYPE_PHONETIC_NAME),
+                            primary, state, false, vig);
+                }
+                //}Modified by yongan.qiu end.
             } else if (Photo.CONTENT_ITEM_TYPE.equals(mimeType)) {
                 // Handle special case editor for photos
                 final ValuesDelta primary = state.getPrimaryEntry(mimeType);

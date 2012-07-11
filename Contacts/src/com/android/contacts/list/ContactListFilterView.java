@@ -17,6 +17,7 @@
 package com.android.contacts.list;
 
 import com.android.contacts.R;
+import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.util.ThemeUtils;
 
 import android.content.Context;
@@ -109,7 +110,19 @@ public class ContactListFilterView extends LinearLayout {
                 } else {
                     mIcon.setImageResource(R.drawable.unknown_source);
                 }
-                mLabel.setText(mFilter.accountName);
+                //{Modified by yongan.qiu on 2012-7-9 begin.
+                //TODO special test
+                //old:
+                /*mLabel.setText(mFilter.accountName);*/
+                //new:
+                if (AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(mFilter.accountType)
+                        || AccountTypeManager.ACCOUNT_TYPE_SIM.equals(mFilter.accountType)) {
+                    mLabel.setText(AccountTypeManager.getInstance(mContext).getAccountType(mFilter.accountType, mFilter.dataSet)
+                            .getDisplayLabel(mContext));
+                } else {
+                    mLabel.setText(mFilter.accountName);
+                }
+                //}Modified by yongan.qiu end.
                 if (dropdown) {
                     mIndent.setVisibility(View.GONE);
                 }

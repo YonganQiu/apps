@@ -96,9 +96,7 @@ public class ContactEditorUtils {
         //old:
         /*return mAccountTypes.getAccounts(true);*/
         //new:
-        List<AccountWithDataSet> allAccounts = new ArrayList<AccountWithDataSet>(mAccountTypes.getAccounts(true));
-        allAccounts.addAll(mAccountTypes.getInternals(true));
-        return allAccounts;
+        return mAccountTypes.getInternalsAndAccounts(true);
         //}Modified by yongan.qiu end.
     }
 

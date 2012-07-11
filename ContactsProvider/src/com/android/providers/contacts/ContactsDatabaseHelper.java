@@ -82,6 +82,10 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.Locale;
 
+//{Added by yongan.qiu on 2012-7-10 begin.
+import com.android.providers.contacts.R;
+//}Added by yongan.qiu end.
+
 /**
  * Database helper for contacts. Designed as a singleton to make sure that all
  * {@link android.content.ContentProvider} users get the same reference.
@@ -703,6 +707,10 @@ import java.util.Locale;
     private CharArrayBuffer mCharArrayBuffer = new CharArrayBuffer(128);
     private NameSplitter mNameSplitter;
 
+    //{Added by yongan.qiu on 2012-7-10 begin.
+    private Context mContactsContext;
+    //}Added by yongan.qiu end.
+
     public static synchronized ContactsDatabaseHelper getInstance(Context context) {
         if (sSingleton == null) {
             sSingleton = new ContactsDatabaseHelper(context, DATABASE_NAME, true);
@@ -721,6 +729,11 @@ import java.util.Locale;
     protected ContactsDatabaseHelper(
             Context context, String databaseName, boolean optimizationEnabled) {
         super(context, databaseName, null, DATABASE_VERSION);
+
+        //{Added by yongan.qiu on 2012-7-10 begin.
+        mContactsContext = context;
+        //}Added by yongan.qiu end.
+
         mDatabaseOptimizationEnabled = optimizationEnabled;
         Resources resources = context.getResources();
 
@@ -1135,6 +1148,36 @@ import java.util.Locale;
                 Groups.DATA_SET +
         ");");
 
+        //{Added by yongan.qiu on 2012-7-10 begin.
+        //For create default groups.
+        db.execSQL("INSERT INTO " + Tables.GROUPS + " (" +
+                Groups.ACCOUNT_NAME + ", " +
+                Groups.ACCOUNT_TYPE + ", " +
+                Groups.TITLE + ") VALUES (\"" +
+                AccountWithDataSet.ACCOUNT_NAME_LOCAL_DEFAULT + "\", \"" +
+                AccountWithDataSet.ACCOUNT_TYPE_LOCAL + "\", \"" +
+                mContactsContext.getText(R.string.local_group_relatives) +
+        "\");");
+
+        db.execSQL("INSERT INTO " + Tables.GROUPS + " (" +
+                Groups.ACCOUNT_NAME + ", " +
+                Groups.ACCOUNT_TYPE + ", " +
+                Groups.TITLE + ") VALUES (\"" +
+                AccountWithDataSet.ACCOUNT_NAME_LOCAL_DEFAULT + "\", \"" +
+                AccountWithDataSet.ACCOUNT_TYPE_LOCAL + "\", \"" +
+                mContactsContext.getText(R.string.local_group_friends) +
+        "\");");
+
+        db.execSQL("INSERT INTO " + Tables.GROUPS + " (" +
+                Groups.ACCOUNT_NAME + ", " +
+                Groups.ACCOUNT_TYPE + ", " +
+                Groups.TITLE + ") VALUES (\"" +
+                AccountWithDataSet.ACCOUNT_NAME_LOCAL_DEFAULT + "\", \"" +
+                AccountWithDataSet.ACCOUNT_TYPE_LOCAL + "\", \"" +
+                mContactsContext.getText(R.string.local_group_colleagues) +
+        "\");");
+        //}Added by yongan.qiu end.
+
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Tables.AGGREGATION_EXCEPTIONS + " (" +
                 AggregationExceptionColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 AggregationExceptions.TYPE + " INTEGER NOT NULL, " +
@@ -1252,6 +1295,23 @@ import java.util.Locale;
         // Allow contacts without any account to be created for now.  Achieve that
         // by inserting a fake account with both type and name as NULL.
         db.execSQL("INSERT INTO " + Tables.ACCOUNTS + " VALUES(NULL, NULL, NULL)");
+
+        //{Added by yongan.qiu on 2012-7-10 begin.
+        //For create default accounts.
+        /*db.execSQL("INSERT INTO " + Tables.ACCOUNTS + " (" +
+                AccountsColumns.ACCOUNT_NAME + ", " +
+                AccountsColumns.ACCOUNT_TYPE + ", " +
+                AccountsColumns.DATA_SET + ") VALUES (\"" +
+                AccountWithDataSet.ACCOUNT_NAME_LOCAL_DEFAULT + "\", \"" +
+                AccountWithDataSet.ACCOUNT_TYPE_LOCAL + "\", NULL);");
+
+        db.execSQL("INSERT INTO " + Tables.ACCOUNTS + " (" +
+                AccountsColumns.ACCOUNT_NAME + ", " +
+                AccountsColumns.ACCOUNT_TYPE + ", " +
+                AccountsColumns.DATA_SET + ") VALUES (\"" +
+                AccountWithDataSet.ACCOUNT_NAME_SIM_DEFAULT + "\", \"" +
+                AccountWithDataSet.ACCOUNT_TYPE_SIM + "\", NULL);");*/
+        //}Added by yongan.qiu end.
 
         createDirectoriesTable(db);
         createSearchIndexTable(db);

@@ -21,6 +21,8 @@ import com.android.contacts.model.AccountType.DefinitionException;
 import com.android.contacts.model.AccountType.EditField;
 import com.android.contacts.model.AccountType.EditType;
 import com.android.contacts.model.BaseAccountType.EmailActionInflater;
+import com.android.contacts.model.BaseAccountType.PhoneActionAltInflater;
+import com.android.contacts.model.BaseAccountType.PhoneActionInflater;
 import com.android.contacts.model.BaseAccountType.SimpleInflater;
 import com.google.android.collect.Lists;
 
@@ -42,26 +44,23 @@ import android.view.inputmethod.EditorInfo;
 public class SimAccountType extends AccountType {
     private static final String TAG = "SimAccountType";
 
-    public static final String MIMETYPE_NAME = "sim_name";
-    public static final String MIMETYPE_NUMBER = "sim_number";
     protected static final int FLAGS_PHONE = EditorInfo.TYPE_CLASS_PHONE;
     protected static final int FLAGS_PERSON_NAME = EditorInfo.TYPE_CLASS_TEXT
             | EditorInfo.TYPE_TEXT_FLAG_CAP_WORDS | EditorInfo.TYPE_TEXT_VARIATION_PERSON_NAME;
-    protected static final int FLAGS_PHONETIC = EditorInfo.TYPE_CLASS_TEXT
-            | EditorInfo.TYPE_TEXT_VARIATION_PHONETIC;
 
     private SimAccountType(Context context, String resPackageName) {
         this.accountType = AccountTypeManagerImpl.ACCOUNT_TYPE_SIM;
         this.dataSet = null;
         this.titleRes = R.string.account_type_sim;
-        this.iconRes = R.mipmap.ic_launcher_contacts;
+        this.iconRes = R.mipmap.ic_internal_sim;
 
         this.resPackageName = resPackageName;
         this.summaryResPackageName = resPackageName;
 
         try {
-            addDataKindName(context);
-            addDataKindNumber(context);
+            addDataKindStructuredName(context);
+            addDataKindPhone(context);
+            addDataKindDisplayName(context);
             mIsInitialized = true;
         } catch (DefinitionException e) {
             Log.e(TAG, "Problem building account type", e);
@@ -72,30 +71,47 @@ public class SimAccountType extends AccountType {
         this(context, null);
     }
 
-    protected DataKind addDataKindName(Context context) throws DefinitionException {
-        DataKind kind = addKind(new DataKind(MIMETYPE_NAME,
-                    R.string.nameLabelsGroup, -1, true, R.layout.text_fields_editor_view));
-        kind.typeOverallMax = 1;
+    protected DataKind addDataKindStructuredName(Context context) throws DefinitionException {
+        DataKind kind = addKind(new DataKind(StructuredName.CONTENT_ITEM_TYPE,
+                R.string.nameLabelsGroup, -1, true, R.layout.structured_name_editor_view));
         kind.actionHeader = new SimpleInflater(R.string.nameLabelsGroup);
-        kind.actionBody = new SimpleInflater(StructuredName.DISPLAY_NAME);
+        kind.actionBody = new SimpleInflater(Nickname.NAME);
+        kind.typeOverallMax = 1;
 
         kind.fieldList = Lists.newArrayList();
-        kind.fieldList.add(new EditField(StructuredName.DISPLAY_NAME, R.string.full_name,
-                FLAGS_PERSON_NAME));
-
+        kind.fieldList.add(new EditField(StructuredName.DISPLAY_NAME,
+                R.string.full_name, FLAGS_PERSON_NAME));
         return kind;
     }
 
-    protected DataKind addDataKindNumber(Context context) throws DefinitionException {
-        DataKind kind = addKind(new DataKind(MIMETYPE_NUMBER, R.string.phoneLabelsGroup,
-                -1, true, R.layout.text_fields_editor_view));
+    protected DataKind addDataKindDisplayName(Context context) throws DefinitionException {
+        DataKind kind = addKind(new DataKind(DataKind.PSEUDO_MIME_TYPE_DISPLAY_NAME,
+                R.string.nameLabelsGroup, -1, true, R.layout.text_fields_editor_view));
+        kind.actionHeader = new SimpleInflater(R.string.nameLabelsGroup);
+        kind.actionBody = new SimpleInflater(Nickname.NAME);
         kind.typeOverallMax = 1;
-        kind.actionHeader = new SimpleInflater(R.string.phoneLabelsGroup);
-        kind.actionBody = new SimpleInflater(Phone.NUMBER);
 
         kind.fieldList = Lists.newArrayList();
-        kind.fieldList.add(new EditField(Phone.NUMBER, R.string.phoneLabelsGroup,
-                FLAGS_PHONE));
+        kind.fieldList.add(new EditField(StructuredName.DISPLAY_NAME,
+                R.string.full_name, FLAGS_PERSON_NAME));
+        return kind;
+    }
+
+    protected DataKind addDataKindPhone(Context context) throws DefinitionException {
+        DataKind kind = addKind(new DataKind(Phone.CONTENT_ITEM_TYPE, R.string.phoneLabelsGroup,
+                -1, true, R.layout.text_fields_editor_view));
+        kind.iconAltRes = R.drawable.ic_text_holo_light;
+        kind.iconAltDescriptionRes = R.string.sms;
+        kind.typeOverallMax = 1;
+        kind.actionHeader = new PhoneActionInflater();
+        kind.actionAltHeader = new PhoneActionAltInflater();
+        kind.actionBody = new SimpleInflater(Phone.NUMBER);
+        /*kind.typeColumn = Phone.TYPE;
+        kind.typeList = Lists.newArrayList();
+        kind.typeList.add(buildPhoneType(Phone.TYPE_OTHER));*/
+
+        kind.fieldList = Lists.newArrayList();
+        kind.fieldList.add(new EditField(Phone.NUMBER, R.string.phoneLabelsGroup, FLAGS_PHONE));
 
         return kind;
     }

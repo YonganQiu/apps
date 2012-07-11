@@ -548,12 +548,7 @@ public class ContactEditorFragment extends Fragment implements
 
         // If there is no default account or the accounts have changed such that we need to
         // prompt the user again, then launch the account prompt.
-        //{Modified by yongan.qiu on 2012-7-4 begin./TODO
-        //old:
-        //if (mEditorUtils.shouldShowAccountChangedNotification()) {
-        if (true) {
-        //new:
-        //}Modified by yongan.qiu end.
+        if (mEditorUtils.shouldShowAccountChangedNotification()) {
             Intent intent = new Intent(mContext, ContactEditorAccountsChangedActivity.class);
             mStatus = Status.SUB_ACTIVITY;
             startActivityForResult(intent, REQUEST_CODE_ACCOUNTS_CHANGED);
@@ -671,9 +666,8 @@ public class ContactEditorFragment extends Fragment implements
         EntityModifier.ensureKindExists(insert, newAccountType, Email.CONTENT_ITEM_TYPE);
         EntityModifier.ensureKindExists(insert, newAccountType, Organization.CONTENT_ITEM_TYPE);*/
         //new:
-        if (newAccountType instanceof SimAccountType) {
-            EntityModifier.ensureKindExists(insert, newAccountType, SimAccountType.MIMETYPE_NAME);
-            EntityModifier.ensureKindExists(insert, newAccountType, SimAccountType.MIMETYPE_NUMBER);
+        if (AccountTypeManager.ACCOUNT_TYPE_SIM.equals(newAccountType.accountType)) {
+            EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
         } else {
             EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
             EntityModifier.ensureKindExists(insert, newAccountType, Email.CONTENT_ITEM_TYPE);

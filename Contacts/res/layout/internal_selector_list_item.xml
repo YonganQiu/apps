@@ -31,6 +31,19 @@
         android:orientation="vertical"
         android:layout_gravity="center_vertical">
 
+        <!-- Added by yongan.qiu on 2012-7-11 begin. 
+        TODO: special test-->
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="8dip"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:singleLine="true"
+            android:ellipsize="end"/>
+        <!-- Added by yongan.qiu end. -->
+
+        <!--
         <TextView android:id="@android:id/text1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -47,5 +60,6 @@
             android:textColor="?android:attr/textColorSecondary"
             android:singleLine="true"
             android:ellipsize="end"/>
+        -->
     </LinearLayout>
 </LinearLayout>

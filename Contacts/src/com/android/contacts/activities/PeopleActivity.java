@@ -247,7 +247,13 @@ public class PeopleActivity extends ContactsActivity
     }
 
     public boolean areContactsAvailable() {
-        return mProviderStatus == ProviderStatus.STATUS_NORMAL;
+        //{Modified by yongan.qiu on 2012-7-11 begin.
+        //old:
+        /*return mProviderStatus == ProviderStatus.STATUS_NORMAL;*/
+        //new:
+        return (mProviderStatus == ProviderStatus.STATUS_NORMAL
+                || AccountTypeManager.getInstance(this).getInternalsAndAccounts(true).size() > 0);
+		//}Modified by yongan.qiu end.
     }
 
     private boolean areContactWritableAccountsAvailable() {
@@ -1165,7 +1171,12 @@ public class PeopleActivity extends ContactsActivity
         View contactsUnavailableView = findViewById(R.id.contacts_unavailable_view);
         View mainView = findViewById(R.id.main_view);
 
-        if (mProviderStatus == ProviderStatus.STATUS_NORMAL) {
+        //{Modified by yongan.qiu on 2012-7-11 begin.
+        //old:
+        /*if (mProviderStatus == ProviderStatus.STATUS_NORMAL) {*/
+        //new:
+        if (areContactsAvailable()) {
+        //}Modified by yongan.qiu end.
             contactsUnavailableView.setVisibility(View.GONE);
             if (mainView != null) {
                 mainView.setVisibility(View.VISIBLE);
@@ -1815,7 +1826,7 @@ public class PeopleActivity extends ContactsActivity
             }
         });*/
         //new:
-        if (accounts.size() <= 1 || mAddGroupImageView == null) {
+        if (mAddGroupImageView == null) {
             final Intent intent = new Intent(this, GroupEditorActivity.class);
             intent.setAction(Intent.ACTION_INSERT);
             startActivityForResult(intent, SUBACTIVITY_NEW_GROUP);
@@ -1826,7 +1837,7 @@ public class PeopleActivity extends ContactsActivity
         popup.setAnchorView(mAddGroupImageView);
         final InternalsListAdapter internalListAdapter = new InternalsListAdapter(this, InternalListFilter.INTERNALS_GROUP_WRITABLE);
         AccountsListAdapter accountListAdapter = null;
-        if (accounts.size() <= 1) {
+        if (accounts.size() > 0) {
             accountListAdapter = new AccountsListAdapter(this,
                     AccountListFilter.ACCOUNTS_GROUP_WRITABLE);
         }

@@ -110,7 +110,12 @@ public class AccountFilterActivity extends ContactsActivity
         final ArrayList<ContactListFilter> result = Lists.newArrayList();
         final ArrayList<ContactListFilter> accountFilters = Lists.newArrayList();
         final AccountTypeManager accountTypes = AccountTypeManager.getInstance(context);
-        List<AccountWithDataSet> accounts = accountTypes.getAccounts(false);
+        //{Modified by yongan.qiu on 2012-7-9 begin.
+        //old:
+        /*List<AccountWithDataSet> accounts = accountTypes.getAccounts(false);*/
+        //new:
+        List<AccountWithDataSet> accounts = accountTypes.getInternalsAndAccounts(false);
+        //}Modified by yongan.qiu end.
         for (AccountWithDataSet account : accounts) {
             AccountType accountType = accountTypes.getAccountType(account.type, account.dataSet);
             if (accountType.isExtension() && !account.hasData(context)) {

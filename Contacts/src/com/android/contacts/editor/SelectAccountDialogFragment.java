@@ -100,10 +100,12 @@ public final class SelectAccountDialogFragment extends DialogFragment {
         //new:
         final InternalListFilter internalFilter = (InternalListFilter) args.getSerializable(KEY_INTERNAL_LIST_FILTER);
         final AccountListFilter accountFilter = (AccountListFilter) args.getSerializable(KEY_ACCOUNT_LIST_FILTER);
-        final InternalsListAdapter internalAdapter = new InternalsListAdapter(builder.getContext(), internalFilter);
+        final InternalsListAdapter internalAdapter = new InternalsListAdapter(builder.getContext(),
+                internalFilter);
         final AccountsListAdapter accountAdapter = new AccountsListAdapter(builder.getContext(),
                 accountFilter);
-        final InternalsAndAccountsMergeAdapter mergeAdapter = new InternalsAndAccountsMergeAdapter(internalAdapter, accountAdapter);
+        final InternalsAndAccountsMergeAdapter mergeAdapter = new InternalsAndAccountsMergeAdapter(internalAdapter,
+                accountAdapter);
         //}Modified by yongan.qiu end.
 
         final DialogInterface.OnClickListener clickListener =

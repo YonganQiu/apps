@@ -82,19 +82,13 @@ public class InternalsListAdapter extends BaseAdapter {
 		final View resultView = convertView != null ? convertView
 				: mInflater.inflate(R.layout.internal_selector_list_item, parent, false);
 
-		final TextView text1 = (TextView) resultView.findViewById(android.R.id.text1);
-		final TextView text2 = (TextView) resultView.findViewById(android.R.id.text2);
+		final TextView text = (TextView) resultView.findViewById(R.id.text);
 		final ImageView icon = (ImageView) resultView.findViewById(android.R.id.icon);
 
 		final AccountWithDataSet local = mInternals.get(position);
 		final AccountType accountType = mAccountTypes.getAccountType(local.type, local.dataSet);
 
-		text1.setText(accountType.getDisplayLabel(mContext));
-
-		// For email addresses, we don't want to truncate at end, which might cut off the domain
-		// name.
-		text2.setText(local.name);
-		text2.setEllipsize(TruncateAt.MIDDLE);
+		text.setText(accountType.getDisplayLabel(mContext));
 
 		icon.setImageDrawable(accountType.getDisplayIcon(mContext));
 

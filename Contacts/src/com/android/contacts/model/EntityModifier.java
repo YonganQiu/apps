@@ -921,11 +921,6 @@ public class EntityModifier {
             Arrays.asList(Organization.CONTENT_ITEM_TYPE,
                     Note.CONTENT_ITEM_TYPE,
                     Photo.CONTENT_ITEM_TYPE,
-                    //{Added by yongan.qiu on 2012-7-6 begin.
-                    //For SIM card item type.
-                    SimAccountType.MIMETYPE_NAME,
-                    SimAccountType.MIMETYPE_NUMBER,
-                    //}Added by yongan.qiu end.
                     GroupMembership.CONTENT_ITEM_TYPE));
     // CommonColumns.TYPE cannot be accessed as it is protected interface, so use
     // Phone.TYPE instead.

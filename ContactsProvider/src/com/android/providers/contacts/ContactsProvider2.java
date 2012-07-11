@@ -4523,6 +4523,13 @@ public class ContactsProvider2 extends AbstractContactsProvider
         scheduleBackgroundTask(BACKGROUND_TASK_UPDATE_ACCOUNTS);
     }
 
+    //{Added by yongan.qiu on 2012-7-10 begin.
+    private boolean isInternal(String accountType) {
+        return AccountWithDataSet.ACCOUNT_TYPE_LOCAL.equals(accountType)
+                || AccountWithDataSet.ACCOUNT_TYPE_SIM.equals(accountType);
+    }
+    //}Added by yongan.qiu end.
+
     protected boolean updateAccountsInBackground(Account[] accounts) {
         // TODO : Check the unit test.
         boolean accountsChanged = false;
@@ -4564,7 +4571,13 @@ public class ContactsProvider2 extends AbstractContactsProvider
             for (AccountWithDataSet accountWithDataSet : existingAccountsWithDataSets) {
                 Account owningAccount = new Account(
                         accountWithDataSet.getAccountName(), accountWithDataSet.getAccountType());
-                if (!accountList.contains(owningAccount)) {
+                //{Modified by yongan.qiu on 2012-7-10 begin.
+                //Dont delete local or sim account.
+                //old:
+                /*if (!accountList.contains(owningAccount)) {*/
+                //new:
+                if (!isInternal(accountWithDataSet.getAccountType()) && !accountList.contains(owningAccount)) {
+                //}Modified by yongan.qiu end.
                     accountsWithDataSetsToDelete.add(accountWithDataSet);
                 }
             }

@@ -34,7 +34,7 @@ public class LocalAccountType extends BaseAccountType {
         this.accountType = AccountTypeManagerImpl.ACCOUNT_TYPE_LOCAL;
         this.dataSet = null;
         this.titleRes = R.string.account_type_local;
-        this.iconRes = R.mipmap.ic_launcher_contacts;
+        this.iconRes = R.mipmap.ic_internal_local;
 
         this.resPackageName = resPackageName;
         this.summaryResPackageName = resPackageName;

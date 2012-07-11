@@ -179,15 +179,33 @@ public class ContactsUtils {
     }
 
     public static boolean areContactWritableAccountsAvailable(Context context) {
+        //{Modified by yongan.qiu on 2012-7-10 begin.
+        //old:
+        /*final List<AccountWithDataSet> accounts =
+                AccountTypeManager.getInstance(context).getAccounts(true  writeable );
+        return !accounts.isEmpty();*/
+        //new:
+        final List<AccountWithDataSet> internals =
+                AccountTypeManager.getInstance(context).getInternals(true /* writeable */);
         final List<AccountWithDataSet> accounts =
                 AccountTypeManager.getInstance(context).getAccounts(true /* writeable */);
-        return !accounts.isEmpty();
+        return (!internals.isEmpty()) || (!accounts.isEmpty());
+        //}Modified by yongan.qiu end.
     }
 
     public static boolean areGroupWritableAccountsAvailable(Context context) {
+        //{Modified by yongan.qiu on 2012-7-10 begin.
+        //old:
+        /*final List<AccountWithDataSet> accounts =
+                AccountTypeManager.getInstance(context).getGroupWritableAccounts();
+        return !accounts.isEmpty();*/
+        //new:
+        final List<AccountWithDataSet> internals =
+                AccountTypeManager.getInstance(context).getGroupWritableInternals();
         final List<AccountWithDataSet> accounts =
                 AccountTypeManager.getInstance(context).getGroupWritableAccounts();
-        return !accounts.isEmpty();
+        return (!internals.isEmpty()) || (!accounts.isEmpty());
+        //}Modified by yongan.qiu end.
     }
 
     /**

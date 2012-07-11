@@ -26,6 +26,13 @@ public class AccountWithDataSet {
     private final String mAccountType;
     private final String mDataSet;
 
+    //{Added by yongan.qiu on 2012-7-10 begin.
+    public static final String ACCOUNT_TYPE_LOCAL = "local";
+    public static final String ACCOUNT_TYPE_SIM = "sim";
+    public static final String ACCOUNT_NAME_LOCAL_DEFAULT = "local1";
+    public static final String ACCOUNT_NAME_SIM_DEFAULT = "sim1";
+    //}Added by yongan.qiu end.
+
     public AccountWithDataSet(String accountName, String accountType, String dataSet) {
         mAccountName = accountName;
         mAccountType = accountType;

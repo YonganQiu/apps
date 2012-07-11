@@ -28,4 +28,9 @@
     <string name="read_write_all_voicemail_label" msgid="4557216100818257560">"访问所有语音邮件"</string>
     <string name="read_write_all_voicemail_description" msgid="2249895806470926882">"允许应用程序存储和检索此设备可访问的所有语音邮件。"</string>
     <string name="voicemail_from_column" msgid="435732568832121444">"语音邮件发件人 "</string>
+    <!-- Added by yongan.qiu on 2012-7-10 begin. -->
+    <string name="local_group_relatives">家人</string>
+    <string name="local_group_friends">朋友</string>
+    <string name="local_group_colleagues">同事</string>
+    <!-- Added by yongan.qiu end. -->
 </resources>
