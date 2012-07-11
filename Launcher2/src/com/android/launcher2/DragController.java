@@ -20,16 +20,19 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.inputmethod.InputMethodManager;
 
+import com.android.internal.telephony.IntRangeManager;
 import com.android.launcher.R;
 
 import java.util.ArrayList;
@@ -109,6 +112,31 @@ public class DragController {
 
     private int mTmpPoint[] = new int[2];
     private Rect mDragLayerRect = new Rect();
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin for variable of dragging and sliding
+    private static final boolean DEBUG = true;
+    private static final int INVALID_POINTER = -1;
+    private int mDragPointerId = INVALID_POINTER;
+    private int mScrollPointerId = INVALID_POINTER;
+    private float mDownMotionX;
+ // The page is moved more than halfway, automatically move to the next page on touch up.
+    private static final float SIGNIFICANT_MOVE_THRESHOLD = 0.4f;
+ // the velocity at which a fling gesture will cause us to snap to the next page
+    private int mSnapVelocity = 500;
+    private static final float RETURN_TO_ORIGINAL_PAGE_THRESHOLD = 0.33f;
+ // the min drag distance for a fling to register, to prevent random page shifts
+    private static final int MIN_LENGTH_FOR_FLING = 25;
+    private float mScrollTotalMotionX;
+    private float mLastMotionX;
+    private float mLastMotionXRemainder;
+    private float mTotalMotionX;
+    private float mTouchX;
+    private float mSmoothingTime;
+    private static final float NANOTIME_DIV = 1000000000.0f;
+    private boolean mDeferScrollUpdate = false;
+    private VelocityTracker mVelocityTracker;
+    private ArrayList<Integer> mList;
+  //}add by zhongheng.zheng end
 
     /**
      * Interface to receive notifications when a drag starts or stops
@@ -441,12 +469,36 @@ public class DragController {
             case MotionEvent.ACTION_MOVE:
                 break;
             case MotionEvent.ACTION_DOWN:
+            	//{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+            	if(DEBUG){
+            		Log.d(TAG, "onInterceptTouchEvent ACTION_DOWN --------");
+            	}
+            	if (null == mList){
+            		mList = new ArrayList <Integer> ();
+            	}
+            	if (!mList.isEmpty()){
+            		mList.clear();
+            	}
+            	mDragPointerId = ev.getPointerId(0);
+            	if(DEBUG){
+            		Log.d(TAG, "onInterceptTouchEvent ACTION_DOWN mDragPointerId = " + mDragPointerId);
+            	}
+            	mList.add(mDragPointerId);
+            	//}add by zhongheng.zheng end
                 // Remember location of down touch
                 mMotionDownX = dragLayerX;
                 mMotionDownY = dragLayerY;
                 mLastDropTarget = null;
                 break;
             case MotionEvent.ACTION_UP:
+            	//{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+            	if(DEBUG){
+            		Log.d(TAG, "onInterceptTouchEvent ACTION_UP");
+            	}
+            	if (!mList.isEmpty()){
+            		mList.clear();
+            	}
+            	//}add by zhongheng.zheng end
                 if (mDragging) {
                     drop(dragLayerX, dragLayerY);
                 }
@@ -454,6 +506,11 @@ public class DragController {
                 break;
             case MotionEvent.ACTION_CANCEL:
                 cancelDrag();
+              //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+            	if (!mList.isEmpty()){
+            		mList.clear();
+            	}
+            	//}add by zhongheng.zheng end
                 break;
         }
 
@@ -547,7 +604,17 @@ public class DragController {
             return false;
         }
 
-        final int action = ev.getAction();
+        
+      //{modify by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+//        final int action = ev.getAction();
+        acquireVelocityTrackerAndAddMovement(ev);
+        final int action = ev.getActionMasked();
+        final int pointCount = ev.getPointerCount();
+        if(DEBUG){
+        	Log.d(TAG, "onTouchEvent action = " + action);
+        }
+        //}modify by zhongheng.zheng end
+        
         final int[] dragLayerPos = getClampedDragLayerPos(ev.getX(), ev.getY());
         final int dragLayerX = dragLayerPos[0];
         final int dragLayerY = dragLayerPos[1];
@@ -566,7 +633,57 @@ public class DragController {
             }
             break;
         case MotionEvent.ACTION_MOVE:
-            handleMoveEvent(dragLayerX, dragLayerY);
+        	 
+        	//{modify by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+//            handleMoveEvent(dragLayerX, dragLayerY);
+        	if(DEBUG){
+        		Log.d(TAG, "onTouchEvent ACTION_MOVE");
+        	}  	
+            if(pointCount == 1){
+            	handleMoveEvent(dragLayerX, dragLayerY);
+            }else if (pointCount > 1){
+				final int pointerIndex1 = ev.findPointerIndex(mDragPointerId);
+				if(DEBUG){
+					Log.d(TAG, "onTouchEvent ACTION_MOVE mDragPointerId = " + mDragPointerId);
+					Log.d(TAG, "onTouchEvent ACTION_MOVE pointerIndex1 = " + pointerIndex1);
+				}
+				if(pointerIndex1 != -1){
+					final int[] dragLayerPos1 = getClampedDragLayerPos(ev.getX(pointerIndex1), ev.getY(pointerIndex1));
+					final int dragLayerX1 = dragLayerPos1[0];
+					final int dragLayerY1 = dragLayerPos1[1];
+					handleMoveEvent(dragLayerX1, dragLayerY1);
+				}
+				if(pointCount == 2){
+					final int pointerIndex2 = ev.findPointerIndex(mScrollPointerId);
+					if(DEBUG){
+						Log.d(TAG, "onTouchEvent ACTION_MOVE mScrollPointerId = " + mScrollPointerId);
+					}
+					if(pointerIndex2 == -1){
+						break;
+					}
+					final float x = ev.getX(pointerIndex2);
+	                final float deltaX = mLastMotionX + mLastMotionXRemainder - x;
+	                mTotalMotionX += Math.abs(deltaX);
+
+	                // Only scroll and update mLastMotionX if we have moved some discrete amount.  We
+	                // keep the remainder because we are actually testing if we've moved from the last
+	                // scrolled position (which is discrete).
+	                if (Math.abs(deltaX) >= 1.0f) {
+	                    mTouchX += deltaX;
+	                    mSmoothingTime = System.nanoTime() / NANOTIME_DIV;
+	                    if (!mDeferScrollUpdate) {
+	                    	mLauncher.getWorkspace().scrollBy((int) deltaX, 0);
+	                    } else {
+	                    	mLauncher.getWorkspace().invalidateForDrag();
+	                    }
+	                    mLastMotionX = x;
+	                    mLastMotionXRemainder = deltaX - (int) deltaX;
+	                } else {
+	                	mLauncher.getWorkspace().awakenScrollBarsForDrag();
+	                }
+				}
+            }
+          //}modify by zhongheng.zheng end
             break;
         case MotionEvent.ACTION_UP:
             // Ensure that we've processed a move event at the current pointer location.
@@ -577,10 +694,167 @@ public class DragController {
                 drop(dragLayerX, dragLayerY);
             }
             endDrag();
+            
+          //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+            if(DEBUG){
+            	Log.d(TAG, "onTouchEvent ACTION_UP");
+            }
+            releaseVelocityTracker();
+            mScrollPointerId = INVALID_POINTER;
+            mDragPointerId = INVALID_POINTER;
+            mList.clear();
+          //}add by zhongheng.zheng end
             break;
         case MotionEvent.ACTION_CANCEL:
             cancelDrag();
+          //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+            releaseVelocityTracker();
+            mScrollPointerId = INVALID_POINTER;
+            mDragPointerId = INVALID_POINTER;
+            mList.clear();
+          //}add by zhongheng.zheng end
             break;
+          //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+        case MotionEvent.ACTION_POINTER_DOWN:
+        	if(DEBUG){
+        		Log.d("TAG", "onTouchEvent ACTION_POINTER_DOWN");
+            	Log.d("TAG", "pointCount = " + pointCount);
+        	}
+        	int actionIndex = ev.getActionIndex();
+        	int pointerId = ev.getPointerId(actionIndex);
+        	mList.add(pointerId);
+        	if(DEBUG){
+        		Log.d(TAG, "ACTION_POINTER_DOWN list size : " + mList.size());
+        	}        
+        	if (pointCount > 2) {
+        		
+          	 } else if (pointCount == 2) {
+          		mScrollPointerId = pointerId;
+          		int scrollPointerIndex = ev.findPointerIndex(mScrollPointerId);
+          		mLastMotionX = mDownMotionX = ev.getX(scrollPointerIndex);
+          		mLastMotionXRemainder = 0;
+          		mTotalMotionX = 0;
+          		if(DEBUG){
+          			Log.d(TAG, "onTouchEvent ACTION_POINTER_DOWN : mDownMotionX = " + mDownMotionX);
+          		}
+          		mLauncher.getWorkspace().pageBeginMovingForDrag();
+          	 }
+        	 break;
+        case MotionEvent.ACTION_POINTER_UP:
+        	if(DEBUG){
+        		Log.d(TAG, "onTouchEvent ACTION_POINTER_UP");
+            	Log.d("TAG", "pointCount = " + pointCount);
+            	Log.d("TAG", "ACTION_POINTER_UP list size : " + mList.size());
+        	}
+        	if (pointCount > 2) {
+        		
+       	 } else if (pointCount == 2) {
+       		if(DEBUG){
+       			Log.d("TAG", "onTouchEvent ACTION_POINTER_UP : pointCount == 2");
+       		}
+       	  int mCurrentPage = mLauncher.getWorkspace().getCurrentPage();
+       	  int mMaximumVelocity = mLauncher.getWorkspace().getMaximumVelocity();
+            final int activePointerId = mScrollPointerId;
+            final int pointerIndex = ev.findPointerIndex(activePointerId);
+            if(pointerIndex == -1){
+            	break;
+            }
+            final float x = ev.getX(pointerIndex);
+            final VelocityTracker velocityTracker = mVelocityTracker;
+            velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
+            int velocityX = (int) velocityTracker.getXVelocity(activePointerId);
+            final int deltaX = (int) (x - mDownMotionX);
+            final int pageWidth = mLauncher.getWorkspace().getScaledMeasuredWidthForDrag(mLauncher.getWorkspace().getPageAt(mCurrentPage));
+            boolean isSignificantMove = Math.abs(deltaX) > pageWidth *
+                    SIGNIFICANT_MOVE_THRESHOLD;
+            final int snapVelocity = mSnapVelocity;
+            mTotalMotionX += Math.abs(mLastMotionX + mLastMotionXRemainder - x);
+            boolean isFling = mTotalMotionX > MIN_LENGTH_FOR_FLING &&
+                    Math.abs(velocityX) > snapVelocity;
+
+            // In the case that the page is moved far to one direction and then is flung
+            // in the opposite direction, we use a threshold to determine whether we should
+            // just return to the starting page, or if we should skip one further.
+            boolean returnToOriginalPage = false;
+            if (Math.abs(deltaX) > pageWidth * RETURN_TO_ORIGINAL_PAGE_THRESHOLD &&
+                    Math.signum(velocityX) != Math.signum(deltaX) && isFling) {
+                returnToOriginalPage = true;
+            }
+
+            int finalPage;
+            // We give flings precedence over large moves, which is why we short-circuit our
+            // test for a large move if a fling has been registered. That is, a large
+            // move to the left and fling to the right will register as a fling to the right.
+            if (((isSignificantMove && deltaX > 0 && !isFling) ||
+                    (isFling && velocityX > 0)) && mCurrentPage > 0) {
+                finalPage = returnToOriginalPage ? mCurrentPage : mCurrentPage - 1;
+                mLauncher.getWorkspace().snapToPageWithVelocityforDrag(finalPage, velocityX);
+            } else if (((isSignificantMove && deltaX < 0 && !isFling) ||
+                    (isFling && velocityX < 0)) &&
+//                    mCurrentPage < mLauncher.getWorkspace().getChildCount() - 1) {
+                    mCurrentPage < mLauncher.getWorkspace().getPageCount() - 1) {
+                finalPage = returnToOriginalPage ? mCurrentPage : mCurrentPage + 1;
+                mLauncher.getWorkspace().snapToPageWithVelocityforDrag(finalPage, velocityX);
+            } else {
+            	mLauncher.getWorkspace().snapToDestinationForDrag();
+            }
+        } 
+        	
+        	int actionIndex3 = ev.getActionIndex();
+        	int actionId = ev.getPointerId(actionIndex3);
+        	if(DEBUG){
+        		Log.d(TAG, "ACTION_POINTER_UP actionId : " + actionId);
+            	for (int i=0;i<mList.size();i++){
+            		Log.d(TAG, "ACTION_POINTER_UP list id : " + mList.get(i));
+            	}
+        	}
+        	int flagActionId = -1;
+        	for (int i=0;i<mList.size();i++){
+    			if(mList.get(i) == actionId){
+    				flagActionId = i;
+    				break;
+    			}
+    		}
+        	if(actionId == mDragPointerId){
+        		if(pointCount == 2){
+        			for (int i=0;i<mList.size();i++){
+            			if(mList.get(i) != mDragPointerId){
+            				mDragPointerId = mList.get(i);
+            				break;
+            			}
+            		} 
+        			mScrollPointerId = INVALID_POINTER;
+        		} else if(pointCount > 2){
+        			for (int i=0;i<mList.size();i++){
+            			if(mList.get(i) != mDragPointerId && mList.get(i) != mScrollPointerId){
+            				mDragPointerId = mList.get(i);
+            				break;
+            			}
+            		}
+        		}
+
+        	}else if(actionId == mScrollPointerId){
+        		for (int i=0;i<mList.size();i++){
+        			if(mList.get(i) != mScrollPointerId && mList.get(i) != mDragPointerId){
+        				mScrollPointerId = mList.get(i);
+        				int scrollPointerIndex = ev.findPointerIndex(mScrollPointerId);
+        				mLastMotionX = mDownMotionX = ev.getX(scrollPointerIndex);
+                  		mLastMotionXRemainder = 0;
+                  		mTotalMotionX = 0;
+        				break;
+        			}
+        		}
+        	}
+        	if(flagActionId != -1){
+        		mList.remove(flagActionId);
+        	}
+        	if(DEBUG){
+        	   	Log.d("TAG", "ACTION_POINTER_UP mScrollPointerId : " + mScrollPointerId);
+            	Log.d("TAG", "ACTION_POINTER_UP mDragPointerId : " + mDragPointerId);
+        	}
+       	 break;
+       //}add by zhongheng.zheng end
+        	
         }
 
         return true;
@@ -709,4 +983,21 @@ public class DragController {
             mDirection = direction;
         }
     }
+    
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+    private void acquireVelocityTrackerAndAddMovement(MotionEvent ev) {
+        if (mVelocityTracker == null) {
+            mVelocityTracker = VelocityTracker.obtain();
+        }
+        mVelocityTracker.addMovement(ev);
+    }
+
+    private void releaseVelocityTracker() {
+        if (mVelocityTracker != null) {
+            mVelocityTracker.recycle();
+            mVelocityTracker = null;
+        }
+    }
+  //}add by zhongheng.zheng end
 }

@@ -22,7 +22,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.Checkable;
 import android.widget.TextView;
 
@@ -53,13 +56,24 @@ public class PagedViewIcon extends TextView implements Checkable {
 
     HolographicPagedViewIcon mHolographicOutlineView;
     private HolographicOutlineHelper mHolographicOutlineHelper;
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
+    private Bitmap mNewIcon;
+    private ApplicationInfo mInfo;
+  //}add by zhongheng.zheng end
 
     public PagedViewIcon(Context context) {
         this(context, null);
+      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+        initBgBitmap(context);
+      //}add by zhongheng.zheng end
     }
 
     public PagedViewIcon(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
+      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+        initBgBitmap(context);
+      //}add by zhongheng.zheng end
     }
 
     public PagedViewIcon(Context context, AttributeSet attrs, int defStyle) {
@@ -77,6 +91,10 @@ public class PagedViewIcon extends TextView implements Checkable {
         }
 
         mHolographicOutlineView = new HolographicPagedViewIcon(context, this);
+        
+      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+        initBgBitmap(context);
+      //}add by zhongheng.zheng end
     }
 
     protected HolographicPagedViewIcon getHolographicOutlineView() {
@@ -94,6 +112,9 @@ public class PagedViewIcon extends TextView implements Checkable {
         setCompoundDrawablesWithIntrinsicBounds(null, new FastBitmapDrawable(mIcon), null, null);
         setText(info.title);
         setTag(info);
+      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+        mInfo = info;
+      //}add by zhongheng.zheng end
     }
 
     public void setHolographicOutline(Bitmap holoOutline) {
@@ -145,6 +166,15 @@ public class PagedViewIcon extends TextView implements Checkable {
                     mPaddingTop,
                     mPaint);
         }
+        
+      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+        if(mInfo.isEnabledNew && mInfo.launchCount <= 0){
+        	int hspace = (getWidth() - mIcon.getWidth()) / 2;
+        	int vspace = (getHeight() - mIcon.getHeight()) / 2;
+        	Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
+        	canvas.drawBitmap(mNewIcon, mIcon.getWidth() + hspace - mNewIcon.getWidth(), 0, null);
+        }
+      //}add by zhongheng.zheng end
     }
 
     @Override
@@ -191,4 +221,12 @@ public class PagedViewIcon extends TextView implements Checkable {
     public void toggle() {
         setChecked(!mIsChecked);
     }
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+    private void initBgBitmap(Context context) {
+//        mPressedBgPaint = new Paint();
+//        mPressedBgPaint.setAlpha(100);
+        mNewIcon = Utilities.getAppIconNewBitmap(context);
+    }
+  //{add by zhongheng.zheng end
 }

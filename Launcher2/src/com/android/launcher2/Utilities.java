@@ -21,6 +21,7 @@ import java.util.Random;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
@@ -271,4 +272,19 @@ final class Utilities {
     static int generateRandomId() {
         return new Random(System.currentTimeMillis()).nextInt(1 << 24);
     }
+    
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin new install sign
+    static Bitmap mNewIcon;
+
+    static Bitmap getAppIconNewBitmap(Context context) {
+        synchronized (sCanvas) {
+            if (mNewIcon == null) {
+            	mNewIcon = BitmapFactory.decodeResource(context.getResources(),
+                        R.drawable.gardening_crosshairs);
+            }
+        }
+        return mNewIcon;
+    }
+  //}add by zhongheng.zheng end
 }

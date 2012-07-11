@@ -59,6 +59,11 @@ class ApplicationInfo extends ItemInfo {
     static final int UPDATED_SYSTEM_APP_FLAG = 2;
 
     int flags = 0;
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
+    boolean isEnabledNew;
+    int launchCount = 0;
+  //}add by zhongheng.zheng end
 
     ApplicationInfo() {
         itemType = LauncherSettings.BaseLauncherColumns.ITEM_TYPE_SHORTCUT;
@@ -91,6 +96,21 @@ class ApplicationInfo extends ItemInfo {
         }
 
         iconCache.getTitleAndIcon(this, info, labelCache);
+        
+      //{add by zhongheng.zheng at 2012.7.10 begin for new install sign
+        try {
+            android.content.pm.ApplicationInfo appinfo = pm.getApplicationInfo(
+                    info.activityInfo.applicationInfo.packageName, 0);
+            if ((appinfo.flags & android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
+            	isEnabledNew = false;
+            } else {
+            	isEnabledNew = true;
+            }
+        } catch (NameNotFoundException e) {
+        	isEnabledNew = false;
+            Log.e("Launcher_ApplicationInfo", e.getMessage(), e);
+        }
+      //}add by zhongheng.zheng end
     }
 
     public ApplicationInfo(ApplicationInfo info) {

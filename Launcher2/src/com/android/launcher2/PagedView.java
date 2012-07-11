@@ -281,6 +281,80 @@ public abstract class PagedView extends ViewGroup {
     int getCurrentPage() {
         return mCurrentPage;
     }
+    
+  //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
+    int getMaximumVelocity() {
+    	return mMaximumVelocity;
+    }
+    
+    int getScaledMeasuredWidthForDrag(View child) {
+        // This functions are called enough times that it actually makes a difference in the
+        // profiler -- so just inline the max() here
+        final int measuredWidth = child.getMeasuredWidth();
+        final int minWidth = mMinimumWidth;
+        final int maxWidth = (minWidth > measuredWidth) ? minWidth : measuredWidth;
+        return (int) (maxWidth * mLayoutScale + 0.5f);
+    }
+    
+    void snapToDestinationForDrag() {
+        snapToPage(getPageNearestToCenterOfScreen(), PAGE_SNAP_ANIMATION_DURATION);
+    }
+    
+     void snapToPageWithVelocityforDrag(int whichPage, int velocity) {
+    	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+         //whichPage = Math.max(0, Math.min(whichPage, getChildCount() - 1));
+     	  whichPage = Math.max(0, Math.min(whichPage, getPageCount() - 1));
+       //}modify by jingjiang.yu end
+        int halfScreenSize = getMeasuredWidth() / 2;
+
+        if (DEBUG) Log.d(TAG, "snapToPage.getChildOffset(): " + getChildOffset(whichPage));
+        if (DEBUG) Log.d(TAG, "snapToPageWithVelocity.getRelativeChildOffset(): "
+                + getMeasuredWidth() + ", " + getChildWidth(whichPage));
+        final int newX = getChildOffset(whichPage) - getRelativeChildOffset(whichPage);
+        int delta = newX - mUnboundedScrollX;
+        int duration = 0;
+
+        if (Math.abs(velocity) < MIN_FLING_VELOCITY) {
+            // If the velocity is low enough, then treat this more as an automatic page advance
+            // as opposed to an apparent physical response to flinging
+            snapToPage(whichPage, PAGE_SNAP_ANIMATION_DURATION);
+            return;
+        }
+
+        // Here we compute a "distance" that will be used in the computation of the overall
+        // snap duration. This is a function of the actual distance that needs to be traveled;
+        // we keep this value close to half screen size in order to reduce the variance in snap
+        // duration as a function of the distance the page needs to travel.
+        float distanceRatio = Math.min(1f, 1.0f * Math.abs(delta) / (2 * halfScreenSize));
+        float distance = halfScreenSize + halfScreenSize *
+                distanceInfluenceForSnapDuration(distanceRatio);
+
+        velocity = Math.abs(velocity);
+        velocity = Math.max(MINIMUM_SNAP_VELOCITY, velocity);
+
+        // we want the page's snap velocity to approximately match the velocity at which the
+        // user flings, so we scale the duration by a value near to the derivative of the scroll
+        // interpolator at zero, ie. 5. We use 4 to make it a little slower.
+        duration = 4 * Math.round(1000 * Math.abs(distance / velocity));
+
+        snapToPage(whichPage, delta, duration);
+    }
+     
+      void pageBeginMovingForDrag() {
+         if (!mIsPageMoving) {
+             mIsPageMoving = true;
+             onPageBeginMoving();
+         }
+     }
+      
+      boolean awakenScrollBarsForDrag() {
+    	  return awakenScrollBars();
+      }
+      
+      void invalidateForDrag(){
+    	  invalidate();
+      }
+    //}add by zhongheng.zheng end
 
     int getPageCount() {
         return getChildCount();
