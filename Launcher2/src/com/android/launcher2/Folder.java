@@ -30,6 +30,7 @@ import android.text.InputType;
 import android.text.Selection;
 import android.text.Spannable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -37,6 +38,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.animation.AccelerateInterpolator;
@@ -70,7 +72,10 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     static final int STATE_OPEN = 2;
 
     private int mExpandDuration;
-    protected CellLayout mContent;
+//Modified by lijuan.li at 2012.07.11 begin
+	//protected CellLayout mContent;
+	protected FolderPagedView mContent;
+		//ended by lijuan.li
     private final LayoutInflater mInflater;
     private final IconCache mIconCache;
     private int mState = STATE_NONE;
@@ -104,6 +109,9 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     private boolean mSuppressFolderDeletion = false;
     private boolean mItemAddedBackToSelfViaIcon = false;
     FolderEditText mFolderName;
+	//added by lijuan.li 2012.07.11 begin
+    private int mPageCount;
+	//ended by lijuan.li
 
     private boolean mIsEditingName = false;
     private InputMethodManager mInputMethodManager;
@@ -154,9 +162,12 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mContent = (CellLayout) findViewById(R.id.folder_content);
-        mContent.setGridSize(0, 0);
-        mContent.getChildrenLayout().setMotionEventSplittingEnabled(false);
+		//Modified by lijuan.li 2012.07.11
+        //mContent = (CellLayout) findViewById(R.id.folder_content);
+        //mContent.setGridSize(0, 0);
+        //mContent.getChildrenLayout().setMotionEventSplittingEnabled(false);
+        mContent = (FolderPagedView) findViewById(R.id.folder_content);
+		//ended by lijuan.li
         mFolderName = (FolderEditText) findViewById(R.id.folder_name);
         mFolderName.setFolder(this);
         mFolderName.setOnFocusChangeListener(this);
@@ -224,7 +235,11 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             mEmptyCell[1] = item.cellY;
             mCurrentDragView = v;
 
-            mContent.removeView(mCurrentDragView);
+			//Modified by lijuan.li 2012.07.11
+            //mContent.removeView(mCurrentDragView);
+            CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getCurrentScreen());
+            cl.removeView(mCurrentDragView);
+			//ended by lijuan.li
             mInfo.remove(mCurrentDragInfo);
             mDragInProgress = true;
             mItemAddedBackToSelfViaIcon = false;
@@ -311,11 +326,15 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         return mInfo;
     }
 
-    void bind(FolderInfo info) {
-        mInfo = info;
-        ArrayList<ShortcutInfo> children = info.contents;
-        ArrayList<ShortcutInfo> overflow = new ArrayList<ShortcutInfo>();
-        setupContentForNumItems(children.size());
+	void bind(FolderInfo info) {
+		mInfo = info;
+		//added by lijuan.li 2012.07.11
+		mPageCount = 1;
+		//ended by lijuan.li
+		ArrayList<ShortcutInfo> children = info.contents;
+		ArrayList<ShortcutInfo> overflow = new ArrayList<ShortcutInfo>();
+			//Modified by lijuan.li 2012.07.11
+        /*setupContentForNumItems(children.size());
         int count = 0;
         for (int i = 0; i < children.size(); i++) {
             ShortcutInfo child = (ShortcutInfo) children.get(i);
@@ -327,7 +346,41 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         }
 
         // We rearrange the items in case there are any empty gaps
-        setupContentForNumItems(count);
+        setupContentForNumItems(count);*/
+		
+			mPageCount = (children.size() - 1)/9 + 1;
+
+			if (mPageCount > 1) {
+				mContent.removeAllViewsInLayout();
+				for (int i = 0; i < mPageCount; i++){
+					CellLayout cl = (CellLayout) LayoutInflater.from(getContext()).inflate(
+							R.layout.folder_layout, this, false);
+					cl.setGridSize(3, 3);
+					mContent.addView(cl);
+				}
+				
+				for (int i = 0; i < mPageCount; i++) {
+					setupContentForNumItems(9,i);
+				}
+			}
+			else {
+				setupContentForNumItems(children.size(), 0);
+			}
+			int count = 0;
+			int i = 0;
+			for (int j = 0; j < mPageCount; j++) {
+			for (; i < Math.min(children.size(), 9 * (j + 1)); i++) {
+				ShortcutInfo child = (ShortcutInfo) children.get(i);
+				findAndSetEmptyCells(child, j);
+				if (!createAndAddShortcut(child, j)) {
+					overflow.add(child);
+				} else {
+					count++;
+				}
+			}
+			
+			
+			}
 
         // If our folder has too many items we prune them from the list. This is an issue 
         // when upgrading from the old Folders implementation which could contain an unlimited
@@ -419,10 +472,17 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         oa.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-                sendCustomAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+				//Modefied by lijuan.li 2012.07.11 begin
+                /*sendCustomAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
                         String.format(mContext.getString(R.string.folder_opened),
                         mContent.getCountX(), mContent.getCountY()));
+                mState = STATE_ANIMATING;*/
+            	CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getCurrentScreen());
+                sendCustomAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED,
+                        String.format(mContext.getString(R.string.folder_opened),
+                        		cl.getCountX(), cl.getCountY()));
                 mState = STATE_ANIMATING;
+				//ended by lijuan.li
             }
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -433,6 +493,9 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
                     cling.bringToFront();
                 }
                 setFocusOnFirstChild();
+				//added by lijuan.li 2012.07.11
+                mContent.invalidate();
+				//ended by lijuan.li
             }
         });
         oa.setDuration(mExpandDuration);
@@ -449,7 +512,11 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     }
 
     private void setFocusOnFirstChild() {
-        View firstChild = mContent.getChildAt(0, 0);
+		//Modefied by lijuan.li at 2012.07.11 begin
+        //View firstChild = mContent.getChildAt(0, 0);
+    	CellLayout cl = (CellLayout)mContent.getChildAt(0);
+        View firstChild = cl.getChildAt(0, 0);
+		//ended by lijuan.li
         if (firstChild != null) {
             firstChild.requestFocus();
         }
@@ -512,23 +579,40 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     public boolean acceptDrop(DragObject d) {
         final ItemInfo item = (ItemInfo) d.dragInfo;
         final int itemType = item.itemType;
-        return ((itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
+		//Modefied by lijuan.li 2012.07.11 begin
+        /*return ((itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
                     itemType == LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT) &&
-                    !isFull());
+                    !isFull());*/
+        return ((itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
+                    itemType == LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT));
+		//ended by lijuan.li
     }
-
-    protected boolean findAndSetEmptyCells(ShortcutInfo item) {
+	//Modefied by lijuan.li 2012.07.11 begin
+    //protected boolean findAndSetEmptyCells(ShortcutInfo item) {
+	protected boolean findAndSetEmptyCells(ShortcutInfo item, int atChild) {
+	//ended bylijuan.li
+		//added by lijuan.li 2012.07.11
+        CellLayout cl = (CellLayout)mContent.getChildAt(atChild);
+		//ended by lijuan.li
         int[] emptyCell = new int[2];
-        if (mContent.findCellForSpan(emptyCell, item.spanX, item.spanY)) {
+		//Modefied by lijuan.li 2012.07.11 begin
+        //if (mContent.findCellForSpan(emptyCell, item.spanX, item.spanY)) {
+        if (cl.findCellForSpan(emptyCell, item.spanX, item.spanY)) {
+		//ended by lijuan.li
             item.cellX = emptyCell[0];
             item.cellY = emptyCell[1];
             return true;
         } else {
             return false;
         }
-    }
 
-    protected boolean createAndAddShortcut(ShortcutInfo item) {
+    	}
+    	
+
+	//Modefied by lijuan.li 2012.07.11 begin
+    //protected boolean createAndAddShortcut(ShortcutInfo item) {
+    protected boolean createAndAddShortcut(ShortcutInfo item , int toChild) {
+	//ended by lijuan.li
         final TextView textView =
             (TextView) mInflater.inflate(R.layout.application, this, false);
         textView.setCompoundDrawablesWithIntrinsicBounds(null,
@@ -543,21 +627,35 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         // by another item. If it is, we need to find the next available slot and assign
         // it that position. This is an issue when upgrading from the old Folders implementation
         // which could contain an unlimited number of items.
-        if (mContent.getChildAt(item.cellX, item.cellY) != null || item.cellX < 0 || item.cellY < 0
+	//Modefied by lijuan.li 2012.07.11 begin
+        /*if (mContent.getChildAt(item.cellX, item.cellY) != null || item.cellX < 0 || item.cellY < 0
                 || item.cellX >= mContent.getCountX() || item.cellY >= mContent.getCountY()) {
             if (!findAndSetEmptyCells(item)) {
                 return false;
             }
+        }*/
+		CellLayout cl = (CellLayout)mContent.getChildAt(toChild);
+        if (cl.getChildAt(item.cellX, item.cellY) != null || item.cellX < 0 || item.cellY < 0
+                || item.cellX >= cl.getCountX() || item.cellY >= cl.getCountY()) {
+            if (!findAndSetEmptyCells(item, mPageCount - 1)) {
+                return false;
+            }
         }
+		//ended by lijuan.li
 
         CellLayout.LayoutParams lp =
             new CellLayout.LayoutParams(item.cellX, item.cellY, item.spanX, item.spanY);
         boolean insert = false;
         textView.setOnKeyListener(new FolderKeyEventListener());
-        mContent.addViewToCellLayout(textView, insert ? 0 : -1, (int)item.id, lp, true);
+		//Modefied by lijuan.li 2012.07.11 begin
+        //mContent.addViewToCellLayout(textView, insert ? 0 : -1, (int)item.id, lp, true);
+        cl.addViewToCellLayout(textView, insert ? 0 : -1, (int)item.id, lp, true);
+        mContent.requestLayout();
+        mContent.invalidate();
+		//ended by lijuan.li
         return true;
     }
-
+    
     public void onDragEnter(DragObject d) {
         mPreviousTargetCell[0] = -1;
         mPreviousTargetCell[1] = -1;
@@ -585,15 +683,27 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         int startY;
         int delay = 0;
         float delayAmount = 30;
+	//Added by lijuan.li 2012.07.11 begin
+	CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getChildCount() - 1);
+	//ended by lijuan.li
         if (readingOrderGreaterThan(target, empty)) {
-            wrap = empty[0] >= mContent.getCountX() - 1;
+			//Modefied by lijuan.li 2012.07.11 begin
+            //wrap = empty[0] >= mContent.getCountX() - 1;
+            wrap = empty[0] >= cl.getCountX() - 1;
+			//ended by lijuan.li
             startY = wrap ? empty[1] + 1 : empty[1];
             for (int y = startY; y <= target[1]; y++) {
                 startX = y == empty[1] ? empty[0] + 1 : 0;
-                endX = y < target[1] ? mContent.getCountX() - 1 : target[0];
+				//Modefied by lijuan.li 2012.07.11 begin
+                /*endX = y < target[1] ? mContent.getCountX() - 1 : target[0];
                 for (int x = startX; x <= endX; x++) {
                     View v = mContent.getChildAt(x,y);
-                    if (mContent.animateChildToPosition(v, empty[0], empty[1],
+                    if (mContent.animateChildToPosition(v, empty[0], empty[1],*/
+                endX = y < target[1] ? cl.getCountX() - 1 : target[0];
+                for (int x = startX; x <= endX; x++) {
+                    View v = cl.getChildAt(x,y);
+                    if (cl.animateChildToPosition(v, empty[0], empty[1],
+				//ended by lijuan.li
                             REORDER_ANIMATION_DURATION, delay)) {
                         empty[0] = x;
                         empty[1] = y;
@@ -606,11 +716,18 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             wrap = empty[0] == 0;
             startY = wrap ? empty[1] - 1 : empty[1];
             for (int y = startY; y >= target[1]; y--) {
-                startX = y == empty[1] ? empty[0] - 1 : mContent.getCountX() - 1;
+				//Modefied by lijuan.li 2012.07.11
+                /*startX = y == empty[1] ? empty[0] - 1 : mContent.getCountX() - 1;
                 endX = y > target[1] ? 0 : target[0];
                 for (int x = startX; x >= endX; x--) {
                     View v = mContent.getChildAt(x,y);
-                    if (mContent.animateChildToPosition(v, empty[0], empty[1],
+                    if (mContent.animateChildToPosition(v, empty[0], empty[1],*/
+                startX = y == empty[1] ? empty[0] - 1 : cl.getCountX() - 1;
+                endX = y > target[1] ? 0 : target[0];
+                for (int x = startX; x >= endX; x--) {
+                    View v = cl.getChildAt(x,y);
+                    if (cl.animateChildToPosition(v, empty[0], empty[1],
+				//ended by lijuan.li
                             REORDER_ANIMATION_DURATION, delay)) {
                         empty[0] = x;
                         empty[1] = y;
@@ -624,7 +741,11 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
 
     public void onDragOver(DragObject d) {
         float[] r = getDragViewVisualCenter(d.x, d.y, d.xOffset, d.yOffset, d.dragView, null);
-        mTargetCell = mContent.findNearestArea((int) r[0], (int) r[1], 1, 1, mTargetCell);
+		//Modefied by lijuan.li 2012.07.11 begin
+        //mTargetCell = mContent.findNearestArea((int) r[0], (int) r[1], 1, 1, mTargetCell);
+		CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getCurrentScreen());
+        mTargetCell = cl.findNearestArea((int) r[0], (int) r[1], 1, 1, mTargetCell);
+		//ended by lijuan.li
 
         if (mTargetCell[0] != mPreviousTargetCell[0] || mTargetCell[1] != mPreviousTargetCell[1]) {
             mReorderAlarm.cancelAlarm();
@@ -720,7 +841,7 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     }
 
     private void updateItemLocationsInDatabase() {
-        ArrayList<View> list = getItemsInReadingOrder();
+        ArrayList<View> list = getItemsInReadingOrder(mContent.getCurrentScreen() - 1);
         for (int i = 0; i < list.size(); i++) {
             View v = list.get(i);
             ItemInfo info = (ItemInfo) v.getTag();
@@ -743,11 +864,23 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         return null;
     }
 
-    private void setupContentDimensions(int count) {
+	//Modefied by lijuan.li 2012.07.11 begin
+    /*private void setupContentDimensions(int count) {
         ArrayList<View> list = getItemsInReadingOrder();
 
         int countX = mContent.getCountX();
-        int countY = mContent.getCountY();
+        int countY = mContent.getCountY();*/
+	private void setupContentDimensions(int count, int atChild) {
+    	CellLayout cl;
+    	cl = (CellLayout)mContent.getChildAt(atChild);
+
+        ArrayList<View> list = getItemsInReadingOrder(atChild);
+                
+        if (mPageCount == 1) {
+        int countX = cl.getCountX();
+        int countY = cl.getCountY();
+	//ended by lijuan.li
+
         boolean done = false;
 
         while (!done) {
@@ -755,7 +888,10 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             int oldCountY = countY;
             if (countX * countY < count) {
                 // Current grid is too small, expand it
-                if ((countX <= countY || countY == mMaxCountY) && countX < mMaxCountX) {
+				//Modefied by lijuan.li 2012.07.11
+                //if ((countX <= countY || countY == mMaxCountY) && countX < mMaxCountX) {
+				if ((countX <= countY || countY == 3) && countX < 3) {
+				//ended by lijuan.li
                     countX++;
                 } else if (countY < mMaxCountY) {
                     countY++;
@@ -768,20 +904,34 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             }
             done = countX == oldCountX && countY == oldCountY;
         }
-        mContent.setGridSize(countX, countY);
-        arrangeChildren(list);
+		//Modefied by lijuan.li 2012.07.11
+        //mContent.setGridSize(countX, countY);
+        //arrangeChildren(list);
+		cl.setGridSize(countX, countY);
+        mContent.requestLayout();
+        }
+        arrangeChildren(list, atChild);
+		//ended by lijuan.li
     }
 
-    public boolean isFull() {
+	//Deleted by lijuan.li 2012.07.11
+    /*public boolean isFull() {
         return getItemCount() >= mMaxNumItems;
-    }
+    }*/
+	//ended by lijuan.li
 
     private void centerAboutIcon() {
         DragLayer.LayoutParams lp = (DragLayer.LayoutParams) getLayoutParams();
-
-        int width = getPaddingLeft() + getPaddingRight() + mContent.getDesiredWidth();
+		//Modefied by lijuan.li 2012.07.11 begin
+        /*int width = getPaddingLeft() + getPaddingRight() + mContent.getDesiredWidth();
         int height = getPaddingTop() + getPaddingBottom() + mContent.getDesiredHeight()
+                + mFolderNameHeight;*/
+		CellLayout cl = (CellLayout)mContent.getChildAt(0);
+
+        int width = getPaddingLeft() + getPaddingRight() + cl.getDesiredWidth();
+        int height = getPaddingTop() + getPaddingBottom() + cl.getDesiredHeight()
                 + mFolderNameHeight;
+		//ended by lijuan.li
         DragLayer parent = (DragLayer) mLauncher.findViewById(R.id.drag_layer);
 
         parent.getDescendantRectRelativeToSelf(mFolderIcon, mTempRect);
@@ -810,8 +960,8 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             top = bounds.top + (bounds.height() - height) / 2;
         }
 
-        int folderPivotX = width / 2 + (centeredLeft - left);
-        int folderPivotY = height / 2 + (centeredTop - top);
+        int folderPivotX = left / 2 + (centeredLeft - left);
+        int folderPivotY = top / 2 + (centeredTop - top);
         setPivotX(folderPivotX);
         setPivotY(folderPivotY);
         int folderIconPivotX = (int) (mFolderIcon.getMeasuredWidth() *
@@ -831,9 +981,12 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         }
     }
 
-    private void setupContentForNumItems(int count) {
-        setupContentDimensions(count);
-
+	//Modefied by lijuan.li 2012.07.11 begin
+    //private void setupContentForNumItems(int count) {
+        //setupContentDimensions(count);
+    private void setupContentForNumItems(int count , int atChild) {
+        setupContentDimensions(count, atChild);
+	//ended by lijuan.li
         DragLayer.LayoutParams lp = (DragLayer.LayoutParams) getLayoutParams();
         if (lp == null) {
             lp = new DragLayer.LayoutParams(0, 0);
@@ -844,14 +997,25 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     }
 
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = getPaddingLeft() + getPaddingRight() + mContent.getDesiredWidth();
+	//Modefied by lijuan.li 2012.07.11 begin
+        /*int width = getPaddingLeft() + getPaddingRight() + mContent.getDesiredWidth();
         int height = getPaddingTop() + getPaddingBottom() + mContent.getDesiredHeight()
                 + mFolderNameHeight;
 
         int contentWidthSpec = MeasureSpec.makeMeasureSpec(mContent.getDesiredWidth(),
                 MeasureSpec.EXACTLY);
         int contentHeightSpec = MeasureSpec.makeMeasureSpec(mContent.getDesiredHeight(),
+                MeasureSpec.EXACTLY);*/
+		CellLayout cl = (CellLayout)mContent.getChildAt(0);
+        int width = getPaddingLeft() + getPaddingRight() + cl.getDesiredWidth();
+        int height = getPaddingTop() + getPaddingBottom() + cl.getDesiredHeight()
+                + mFolderNameHeight;
+
+        int contentWidthSpec = MeasureSpec.makeMeasureSpec(cl.getDesiredWidth(),
                 MeasureSpec.EXACTLY);
+        int contentHeightSpec = MeasureSpec.makeMeasureSpec(cl.getDesiredHeight(),
+                MeasureSpec.EXACTLY);
+
         mContent.measure(contentWidthSpec, contentHeightSpec);
 
         mFolderName.measure(contentWidthSpec,
@@ -859,7 +1023,8 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         setMeasuredDimension(width, height);
     }
 
-    private void arrangeChildren(ArrayList<View> list) {
+	//Modefied by lijuan.li 2012.07.11 begin
+    /*private void arrangeChildren(ArrayList<View> list) {
         int[] vacant = new int[2];
         if (list == null) {
             list = getItemsInReadingOrder();
@@ -883,14 +1048,57 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             mContent.addViewToCellLayout(v, insert ? 0 : -1, (int)info.id, lp, true);
         }
         mItemsInvalidated = true;
+    }*/
+    private void arrangeChildren(ArrayList<View> list, int atChild) {
+        int[] vacant = new int[2];
+        if (list == null) {
+            list = getItemsInReadingOrder(atChild);
+        }
+        CellLayout cl = (CellLayout)mContent.getChildAt(atChild);
+     
+			cl.removeAllViews();
+			
+			int startIndex = (atChild) * 9;
+			
+			for (int i = 0; i < 9 && i < list.size(); i++) {
+				View v = list.get(i);
+				cl.getVacantCell(vacant, 1, 1);
+				CellLayout.LayoutParams lp = (CellLayout.LayoutParams) v
+						.getLayoutParams();
+				lp.cellX = vacant[0];
+				lp.cellY = vacant[1];
+				ItemInfo info = (ItemInfo) v.getTag();
+				if (info.cellX != vacant[0] || info.cellY != vacant[1]) {
+					info.cellX = vacant[0];
+					info.cellY = vacant[1];
+					LauncherModel.addOrMoveItemInDatabase(mLauncher, info,
+							mInfo.id, 0, info.cellX, info.cellY);
+				}
+				boolean insert = false;
+				cl.addViewToCellLayout(v, insert ? 0 : -1, (int) info.id, lp,
+						true);
+			}
+			
+		mContent.invalidate();
+        mItemsInvalidated = true;
     }
-
-    public int getItemCount() {
-        return mContent.getChildrenLayout().getChildCount();
+	//ended by lijuan.li
+	
+	//Modefied by lijuan.li 2012.07.11 begin
+    //public int getItemCount() {
+        //return mContent.getChildrenLayout().getChildCount();
+    public int getItemCount(int atChild) {
+    	CellLayout cl = (CellLayout)mContent.getChildAt(atChild);
+        return cl.getChildrenLayout().getChildCount();
+		//ended by lijuan.li
     }
 
     public View getItemAt(int index) {
-        return mContent.getChildrenLayout().getChildAt(index);
+		//Modefied by lijuan.li 2012.07.11 begin
+        //return mContent.getChildrenLayout().getChildAt(index);
+    	CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getCurrentScreen());
+        return cl.getChildrenLayout().getChildAt(index);
+		//ended by lijuan.li
     }
 
     private void onCloseComplete() {
@@ -899,12 +1107,64 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         mDragController.removeDropTarget((DropTarget) this);
         clearFocus();
         mFolderIcon.requestFocus();
+	//Modefied by lijuan.li 2012.07.11 begin
 
-        if (mRearrangeOnClose) {
+        /*if (mRearrangeOnClose) {
             setupContentForNumItems(getItemCount());
             mRearrangeOnClose = false;
         }
-        if (getItemCount() <= 1) {
+        if (getItemCount() <= 1) {*/
+		mPageCount = (mInfo.contents.size()-1) / 9 + 1;
+        
+        if (mContent.getCurrentScreen() + 1 > mPageCount) {
+        	mContent.setCurrentScreen(0);
+        }
+
+        if (mRearrangeOnClose) {   		
+			int count = 0;
+			
+			mContent.removeAllViewsInLayout();
+			
+			ArrayList<ShortcutInfo> children = mInfo.contents;
+			
+			if (mPageCount > 1) {
+			for (int j = 0; j < mPageCount; j++) {
+				CellLayout cl = (CellLayout) LayoutInflater.from(getContext()).inflate(
+						R.layout.folder_layout, this, false);
+				cl.setGridSize(3, 3);
+				mContent.addView(cl);
+			}
+			}
+			else {
+				CellLayout cl = (CellLayout) LayoutInflater.from(getContext()).inflate(
+						R.layout.folder_layout, this, false);
+				cl.setGridSize(0, 0);
+				mContent.addView(cl);
+			}
+			
+			int i = 0;
+			for (int j = 0; j < mPageCount; j++) {
+				for (; i < Math.min(children.size(), (j + 1)*9); i++) {
+					ShortcutInfo child = (ShortcutInfo) children.get(i);
+					if (!findAndSetEmptyCells(child, j)) {
+						// The current layout is full, can we expand it?
+						mItemsInvalidated = true;
+						setupContentForNumItems(getItemCount(j) + 1, j);
+						findAndSetEmptyCells(child, j);
+					}
+					createAndAddShortcut(child, j);
+
+				}
+
+			}
+			
+			
+			mContent.requestLayout();
+			mContent.invalidate();
+			mRearrangeOnClose = false;
+        }
+        if (getItemCount(0) <= 1 && mContent.getChildCount() == 1) {
+		//ended by lijuan.li
             if (!mDragInProgress && !mSuppressFolderDeletion) {
                 replaceFolderWithFinalItem();
             } else if (mDragInProgress) {
@@ -917,7 +1177,10 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     private void replaceFolderWithFinalItem() {
         ItemInfo finalItem = null;
 
-        if (getItemCount() == 1) {
+		//Modefied by lijuan.li 2012.07.11 begin
+        //if (getItemCount() == 1) {
+		if (getItemCount(mContent.getCurrentScreen()) == 1) {
+		//ended by lijuan.li
             finalItem = mInfo.contents.get(0);
         }
 
@@ -948,8 +1211,12 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     // This method keeps track of the last item in the folder for the purposes
     // of keyboard focus
     private void updateTextViewFocus() {
-        View lastChild = getItemAt(getItemCount() - 1);
-        getItemAt(getItemCount() - 1);
+		//Modefied by lijuan.li 2012.07.11 begin
+        //View lastChild = getItemAt(getItemCount() - 1);
+        //getItemAt(getItemCount() - 1);
+		View lastChild = getItemAt(getItemCount(mContent.getCurrentScreen()));
+        getItemAt(getItemCount(mContent.getCurrentScreen()));
+		//ended by lijuan.li
         if (lastChild != null) {
             mFolderName.setNextFocusDownId(lastChild.getId());
             mFolderName.setNextFocusRightId(lastChild.getId());
@@ -975,40 +1242,74 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             CellLayout.LayoutParams lp = (CellLayout.LayoutParams) mCurrentDragView.getLayoutParams();
             si.cellX = lp.cellX = mEmptyCell[0];
             si.cellX = lp.cellY = mEmptyCell[1];
-            mContent.addViewToCellLayout(mCurrentDragView, -1, (int)item.id, lp, true);
+			//Modefied by lijuan.li 2012.07.11 begin
+            //mContent.addViewToCellLayout(mCurrentDragView, -1, (int)item.id, lp, true);
+			CellLayout cl =(CellLayout) mContent.getChildAt(mContent.getCurrentScreen());
+            cl.addViewToCellLayout(mCurrentDragView, -1, (int)item.id, lp, true);
+			//ended by lijuan.li
             if (d.dragView.hasDrawn()) {
                 mLauncher.getDragLayer().animateViewIntoPosition(d.dragView, mCurrentDragView);
             } else {
                 mCurrentDragView.setVisibility(VISIBLE);
             }
             mItemsInvalidated = true;
-            setupContentDimensions(getItemCount());
+			
+			//Modefied by lijuan.li 2012.07.11 begin
+            //setupContentDimensions(getItemCount());
+			setupContentDimensions(getItemCount(mContent.getCurrentScreen()), mContent.getCurrentScreen());
+			//ended by lijuan.li
             mSuppressOnAdd = true;
         }
         mInfo.add(item);
     }
 
     public void onAdd(ShortcutInfo item) {
-        mItemsInvalidated = true;
-        // If the item was dropped onto this open folder, we have done the work associated
-        // with adding the item to the folder, as indicated by mSuppressOnAdd being set
+		mItemsInvalidated = true;
+		// If the item was dropped onto this open folder, we have done the work
+		// associated
+		// with adding the item to the folder, as indicated by mSuppressOnAdd
+		// being set
         if (mSuppressOnAdd) return;
-        if (!findAndSetEmptyCells(item)) {
+	//Modefied by lijuan.li 2012.07.11 begin
+        /*if (!findAndSetEmptyCells(item)) {
             // The current layout is full, can we expand it?
             setupContentForNumItems(getItemCount() + 1);
             findAndSetEmptyCells(item);
         }
         createAndAddShortcut(item);
         LauncherModel.addOrMoveItemInDatabase(
-                mLauncher, item, mInfo.id, 0, item.cellX, item.cellY);
+                mLauncher, item, mInfo.id, 0, item.cellX, item.cellY);*/
+		 mPageCount = (mInfo.contents.size() - 1) / 9 + 1;
+
+		if (mContent.getChildCount() < mPageCount)
+		{
+			CellLayout cl = (CellLayout) LayoutInflater.from(getContext())
+					.inflate(R.layout.folder_layout, this, false);
+			cl.setGridSize(3, 3);
+			mContent.addView(cl);
+		}
+		Log.e("lljhome", "pagecount" + mPageCount);
+		if (!findAndSetEmptyCells(item, mPageCount - 1)) {
+			// The current layout is full, can we expand it?
+			setupContentForNumItems(getItemCount(mPageCount - 1) + 1, mPageCount - 1);
+			findAndSetEmptyCells(item, mPageCount - 1);
+		}
+
+		createAndAddShortcut(item, mPageCount - 1);
+		mContent.requestLayout();
+		mContent.invalidate();
+		LauncherModel.addOrMoveItemInDatabase(mLauncher, item, mInfo.id, 0, item.cellX, item.cellY);
     }
 
     public void onRemove(ShortcutInfo item) {
-        mItemsInvalidated = true;
-        // If this item is being dragged from this open folder, we have already handled
-        // the work associated with removing the item, so we don't have to do anything here.
+		mItemsInvalidated = true;
+		// If this item is being dragged from this open folder, we have already
+		// handled
+		// the work associated with removing the item, so we don't have to do
+		// anything here.
         if (item == mCurrentDragInfo) return;
-        View v = getViewForInfo(item);
+	//Modefied by lijuan.li 2012.07.11 begin
+        /*View v = getViewForInfo(item);
         mContent.removeView(v);
         if (mState == STATE_ANIMATING) {
             mRearrangeOnClose = true;
@@ -1016,14 +1317,73 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
             setupContentForNumItems(getItemCount());
         }
         if (getItemCount() <= 1) {
-            replaceFolderWithFinalItem();
+            replaceFolderWithFinalItem();*/
+		mContent.removeAllViews();
+		ArrayList<ShortcutInfo> children = mInfo.contents;
+		children.remove(item);
+		mPageCount = children.size() / 9 + 1;
+		
+		if (mState == STATE_ANIMATING) {
+			mRearrangeOnClose = true;
+		} else if (children.size() <= 1 && mPageCount == 1) {
+			replaceFolderWithFinalItem();
+		} else {			
+	        mPageCount = (mInfo.contents.size()-1) / 9 + 1;
+	        
+	        if (mContent.getCurrentScreen() + 1 > mPageCount) {
+	        	mContent.setCurrentScreen(0);
+	        }
+		
+				int count = 0;
+				
+				mContent.removeAllViewsInLayout();
+				
+				if (mPageCount > 1) {
+				for (int j = 0; j < mPageCount; j++) {
+					CellLayout cl = (CellLayout) LayoutInflater.from(getContext()).inflate(
+							R.layout.folder_layout, this, false);
+					cl.setGridSize(3, 3);
+					mContent.addView(cl);
+				}
+				}
+				else {
+					CellLayout cl = (CellLayout) LayoutInflater.from(getContext()).inflate(
+							R.layout.folder_layout, this, false);
+					cl.setGridSize(0, 0);
+					mContent.addView(cl);
+				}
+				
+				int i = 0;
+				for (int j = 0; j < mPageCount; j++) {
+					for (; i < Math.min(children.size(), (j + 1)*9); i++) {
+						ShortcutInfo child = (ShortcutInfo) children.get(i);
+						if (!findAndSetEmptyCells(child, j)) {
+							// The current layout is full, can we expand it?
+							mItemsInvalidated = true;
+							setupContentForNumItems(getItemCount(j) + 1, j);
+							findAndSetEmptyCells(child, j);
+						}
+						createAndAddShortcut(child, j);
+
+					}
+
+				}			
+				mContent.requestLayout();
+				mContent.invalidate();
+			//ended by lijuan.li
         }
     }
 
     private View getViewForInfo(ShortcutInfo item) {
-        for (int j = 0; j < mContent.getCountY(); j++) {
+	//Modefied by lijuan.li 2012.07.11 begin
+        /*for (int j = 0; j < mContent.getCountY(); j++) {
             for (int i = 0; i < mContent.getCountX(); i++) {
-                View v = mContent.getChildAt(i, j);
+                View v = mContent.getChildAt(i, j);*/
+		CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getCurrentScreen());
+        for (int j = 0; j < cl.getCountY(); j++) {
+            for (int i = 0; i < cl.getCountX(); i++) {
+                View v = cl.getChildAt(i, j);
+		//ended by lijuan.li
                 if (v.getTag() == item) {
                     return v;
                 }
@@ -1039,16 +1399,29 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
     public void onTitleChanged(CharSequence title) {
     }
 
-    public ArrayList<View> getItemsInReadingOrder() {
-        return getItemsInReadingOrder(true);
+	//Modefied by lijuan.li 2012.07.11 begin
+
+    //public ArrayList<View> getItemsInReadingOrder() {
+        //return getItemsInReadingOrder(true);
+	public ArrayList<View> getItemsInReadingOrder(int atChild) {
+        return getItemsInReadingOrder(true, atChild);
+	//ended by lijuan.li
     }
 
-    public ArrayList<View> getItemsInReadingOrder(boolean includeCurrentDragItem) {
+    public ArrayList<View> getItemsInReadingOrder(boolean includeCurrentDragItem, int atChild) {
         if (mItemsInvalidated) {
             mItemsInReadingOrder.clear();
-            for (int j = 0; j < mContent.getCountY(); j++) {
+			//Modefied by lijuan.li 2012.07.11 begin
+            /*for (int j = 0; j < mContent.getCountY(); j++) {
                 for (int i = 0; i < mContent.getCountX(); i++) {
-                    View v = mContent.getChildAt(i, j);
+                    View v = mContent.getChildAt(i, j);*/
+			CellLayout cl = (CellLayout)mContent.getChildAt(atChild);
+            if (cl == null)
+            	return mItemsInReadingOrder;
+            for (int j = 0; j < cl.getCountY(); j++) {
+                for (int i = 0; i < cl.getCountX(); i++) {
+                    View v = cl.getChildAt(i, j);
+			//ended by lijuan.li
                     if (v != null) {
                         ShortcutInfo info = (ShortcutInfo) v.getTag();
                         if (info != mCurrentDragInfo || includeCurrentDragItem) {
@@ -1061,6 +1434,41 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         }
         return mItemsInReadingOrder;
     }
+
+//Added by lijuan.li 2012.07.11 begin
+    public ArrayList<View> getItemsInReadingOrderWithInvalidate(boolean includeCurrentDragItem) {
+        if (mItemsInvalidated) {
+            mItemsInReadingOrder.clear();
+            Log.e("lljhome","current screen" + mContent.getCurrentScreen());
+            CellLayout cl = (CellLayout)mContent.getChildAt(0);
+            if (cl == null)
+            	return mItemsInReadingOrder;
+            for (int j = 0; j < cl.getCountY(); j++) {
+                for (int i = 0; i < cl.getCountX(); i++) {
+                    View v = cl.getChildAt(i, j);
+                    if (v != null) {
+                        ShortcutInfo info = (ShortcutInfo) v.getTag();
+                        if (info != mCurrentDragInfo || includeCurrentDragItem) {
+                            mItemsInReadingOrder.add(v);
+                        }
+                    }
+                }
+            }
+            mItemsInvalidated = false;
+        }
+        
+       if (mInfo.contents.size() >= 9 && mItemsInReadingOrder.size() == 8) {
+    	   CellLayout cl = (CellLayout)mContent.getChildAt(1);
+    	   View v = cl.getChildAt(0, 0);
+    	   ShortcutInfo info = (ShortcutInfo) v.getTag();
+    	   if (info != mCurrentDragInfo || includeCurrentDragItem) {
+               mItemsInReadingOrder.add(v);
+    	   }
+       }
+    	   
+        return mItemsInReadingOrder;
+    }
+	//ended by lijuan.li
 
     public void getLocationInDragLayer(int[] loc) {
         mLauncher.getDragLayer().getLocationInDragLayer(this, loc);

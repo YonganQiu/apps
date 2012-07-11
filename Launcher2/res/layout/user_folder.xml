@@ -78,16 +78,9 @@
     android:singleLine="true"
     android:imeOptions="flagNoExtractUi"/>
 
-   <com.android.launcher2.CellLayout
+   <com.android.launcher2.FolderPagedView
     android:id="@+id/folder_content"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:paddingBottom = "10dp"
-    android:cacheColorHint="#ff333333"
-    android:hapticFeedbackEnabled="false"
-    launcher:widthGap="@dimen/folder_width_gap"
-    launcher:heightGap="@dimen/folder_height_gap"
-    launcher:cellWidth="@dimen/folder_cell_width"
-    launcher:cellHeight="@dimen/folder_cell_height"/>
+    android:layout_height="wrap_content"/>
 </com.android.launcher2.Folder>
 <!-- Modified by lijuan.li 2012.06.21 end-->

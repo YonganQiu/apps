@@ -132,7 +132,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
         icon.mInfo = folderInfo;
         icon.mLauncher = launcher;
         icon.setContentDescription(String.format(launcher.getString(R.string.folder_name_format),
-                folderInfo.title));
+                folderInfo.title)); 
         Folder folder = Folder.fromXml(launcher);
         folder.setDragController(launcher.getDragController());
         folder.setFolderIcon(icon);
@@ -272,7 +272,10 @@ public class FolderIcon extends LinearLayout implements FolderListener {
         final int itemType = item.itemType;
         return ((itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
                 itemType == LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT) &&
-                !mFolder.isFull() && item != mInfo && !mInfo.opened);
+				//Modefied by lijuan.li 2012.07.11 begin
+                //!mFolder.isFull() && item != mInfo && !mInfo.opened);
+				item != mInfo && !mInfo.opened);
+				//ended by lijuan.li
     }
 
     public boolean acceptDrop(Object dragInfo) {
@@ -449,6 +452,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
     private PreviewItemDrawingParams computePreviewItemDrawingParams(int index,
             PreviewItemDrawingParams params) {
+    	//added by lijuan.li at 2012.6.21 begin
     	/*Original code
         index = NUM_ITEMS_IN_PREVIEW - index - 1;
         float r = (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1);
@@ -474,7 +478,6 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             params.overlayAlpha = overlayAlpha;
         }*/
     	
-    	//added by lijuan.li at 2012.6.21 begin
 		float r = (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1);
 		float scale = 0.3f;
 
@@ -532,9 +535,13 @@ public class FolderIcon extends LinearLayout implements FolderListener {
         super.dispatchDraw(canvas);
 
         if (mFolder == null) return;
-        if (mFolder.getItemCount() == 0 && !mAnimating) return;
+		//Modefied by lijuan.li at 2012.07.11 begin
+        //if (mFolder.getItemCount() == 0 && !mAnimating) return;
 
-        ArrayList<View> items = mFolder.getItemsInReadingOrder(false);
+        //ArrayList<View> items = mFolder.getItemsInReadingOrder(false);
+        if (mFolder.getItemCount(0) == 0 && !mAnimating) return;
+		ArrayList<View> items = mFolder.getItemsInReadingOrderWithInvalidate(false);
+		// ended by lijuan.li
         Drawable d;
         TextView v;
 
@@ -546,7 +553,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             d = v.getCompoundDrawables()[1];
             computePreviewDrawingParams(d);
         }
-
+      //Modified by lijuan.li at 2012.06.21 begin
         /* Original code
         int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
         if (!mAnimating) {
@@ -560,8 +567,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             }
         } else {
             drawPreviewItem(canvas, mAnimParams);
-        }*/
-        //added by lijuan.li at 2012.06.21 begin
+        }*/        
         int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
         if (!mAnimating) {
             for (int i = 0; i < nItemsInPreview; i++) {
