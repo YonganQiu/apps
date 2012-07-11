@@ -50,9 +50,9 @@ public final class InternalsAndAccountsMergeAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		int localsCount = mLocalsAdapter.getCount();
 		if (position < localsCount) {
-			return mLocalsAdapter.getView(position, convertView, parent);
+			return mLocalsAdapter.getView(position, null, parent);
 		} else {
-			return mAccountsAdapter.getView(position - localsCount, convertView, parent);
+			return mAccountsAdapter.getView(position - localsCount, null, parent);
 		}
 	}
 
