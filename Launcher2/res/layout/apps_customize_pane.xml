@@ -39,6 +39,15 @@
                 android:background="@drawable/tab_unselected_holo"
                 android:tabStripEnabled="false"
                 android:divider="@null" />
+              <!-- added by zhong.chen 2012.07.12 begin-->
+              <include
+                android:id="@+id/sort_apps_button"
+                layout="@layout/sort_apps_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="80dp"
+                android:layout_gravity="right" />
+            <!-- added by zhong.chen 2012.07.12 end-->
             <include
                 android:id="@+id/market_button"
                 layout="@layout/market_button"
@@ -81,7 +90,17 @@
                 layout="@layout/scroll_indicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom" />
+                android:layout_gravity="bottom"/>
+            <!-- added by zhong.chen 2012.07.12 begin-->  
+	        <com.android.launcher2.ScrollIndicatorView
+	            android:id="@+id/all_apps_search_view" android:layout_width="18dip"
+	            android:layout_height="match_parent" android:layout_gravity="right"
+	            android:paddingLeft="6dip"
+	            android:paddingRight="0dip"
+	            android:layout_marginTop="12dp"
+	            android:layout_marginBottom="12dp"
+	            android:background="@drawable/allapp_search_bar_bg" />
+	        <!-- added by zhong.chen 2012.07.12 end-->
         </FrameLayout>
     </LinearLayout>
 

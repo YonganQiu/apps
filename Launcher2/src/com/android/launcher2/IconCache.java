@@ -157,6 +157,9 @@ public class IconCache {
             CacheEntry entry = cacheLocked(application.componentName, info, labelCache);
 
             application.title = entry.title;
+            // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+            application.letterIndex = Utilities.getSearchLetterIndexByTitle(application.title.toString());
+            // }added by zhong.chen 2012-7-12 for launcher apps sort end
             application.iconBitmap = entry.icon;
         }
     }

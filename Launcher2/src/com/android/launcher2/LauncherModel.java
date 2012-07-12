@@ -2051,6 +2051,43 @@ public class LauncherModel extends BroadcastReceiver {
             return sCollator.compare(a.label.toString(), b.label.toString());
         }
     };
+    
+    // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+    public static final Comparator<ApplicationInfo> APP_LAST_UPDATE_TIME_COMPARATOR 
+            = new Comparator<ApplicationInfo>() {
+        public final int compare(ApplicationInfo a, ApplicationInfo b) {
+            if (a.lastUpdateTime < b.lastUpdateTime) return 1;
+            if (a.lastUpdateTime > b.lastUpdateTime) return -1;
+            return 0;
+        }
+    };
+    
+    public static final Comparator<ApplicationInfo> APP_LAUNCH_COUNT_COMPARATOR 
+            = new Comparator<ApplicationInfo>() {
+        public final int compare(ApplicationInfo a, ApplicationInfo b) {
+            if (a.launchCount < b.launchCount)
+                return 1;
+            if (a.launchCount > b.launchCount)
+                return -1;
+            return 0;
+        }
+    };
+    public static final Comparator<ApplicationInfo> APP_LETTER_COMPARATOR 
+            = new Comparator<ApplicationInfo>() {
+        public final int compare(ApplicationInfo a, ApplicationInfo b) {
+            final int cmp = a.letterIndex - b.letterIndex;
+            if (cmp == 0) {
+                return sCollator.compare(a.title.toString(), b.title.toString());
+            } else {
+                return cmp;
+            }
+        }
+    };
+    interface ComparatorIndex {
+        int NAME = 0, LETTER_INDEX = 1, INSTALL_TIME = 2, 
+                LAUNCH_COUNT = 3, LAST_UPDATE_TIME = 4;
+        }
+    // }added by zhong.chen 2012-7-12 for launcher apps sort end
     static ComponentName getComponentNameFromResolveInfo(ResolveInfo info) {
         if (info.activityInfo != null) {
             return new ComponentName(info.activityInfo.packageName, info.activityInfo.name);

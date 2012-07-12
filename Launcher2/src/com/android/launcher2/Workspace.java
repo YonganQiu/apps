@@ -170,7 +170,7 @@ public class Workspace extends SmoothPagedView
 
     // {added by zhong.chen 2012-6-28 for launcher user-defined
     enum State { NORMAL, SPRING_LOADED, SMALL, USER_DEFINED };
-    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:30:22
+    // }added by zhong.chen 2012-6-28 for launcher user-defined end
     private State mState = State.NORMAL;
     private boolean mIsSwitchingState = false;
     private boolean mSwitchStateAfterFirstLayout = false;
@@ -433,9 +433,16 @@ public class Workspace extends SmoothPagedView
                     return false;
                 }
             }
+            
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                if(mState == State.USER_DEFINED) {
+                    mLauncher.hideUserDefinedSettings(true, false);
+                    return true;
+                }
+                return false;
+            }
         });
         // }added by zhong.chen 2012-6-28 for launcher user-defined end
-        // 下午3:31:20
 
     }
 
@@ -1387,7 +1394,9 @@ public class Workspace extends SmoothPagedView
             cl.setOverScrollAmount(Math.abs(scrollProgress), index == 0);
             float rotation = - WORKSPACE_OVERSCROLL_ROTATION * scrollProgress;
             cl.setCameraDistance(mDensity * CAMERA_DISTANCE);
-            cl.setPivotX(cl.getMeasuredWidth() * (index == 0 ? 0.75f : 0.25f));
+            // {modified by zhong.chen 2012-7-3 for launcher user-defined
+            cl.setPivotX(cl.getMeasuredWidth() * 0.5f/*(index == 0 ? 0.75f : 0.25f)*/);
+            // }modified by zhong.chen 2012-7-3 for launcher user-defined end
             cl.setPivotY(cl.getMeasuredHeight() * 0.5f);
             cl.setRotationY(rotation);
             cl.setOverscrollTransformsDirty(true);
@@ -1969,20 +1978,20 @@ public class Workspace extends SmoothPagedView
             // {added by zhong.chen 2012-6-28 for launcher user-defined
             if(stateIsUserDefined) {
                 cl.setIsDragOverlapping(true);
-                cl.setBackgroundResource(R.drawable.user_defined_tab_bg);
-                cl.setOnClickListener(new OnClickListener(){
+                //cl.setBackgroundResource(R.drawable.user_defined_tab_bg);
+                /*cl.setOnClickListener(new OnClickListener(){
                     @Override
                     public void onClick(View v) {
                         if(mState == State.USER_DEFINED) {
                             mLauncher.hideUserDefinedSettings(true, false);
                         }
                     }
-                });
+                });*/
             } 
             
             if(oldStateIsUserDefined) {
                 cl.setIsDragOverlapping(false);
-                cl.setBackgroundDrawable(null);
+                //cl.setBackgroundDrawable(null);
             } 
             // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
@@ -4201,7 +4210,7 @@ public class Workspace extends SmoothPagedView
 	    if(mState == State.USER_DEFINED) {
 	        mGestureDetector.onTouchEvent(ev);
 	    }
-	    // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:47:32
+	    // }added by zhong.chen 2012-6-28 for launcher user-defined end
 		int actionMasked = ev.getActionMasked();
 		if (mMultiTouchState) {
 			if (ev.getPointerCount() < 2) {

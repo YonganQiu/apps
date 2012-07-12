@@ -16,14 +16,15 @@
 
 package com.android.launcher2;
 
-import java.util.ArrayList;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -36,6 +37,9 @@ import android.widget.TabWidget;
 import android.widget.TextView;
 
 import com.android.launcher.R;
+import com.android.launcher2.LauncherModel.ComparatorIndex;
+
+import java.util.ArrayList;
 
 public class AppsCustomizeTabHost extends TabHost implements LauncherTransitionable,
         TabHost.OnTabChangeListener  {
@@ -421,6 +425,7 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
             // Load the current page synchronously, and the neighboring pages asynchronously
             mAppsCustomizePane.loadAssociatedPages(mAppsCustomizePane.getCurrentPage(), true);
             mAppsCustomizePane.loadAssociatedPages(mAppsCustomizePane.getCurrentPage());
+            
         }
     }
 
@@ -434,4 +439,42 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
     boolean isTransitioning() {
         return mInTransition;
     }
+    
+    // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+    private String mLetterIndexCharacter = "#";
+    private Paint mEventTextPaint = new Paint();
+    
+    void updateLetterIndex(int mSelectIndex, final int y, int count) {
+        int charIndex = 63 + mSelectIndex;
+        mLetterIndexCharacter = "#";
+        if((charIndex >= 'a' && charIndex <= 'z')
+                || (charIndex >= 'A' && charIndex <= 'Z')) {
+            mLetterIndexCharacter = Character.toString((char)(charIndex));
+        }
+        //mAppTab.setText(mAppTabLabel + mLetterIndexCharacter);
+        mAppsCustomizePane.highlightCurrentLetterIndex(mSelectIndex, count);
+    }
+    
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if(mAppsCustomizePane.getComparatorOrder() == ComparatorIndex.LETTER_INDEX
+                && mAppsCustomizePane.getLetterSelectIndexIndex() > 0
+                && mAppsCustomizePane.isAllAppPage()) {
+            int color = getResources().getColor(R.color.drag_view_multiply_color);
+            int width = canvas.getWidth();
+            int height = canvas.getHeight();
+            int textSize = Math.min(width, height);
+            mEventTextPaint.setColor(color);
+            mEventTextPaint.setTextSize(textSize);
+            mEventTextPaint.setAlpha(32);
+            mEventTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+            mEventTextPaint.setAntiAlias(true);
+            mEventTextPaint.setTextAlign(Paint.Align.CENTER);
+            
+            canvas.drawText(mLetterIndexCharacter, width / 2, height / 2 + textSize / 3, mEventTextPaint);
+        }
+        
+    }
+    // }added by zhong.chen 2012-7-12 for launcher apps sort end
 }

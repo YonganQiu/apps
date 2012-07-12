@@ -23,13 +23,11 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
-import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.SearchManager;
-import android.app.StatusBarManager;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
@@ -37,7 +35,6 @@ import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipDescription;
-import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -52,23 +49,18 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.LinearGradient;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.Bitmap.Config;
-import android.graphics.Shader.TileMode;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.provider.Settings;
@@ -101,14 +93,17 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Advanceable;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.common.Search;
+import com.android.internal.app.IUsageStats;
+import com.android.internal.os.PkgUsageStats;
 import com.android.launcher.R;
 import com.android.launcher2.DropTarget.DragObject;
+import com.android.launcher2.LauncherModel.ComparatorIndex;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -177,11 +172,10 @@ public final class Launcher extends Activity
     /** The different states that Launcher can be in. */
     private enum State { WORKSPACE, APPS_CUSTOMIZE, APPS_CUSTOMIZE_SPRING_LOADED, 
         USER_DEFINED_SETTINGS };
-     // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午2:56:07
+     // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
     private State mState = State.WORKSPACE;
     private AnimatorSet mStateAnimation;
-    private AnimatorSet mDividerAnimator;
 
     static final int APPWIDGET_HOST_ID = 1024;
     private static final int EXIT_SPRINGLOADED_MODE_SHORT_TIMEOUT = 300;
@@ -262,6 +256,9 @@ public final class Launcher extends Activity
     private static Drawable.ConstantState[] sGlobalSearchIcon = new Drawable.ConstantState[2];
     private static Drawable.ConstantState[] sVoiceSearchIcon = new Drawable.ConstantState[2];
     private static Drawable.ConstantState[] sAppMarketIcon = new Drawable.ConstantState[2];
+    // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+    private static Drawable.ConstantState[] sSortAppsIcon = new Drawable.ConstantState[2];
+    // }added by zhong.chen 2012-7-12 for launcher apps sort end
 
     static final ArrayList<String> sDumpLogs = new ArrayList<String>();
 
@@ -292,6 +289,9 @@ public final class Launcher extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LauncherApplication app = ((LauncherApplication)getApplication());
+        // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+        mUsageStatsService = IUsageStats.Stub.asInterface(ServiceManager.getService("usagestats"));
+        // }added by zhong.chen 2012-7-12 for launcher apps sort end
         mModel = app.setLauncher(this);
         mIconCache = app.getIconCache();
         mDragController = new DragController(this);
@@ -347,12 +347,15 @@ public final class Launcher extends Activity
         boolean voiceVisible = false;
         // If we have a saved version of these external icons, we load them up immediately
         int coi = getCurrentOrientationIndexForGlobalIcons();
+        // {added by zhong.chen 2012-7-12 for launcher apps sort begin
         if (sGlobalSearchIcon[coi] == null || sVoiceSearchIcon[coi] == null ||
-                sAppMarketIcon[coi] == null) {
+                sAppMarketIcon[coi] == null || sSortAppsIcon[coi] == null) {
+            updateSortAppsIcon(true, View.VISIBLE);
             updateAppMarketIcon();
             searchVisible = updateGlobalSearchIcon();
             voiceVisible = updateVoiceSearchIcon(searchVisible);
         }
+        // }added by zhong.chen 2012-7-12 for launcher apps sort end
         if (sGlobalSearchIcon[coi] != null) {
              updateGlobalSearchIcon(sGlobalSearchIcon[coi]);
              searchVisible = true;
@@ -582,6 +585,9 @@ public final class Launcher extends Activity
         if (mWaitingForResume != null) {
             mWaitingForResume.setStayPressed(false);
         }
+        // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+        updateSortAppsIcon(true, View.VISIBLE);
+        // }added by zhong.chen 2012-7-12 for launcher apps sort end
         // When we resume Launcher, a different Activity might be responsible for the app
         // market intent, so refresh the icon
         updateAppMarketIcon();
@@ -592,7 +598,7 @@ public final class Launcher extends Activity
                 && mUserDefinedTabHost.getVisibility() == View.VISIBLE) {
             showUserDefinedSettings(false, true);
         }
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:01:15
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
         if (!mWorkspaceLoading) {
             final ViewTreeObserver observer = mWorkspace.getViewTreeObserver();
@@ -741,7 +747,7 @@ public final class Launcher extends Activity
         if (state == State.USER_DEFINED_SETTINGS) {
             showUserDefinedSettings(false, true);
         }
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:03:09
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
 
         final int currentScreen = savedState.getInt(RUNTIME_STATE_CURRENT_SCREEN, -1);
@@ -798,7 +804,7 @@ public final class Launcher extends Activity
             int currentIndex = savedState.getInt("user_defined_settings_currentIndex");
             mUserDefinedContent.restorePageForIndex(currentIndex);
         }
-       // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:03:54
+       // }added by zhong.chen 2012-6-28 for launcher user-defined end 3:03:54
         
     }
 
@@ -814,7 +820,7 @@ public final class Launcher extends Activity
         mDockDivider = (ImageView) findViewById(R.id.dock_divider);
         // {added by zhong.chen 2012-6-28 for launcher user-defined
         mScrollIndicator = (ImageView) findViewById(R.id.paged_view_indicator);
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:04:36
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
         // Setup the drag layer
         mDragLayer.setup(this, dragController);
@@ -847,7 +853,7 @@ public final class Launcher extends Activity
         mUserDefinedContent = (UserDefinedSettingsPagedView)
                 mUserDefinedTabHost.findViewById(R.id.apps_customize_pane_content);
         mUserDefinedContent.setup(this);
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:05:21
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
         // Get the all apps button
         mAllAppsButton = findViewById(R.id.all_apps_button);
@@ -870,6 +876,10 @@ public final class Launcher extends Activity
         if (mSearchDropTargetBar != null) {
             mSearchDropTargetBar.setup(this, dragController);
         }
+        // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+        mSearchIndicatorView = (ScrollIndicatorView) findViewById(R.id.all_apps_search_view);
+        mSearchIndicatorView.setParent(this, mAppsCustomizeTabHost);
+        // }added by zhong.chen 2012-7-12 for launcher apps sort end
     }
 
     /**
@@ -1109,7 +1119,7 @@ public final class Launcher extends Activity
                     mUserDefinedTabHost.reset();
                     showWorkspace(false);
                 }
-                // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:06:25
+                // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
             } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                 mUserPresent = true;
@@ -1142,6 +1152,12 @@ public final class Launcher extends Activity
             unregisterReceiver(mReceiver);
             mAttached = false;
         }
+        // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+        if(null != mLetterIndicator) {
+            mHandler.removeCallbacks(mRemoveLetterIndicator);
+            mHandler.post(mRemoveLetterIndicator);
+        }
+        // }added by zhong.chen 2012-7-12 for launcher apps sort end
         updateRunning();
     }
 
@@ -1306,7 +1322,7 @@ public final class Launcher extends Activity
             if (!alreadyOnHome && mUserDefinedTabHost != null) {
                 mUserDefinedTabHost.reset();
             }
-            // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:07:52
+            // }added by zhong.chen 2012-6-28 for launcher user-defined end
             
         }
     }
@@ -1359,7 +1375,7 @@ public final class Launcher extends Activity
             int currentIndex = mUserDefinedContent.getSaveInstanceStateIndex();
             outState.putInt("user_defined_settings_currentIndex", currentIndex);
         }
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:09:55
+        // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
     }
 
@@ -1497,7 +1513,7 @@ public final class Launcher extends Activity
             // {added by zhong.chen 2012-6-28 for launcher user-defined
             //startWallpaper();
             showUserDefinedSettings(true, false);
-            // }added by zhong.chen 2012-6-28 for launcher user-defined end 下午3:10:40
+            // }added by zhong.chen 2012-6-28 for launcher user-defined end
             return true;
         }
 
@@ -1776,18 +1792,16 @@ public final class Launcher extends Activity
     	
     	// {added by zhong.chen 2012-6-28 for launcher user-defined
     	if(mState != State.WORKSPACE) {
-            
             hideUserDefinedSettings(true, false);
             return;
         }
     	// }added by zhong.chen 2012-6-28 for launcher user-defined end
-        // 下午3:13:00
 
     	// {modified by zhong.chen 2012-6-28 for launcher user-defined
         if (mState == State.APPS_CUSTOMIZE 
                 || mState == State.USER_DEFINED_SETTINGS) {
             showWorkspace(true);
-        //}modified by zhong.chen 2012-6-28 for launcher user-defined end 下午3:13:23 
+        //}modified by zhong.chen 2012-6-28 for launcher user-defined end 
         } else if (mWorkspace.getOpenFolder() != null) {
             Folder openFolder = mWorkspace.getOpenFolder();
             if (openFolder.isEditingName()) {
@@ -1917,6 +1931,8 @@ public final class Launcher extends Activity
             startActivitySafely(mAppMarketIntent, "app market");
         }
     }
+    
+
 
     void startApplicationDetailsActivity(ComponentName componentName) {
         String packageName = componentName.getPackageName();
@@ -2136,7 +2152,7 @@ public final class Launcher extends Activity
                 if(mState != State.USER_DEFINED_SETTINGS) {
                     showUserDefinedSettings(true, false);
                 }
-                // }modified by zhong.chen 2012-6-28 for launcher user-defined end 下午3:14:43 
+                // }modified by zhong.chen 2012-6-28 for launcher user-defined end 
             } else {
                 if (!(itemUnderLongClick instanceof Folder)) {
                     // User long pressed on an item
@@ -2511,6 +2527,13 @@ public final class Launcher extends Activity
      * @param animated If true, the transition will be animated.
      */
     private void hideAppsCustomizeHelper(boolean animated, final boolean springLoaded) {
+        try {
+            if(null != mSortAppsDialog) {
+                mSortAppsDialog.dismiss();
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
         if (mStateAnimation != null) {
             mStateAnimation.cancel();
             mStateAnimation = null;
@@ -2600,7 +2623,6 @@ public final class Launcher extends Activity
                 hideAppsCustomizeHelper(animated, false);
             }
             // }modified by zhong.chen 2012-6-28 for launcher user-defined end
-            // 下午3:17:09 
 
             // Show the search bar and hotseat
             mSearchDropTargetBar.showSearchBar(animated);
@@ -3079,8 +3101,7 @@ public final class Launcher extends Activity
                     // user-defined
                     //startWallpaper();
                     showUserDefinedSettings(true, false);
-                    // }modified by zhong.chen 2012-6-28 for launcher
-                    // user-defined end 下午3:22:34 
+                    // }modified by zhong.chen 2012-6-28 for launcher user-defined end 
                     break;
                 }
             }
@@ -3288,6 +3309,9 @@ public final class Launcher extends Activity
         }
         sPendingAddList.clear();
 
+        // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+        updateSortAppsIcon(true, View.VISIBLE);
+        // }added by zhong.chen 2012-7-12 for launcher apps sort end
         // Update the market app icon as necessary (the other icons will be managed in response to
         // package changes in bindSearchablesChanged()
         updateAppMarketIcon();
@@ -3435,7 +3459,7 @@ public final class Launcher extends Activity
     }
 
     /* Cling related */
-    private static final String PREFS_KEY = "com.android.launcher2.prefs";
+    static final String PREFS_KEY = "com.android.launcher2.prefs";
     private boolean isClingsEnabled() {
         // disable clings when running in a test harness
         if(ActivityManager.isRunningInTestHarness()) return false;
@@ -3679,7 +3703,6 @@ public final class Launcher extends Activity
                 x = cl.getX();
                 y = cl.getY();
                 if(!mInitialized) {
-                    Log.e("zh.cn", "................................................................");
                     cl.setOriginalX(x);
                     cl.setOriginalY(y);
                 }
@@ -3984,6 +4007,167 @@ public final class Launcher extends Activity
     }
     
     //=========== {added by zhong.chen 2012-6-28 for launcher user-defined end ==============
+    // {added by zhong.chen 2012-7-12 for launcher apps sort begin == begin ==
+    private View mSortAppBtn;
+    private AlertDialog mSortAppsDialog;
+    
+    private IUsageStats mUsageStatsService;
+    
+    private ScrollIndicatorView mSearchIndicatorView;
+    private PopupWindow mLetterIndicator;
+    private TextView mLetterIndicatorView;
+    private int mBgWidth;
+    private int mBgHeight;
+    private final class RemoveWindow implements Runnable {
+        public void run() {
+            if(null != mLetterIndicator) {
+                mLetterIndicator.dismiss();
+            }
+        }
+    }
+    private RemoveWindow mRemoveLetterIndicator = new RemoveWindow();
+    
+    boolean DEBUG_POP_WINDOW = true;
+    
+    public int getLaunchCount(ComponentName componentName) {
+        try {
+            if(null == mUsageStatsService) {
+                mUsageStatsService = IUsageStats.Stub
+                        .asInterface(ServiceManager.getService("usagestats"));
+            }
+            PkgUsageStats stats = mUsageStatsService.getPkgUsageStats(componentName);
+            if(null != stats) {
+                return stats.launchCount;
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed getting PkgUsageStats");
+        } 
+        return -1;
+    }
+    
+    public PkgUsageStats[] getPkgUsageStats() {
+        try {
+            if(null == mUsageStatsService) {
+                mUsageStatsService = IUsageStats.Stub
+                        .asInterface(ServiceManager.getService("usagestats"));
+            }
+            return mUsageStatsService.getAllPkgUsageStats();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed getting PkgUsageStats");
+        } 
+        return null;
+    }
+    
+    void updateSortAppsIcon(boolean updateIcon, int visibility) {
+        if(null == mSortAppBtn) {
+            mSortAppBtn = findViewById(R.id.sort_apps_button);
+        }
+        if(updateIcon) {
+            Resources r = getResources();
+            int w = r.getDimensionPixelSize(R.dimen.toolbar_external_icon_width);
+            int h = r.getDimensionPixelSize(R.dimen.toolbar_external_icon_height);
+
+            TextView button = (TextView) findViewById(R.id.sort_apps_button);
+            Drawable toolbarIcon = r.getDrawable(R.drawable.ic_sort_apps);
+            toolbarIcon.setBounds(0, 0, w, h);
+            if (button != null) {
+                button.setCompoundDrawables(toolbarIcon, null, null, null);
+            }
+        }
+        if(visibility != mSortAppBtn.getVisibility()) {
+            mSortAppBtn.setVisibility(visibility);
+        }
+    }
+    
+    public void onClickSortAppsButton(View v) {
+        final int order = mAppsCustomizeContent.getComparatorOrder();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setSingleChoiceItems(getResources()
+                .getStringArray(R.array.sorting_orders_labels), order, 
+                        new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(which == order) {
+                            dialog.dismiss();
+                            return;
+                        }
+                        final int comparatorSort = which;
+                        mAppsCustomizeTabHost.post(new Runnable() {
+                            public void run() {
+                                if (mAppsCustomizeContent != null) {
+                                    if(comparatorSort > ComparatorIndex.LAUNCH_COUNT) {
+                                        mAppsCustomizeContent.sort(ComparatorIndex.NAME);
+                                    } else {
+                                        mAppsCustomizeContent.sort(comparatorSort);
+                                    }
+                                }
+                            }
+                        });
+                        dialog.dismiss();
+                    }
+                });
+        mSortAppsDialog = builder.create();
+        mSortAppsDialog.getListView().post(new Runnable() {
+            @Override
+            public void run() {
+                mSortAppsDialog.getListView().setItemChecked(order, true);
+                mSortAppsDialog.getListView().setSelection(order);
+            }
+        });
+        mSortAppsDialog.setCanceledOnTouchOutside(true);
+        mSortAppsDialog.show();
+    }
+    void showLetterPopuWindow(int mSelectIndex, final int yoff/*, Bitmap bm*/) {
+        if(DEBUG_POP_WINDOW) {
+            return;
+        }
+        Bitmap bm = null;// FIXME zh.cn 
+        if (mLetterIndicatorView == null || mLetterIndicator == null) {
+            mLetterIndicatorView = new TextView(this);
+            mLetterIndicator = new PopupWindow(this);
+            mLetterIndicator.setContentView(mLetterIndicatorView);
+            Drawable windowBg = new ColorDrawable();
+            windowBg.setAlpha(0);
+            mLetterIndicator.setBackgroundDrawable(windowBg);
+            Drawable bigLetterBg = getResources().getDrawable(
+                    R.drawable.fastscroll_label_right_holo_dark);
+            mBgWidth = bigLetterBg.getIntrinsicWidth();
+            mBgHeight = bigLetterBg.getIntrinsicHeight();
+            mLetterIndicator.setWidth(mBgWidth);
+            mLetterIndicator.setHeight(mBgHeight);
+            mLetterIndicatorView.setBackgroundDrawable(bigLetterBg);
+            mLetterIndicatorView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            mLetterIndicatorView.setPadding(0, (mBgHeight - bm.getHeight()) / 2, mBgWidth / 2 - bm.getWidth() / 2, 0);
+        }
+
+        mLetterIndicatorView.setCompoundDrawablesWithIntrinsicBounds(null, new BitmapDrawable(
+                getResources(), bm), null, null);
+
+        if (mLetterIndicator.isShowing()) {
+            mLetterIndicator.update(mAppsCustomizeTabHost, mSearchIndicatorView.getLeft() - mBgWidth , 
+                    yoff + mBgHeight / 2 - mAppsCustomizeTabHost.getHeight(), -1, -1);
+        } else {
+            mLetterIndicator.showAsDropDown(mAppsCustomizeTabHost, mSearchIndicatorView.getLeft() - mBgWidth, 
+                    yoff + mBgHeight / 2 - mAppsCustomizeTabHost.getHeight());
+        }
+        mHandler.removeCallbacks(mRemoveLetterIndicator);
+        mHandler.postDelayed(mRemoveLetterIndicator, 1000);
+    }
+    public void setLetterOrderViewVisibility(int visibility) {
+        mSearchIndicatorView.setVisibility(visibility);
+    }
+    
+    public void setLetterOrderEnable(int[] enables) {
+        mSearchIndicatorView.setEnables(enables);
+        mSearchIndicatorView.invalidate();
+    }
+    
+    int getSearchViewLeft() {
+        return mSearchIndicatorView.getLeft();
+    }
+    // }added by zhong.chen 2012-7-12 for launcher apps sort end ===== end ====
+
 }
 
 interface LauncherTransitionable {

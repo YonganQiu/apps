@@ -60,10 +60,22 @@ class ApplicationInfo extends ItemInfo {
 
     int flags = 0;
     
-  //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
+    //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
     boolean isEnabledNew;
-    int launchCount = 0;
-  //}add by zhongheng.zheng end
+    //}add by zhongheng.zheng end
+    
+    // {added by zhong.chen 2012-7-12 for launcher apps sort begin
+    long lastUpdateTime;
+    
+    int launchCount;
+    
+    int letterIndex;
+    
+    int mOldLeft;
+    int mOldRight;
+    int mOldTop;
+    int mOldBottom;
+    // }added by zhong.chen 2012-7-12 for launcher apps sort end
 
     ApplicationInfo() {
         itemType = LauncherSettings.BaseLauncherColumns.ITEM_TYPE_SHORTCUT;
