@@ -402,7 +402,16 @@ public class ActionBarAdapter implements OnQueryTextListener, OnCloseListener {
 
     private TabState loadLastTabPreference() {
         try {
-            return TabState.fromInt(mPrefs.getInt(PERSISTENT_LAST_TAB, DEFAULT_TAB.ordinal()));
+            //{Modified by yongan.qiu on 2012-7-12 begin.
+            //old:
+            /*return TabState.fromInt(mPrefs.getInt(PERSISTENT_LAST_TAB, DEFAULT_TAB.ordinal()));*/
+            //new:
+            TabState tabState = TabState.fromInt(mPrefs.getInt(PERSISTENT_LAST_TAB, DEFAULT_TAB.ordinal()));
+            if (tabState.equals(TabState.DIALER)) {
+                tabState = DEFAULT_TAB;
+            }
+            return tabState;
+            //}Modified by yongan.qiu end.
         } catch (IllegalArgumentException e) {
             // Preference is corrupt?
             return DEFAULT_TAB;

@@ -19,6 +19,7 @@ package com.android.contacts.editor;
 import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
 import com.android.contacts.model.AccountType;
+import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.model.DataKind;
 import com.android.contacts.model.EntityDelta;
@@ -143,11 +144,31 @@ public class RawContactReadOnlyEditorView extends BaseRawContactEditorView
                 mAccountNameTextView.setText(mAccountName);
             }
         } else {
-            CharSequence accountType = type.getDisplayLabel(mContext);
+            //{Modified by yongan.qiu on 2012-7-12 begin.
+            //old:
+            /*CharSequence accountType = type.getDisplayLabel(mContext);*/
+            //new:
+            CharSequence accountType;
+            boolean hideAccountName = false;
+            if (AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(type.accountType)) {
+                accountType = mContext.getString(R.string.account_phone);
+                hideAccountName = true;
+            } else if (AccountTypeManager.ACCOUNT_TYPE_SIM.equals(type.accountType)) {
+                accountType = mContext.getString(R.string.account_sim);
+                hideAccountName = true;
+            } else {
+                accountType = type.getDisplayLabel(mContext);
+            }
+            //}Modified by yongan.qiu end.
             if (TextUtils.isEmpty(accountType)) {
                 accountType = mContext.getString(R.string.account_phone);
             }
-            if (!TextUtils.isEmpty(mAccountName)) {
+            //{Modified by yongan.qiu on 2012-7-12 begin.
+            //old:
+            /*if (!TextUtils.isEmpty(mAccountName)) {*/
+            //new:
+            if (!TextUtils.isEmpty(mAccountName) && !hideAccountName) {
+            //}Modified by yongan.qiu end.
                 mAccountNameTextView.setVisibility(View.VISIBLE);
                 mAccountNameTextView.setText(
                         mContext.getString(R.string.from_account_format, mAccountName));

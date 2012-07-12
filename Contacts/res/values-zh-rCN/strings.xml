@@ -623,6 +623,8 @@
     <string name="account_type_local">手机</string>
     <string name="account_type_sim">SIM卡</string>
 
+    <string name="account_sim">"仅保存在SIM卡中，不同步"</string>
+
     <!-- Added by yongan.qiu end. -->
 
 </resources>

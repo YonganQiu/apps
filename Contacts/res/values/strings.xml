@@ -1898,6 +1898,8 @@
     <string name="account_type_local">Phone</string>
     <string name="account_type_sim">Sim card</string>
 
+    <string name="account_sim">Sim-only, unsynced</string>
+
     <!-- Added by yongan.qiu end. -->
 
 </resources>

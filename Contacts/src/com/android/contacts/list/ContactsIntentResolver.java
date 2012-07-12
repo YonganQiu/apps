@@ -74,10 +74,11 @@ public class ContactsIntentResolver {
                     request.setActionCode(ContactsRequest.ACTION_DIAL);
                 }
             }
-        } else if (Intent.ACTION_MAIN.equals(action)
+        } /*Removed by yongan.qiu on 2012-7-12
+        else if (Intent.ACTION_MAIN.equals(action)
                 && PeopleActivity.class.getName().equals(intent.getComponent().getClassName())) {
             request.setActionCode(ContactsRequest.ACTION_ALL_CONTACTS);
-        } else if (UI.LIST_DEFAULT.equals(action) ) {
+        }*/ else if (UI.LIST_DEFAULT.equals(action) ) {
             request.setActionCode(ContactsRequest.ACTION_DEFAULT);
         } else if (UI.LIST_ALL_CONTACTS_ACTION.equals(action)) {
             request.setActionCode(ContactsRequest.ACTION_ALL_CONTACTS);

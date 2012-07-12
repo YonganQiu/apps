@@ -20,6 +20,7 @@ import com.android.contacts.R;
 import com.android.contacts.list.AccountFilterActivity;
 import com.android.contacts.list.ContactListFilter;
 import com.android.contacts.list.ContactListFilterController;
+import com.android.contacts.model.AccountTypeManager;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -66,6 +67,15 @@ public class AccountFilterUtil {
         final TextView headerTextView = (TextView)
                 filterContainer.findViewById(R.id.account_filter_header);
 
+        //{Added by yongan.qiu on 2012-7-12 begin.
+        CharSequence accountTypeLabel = null;
+        boolean showAccountTypeLabel = AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(filter.accountType)
+                || AccountTypeManager.ACCOUNT_TYPE_SIM.equals(filter.accountType);
+        if (showAccountTypeLabel) {
+            accountTypeLabel = AccountTypeManager.getInstance(context).
+                    getAccountType(filter.accountType, null).getDisplayLabel(context);
+        }
+        //}Added by yongan.qiu end.
         boolean textWasSet = false;
         if (isLoading) {
             headerTextView.setText(R.string.contact_list_loading);
@@ -77,8 +87,19 @@ public class AccountFilterUtil {
                         textWasSet = true;
                     }
                 } else if (filter.filterType == ContactListFilter.FILTER_TYPE_ACCOUNT) {
-                    headerTextView.setText(context.getString(
-                            R.string.listAllContactsInAccount, filter.accountName));
+                    //{Modified by yongan.qiu on 2012-7-12 begin.
+                    //old:
+                    /*headerTextView.setText(context.getString(
+                            R.string.listAllContactsInAccount, filter.accountName));*/
+                    //new:
+                    if (showAccountTypeLabel) {
+                        headerTextView.setText(context.getString(
+                                R.string.listAllContactsInAccount, accountTypeLabel));
+                    } else {
+                        headerTextView.setText(context.getString(
+                                R.string.listAllContactsInAccount, filter.accountName));
+                    }
+                    //}Modified by yongan.qiu end.
                     textWasSet = true;
                 } else if (filter.filterType == ContactListFilter.FILTER_TYPE_CUSTOM) {
                     headerTextView.setText(R.string.listCustomView);
@@ -93,8 +114,19 @@ public class AccountFilterUtil {
                         textWasSet = true;
                     }
                 } else if (filter.filterType == ContactListFilter.FILTER_TYPE_ACCOUNT) {
-                    headerTextView.setText(context.getString(
-                            R.string.listAllContactsInAccount, filter.accountName));
+                    //{Modified by yongan.qiu on 2012-7-12 begin.
+                    //old:
+                    /*headerTextView.setText(context.getString(
+                            R.string.listAllContactsInAccount, filter.accountName));*/
+                    //new:
+                    if (showAccountTypeLabel) {
+                        headerTextView.setText(context.getString(
+                                R.string.listAllContactsInAccount, accountTypeLabel));
+                    } else {
+                        headerTextView.setText(context.getString(
+                                R.string.listAllContactsInAccount, filter.accountName));
+                    }
+                    //}Modified by yongan.qiu end.
                     textWasSet = true;
                 } else if (filter.filterType == ContactListFilter.FILTER_TYPE_CUSTOM) {
                     headerTextView.setText(R.string.listCustomView);

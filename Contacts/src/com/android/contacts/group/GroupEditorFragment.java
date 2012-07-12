@@ -461,10 +461,23 @@ public class GroupEditorFragment extends Fragment implements SelectAccountDialog
             ImageView accountIcon = (ImageView) editorView.findViewById(R.id.account_icon);
             TextView accountTypeTextView = (TextView) editorView.findViewById(R.id.account_type);
             TextView accountNameTextView = (TextView) editorView.findViewById(R.id.account_name);
-            if (!TextUtils.isEmpty(mAccountName)) {
+            //{Modified by yongan.qiu on 2012-7-12 begin.
+            //old:
+            /*if (!TextUtils.isEmpty(mAccountName)) {
                 accountNameTextView.setText(
                         mContext.getString(R.string.from_account_format, mAccountName));
+            }*/
+            //new:
+            if (!TextUtils.isEmpty(mAccountName)
+                    && !AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(accountType.accountType)
+                    && !AccountTypeManager.ACCOUNT_TYPE_SIM.equals(accountType.accountType)) {
+                accountNameTextView.setText(
+                        mContext.getString(R.string.from_account_format, mAccountName));
+                accountNameTextView.setVisibility(View.VISIBLE);
+            } else {
+                accountNameTextView.setVisibility(View.GONE);
             }
+            //}Modified by yongan.qiu end.
             accountTypeTextView.setText(accountTypeDisplayLabel);
             accountIcon.setImageDrawable(accountType.getDisplayIcon(mContext));
         }

@@ -199,7 +199,18 @@ public class GroupBrowseListAdapter extends BaseAdapter {
         AccountType accountType = mAccountTypeManager.getAccountType(
                 entry.getAccountType(), entry.getDataSet());
         viewCache.accountType.setText(accountType.getDisplayLabel(mContext).toString());
-        viewCache.accountName.setText(entry.getAccountName());
+        //{Modified by yongan.qiu on 2012-7-12 begin.
+        //old:
+        /*viewCache.accountName.setText(entry.getAccountName());*/
+        //new:
+        if (AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(entry.getAccountType())
+                || AccountTypeManager.ACCOUNT_TYPE_SIM.equals(entry.getAccountType())) {
+            viewCache.accountName.setVisibility(View.GONE);
+        } else {
+            viewCache.accountName.setText(entry.getAccountName());
+            viewCache.accountName.setVisibility(View.VISIBLE);
+        }
+        //}Modified by yongan.qiu end.
     }
 
     private static Uri getGroupUriFromId(long groupId) {
