@@ -16,6 +16,9 @@
 
 package com.android.launcher2;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
 import android.app.Application;
 import android.app.SearchManager;
 import android.content.ContentResolver;
@@ -25,8 +28,6 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.os.Handler;
-
-import java.lang.ref.WeakReference;
 
 public class LauncherApplication extends Application {
     public LauncherModel mModel;
@@ -38,6 +39,11 @@ public class LauncherApplication extends Application {
     //Added by yongan.qiu on 2012.3.20 begin.
     private Launcher mLauncher;
     //Added by yongan.qiu on 2012.3.20 end.
+    
+	// {add by jingjiang.yu at 2012.07.09 begin for screen scroll.
+	private ArrayList<ScrollAnimStyleInfo> mScrollAnimList = new ArrayList<ScrollAnimStyleInfo>(
+			0);
+	// }add by jingjiang.yu end
     
     @Override
     public void onCreate() {
@@ -76,6 +82,10 @@ public class LauncherApplication extends Application {
         ContentResolver resolver = getContentResolver();
         resolver.registerContentObserver(LauncherSettings.Favorites.CONTENT_URI, true,
                 mFavoritesObserver);
+        
+      //{add by jingjiang.yu at 2012.07.09 begin for screen scroll.
+        mScrollAnimList = ScrollAnimStyleInfo.parserWorkspaceScrollAnimConfig(this);
+      //}add by jingjiang.yu end
     }
 
     /**
@@ -144,4 +154,10 @@ public class LauncherApplication extends Application {
     public static float getScreenDensity() {
         return sScreenDensity;
     }
+    
+    //{add by jingjiang.yu at 2012.07.09 begin for screen scroll.
+	public ArrayList<ScrollAnimStyleInfo> getScrollAnimList() {
+		return mScrollAnimList;
+	}
+    //}add by jingjiang.yu end
 }

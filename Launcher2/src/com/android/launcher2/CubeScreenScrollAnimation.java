@@ -64,4 +64,14 @@ public class CubeScreenScrollAnimation implements ScreenScrollAnimation{
 		v.fastInvalidate();
 	}
 
+	@Override
+	public void resetAnimationData(View v) {
+		int pageWidth = v.getMeasuredWidth();
+		int pageHeight = v.getMeasuredHeight();
+		v.setPivotX(pageWidth / 2.0f);
+		v.setPivotY(pageHeight / 2.0f);
+		v.setFastRotationY(0);
+		v.fastInvalidate();
+	}
+
 }

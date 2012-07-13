@@ -189,4 +189,28 @@ public class WheelScreenScrollAnimation implements ScreenScrollAnimation {
 		}
 	}
 
+	@Override
+	public void resetAnimationData(View v) {
+		CellLayout cell = (CellLayout) v;
+		CellLayoutChildren childrenLayout = cell.getChildrenLayout();
+		if (childrenLayout.getChildCount() <= 0) {
+			return;
+		}
+		
+		for (int i = 0; i < childrenLayout.getChildCount(); i++) {
+			View child = childrenLayout.getChildAt(i);
+			child.setPivotX(child.getWidth() / 2);
+			child.setPivotY(child.getHeight() / 2);
+			child.setScaleX(1);
+			child.setScaleY(1);
+			child.setTranslationX(0);
+			child.setTranslationY(0);
+			child.setRotation(0);
+		}
+
+		childrenLayout.setPivotX(childrenLayout.getWidth() / 2);
+		childrenLayout.setPivotY(childrenLayout.getHeight() / 2);
+		childrenLayout.setRotation(0);
+	}
+
 }
