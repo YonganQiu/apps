@@ -664,7 +664,9 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
 
     OnAlarmListener mReorderAlarmListener = new OnAlarmListener() {
         public void onAlarm(Alarm alarm) {
-            realTimeReorder(mEmptyCell, mTargetCell);
+        	//Modified by lijuan.li 2012.07.13
+            //realTimeReorder(mEmptyCell, mTargetCell);
+        	//ended by lijuan.li
         }
     };
 
@@ -684,7 +686,7 @@ public class Folder extends LinearLayout implements DragSource, View.OnClickList
         int delay = 0;
         float delayAmount = 30;
 	//Added by lijuan.li 2012.07.11 begin
-	CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getChildCount() - 1);
+	CellLayout cl = (CellLayout)mContent.getChildAt(mContent.getCurrentScreen());
 	//ended by lijuan.li
         if (readingOrderGreaterThan(target, empty)) {
 			//Modefied by lijuan.li 2012.07.11 begin
