@@ -58,8 +58,9 @@ public class PagedViewIcon extends TextView implements Checkable {
     private HolographicOutlineHelper mHolographicOutlineHelper;
     
   //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
+    private static final boolean DEBUG = true;
     private Bitmap mNewIcon;
-    private ApplicationInfo mInfo;
+    private boolean mIsNew = false;
   //}add by zhongheng.zheng end
 
     public PagedViewIcon(Context context) {
@@ -113,7 +114,16 @@ public class PagedViewIcon extends TextView implements Checkable {
         setText(info.title);
         setTag(info);
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        mInfo = info;
+		if (DEBUG) {
+			Log.d(TAG, "info.title" + info.title);
+			Log.d(TAG, "info.isEnabledNew" + info.isEnabledNew);
+			Log.d(TAG, "info.launchCount" + info.launchCount);
+		}
+		if (info.isEnabledNew && info.launchCount <= 0) {
+			mIsNew = true;
+		} else {
+			mIsNew = false;
+		}
       //}add by zhongheng.zheng end
     }
 
@@ -168,7 +178,7 @@ public class PagedViewIcon extends TextView implements Checkable {
         }
         
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        if(mInfo.isEnabledNew && mInfo.launchCount <= 0){
+        if(mIsNew){
         	int hspace = (getWidth() - mIcon.getWidth()) / 2;
         	int vspace = (getHeight() - mIcon.getHeight()) / 2;
         	Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
