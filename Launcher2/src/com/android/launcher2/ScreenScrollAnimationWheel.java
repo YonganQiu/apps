@@ -7,7 +7,7 @@ import android.view.View;
 import com.android.launcher2.CellLayout.LayoutParams;
 import com.android.launcher2.Workspace.ScreenScrollAnimation;
 
-public class WheelScreenScrollAnimation implements ScreenScrollAnimation {
+public class ScreenScrollAnimationWheel implements ScreenScrollAnimation {
 	@Override
 	public void screenScroll(float scrollProgress, View v) {
 		CellLayout cell = (CellLayout) v;

@@ -4,7 +4,7 @@ import android.view.View;
 
 import com.android.launcher2.Workspace.ScreenScrollAnimation;
 
-public class CubeScreenScrollAnimation implements ScreenScrollAnimation{
+public class ScreenScrollAnimationCube implements ScreenScrollAnimation{
 	private static float TRANSITION_PIVOT = 0.65f;
 	private static float TRANSITION_MAX_ROTATION = 30;
 	@Override

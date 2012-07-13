@@ -4,26 +4,26 @@ import android.view.View;
 
 import com.android.launcher2.Workspace.ScreenScrollAnimation;
 
-public class BounceScreenScrollAnimation implements ScreenScrollAnimation{
+public class ScreenScrollAnimationBounce implements ScreenScrollAnimation {
 
 	@Override
 	public void screenScroll(float scrollProgress, View v) {
 		// TODO Auto-generated method stub
-		CellLayout cl = (CellLayout)v;
+		CellLayout cl = (CellLayout) v;
 		int pageWidth = cl.getChildrenLayout().getMeasuredWidth();
 		int pageHeight = cl.getChildrenLayout().getMeasuredHeight();
 		if (Math.abs(scrollProgress) == 1.0f) {
 			v.setFastTranslationY(0);
 			v.setFastTranslationX(0);
-		}else{
+		} else {
 			if (scrollProgress > 0) {
 				v.setFastTranslationY(pageHeight * -scrollProgress);
 
-			}else{
+			} else {
 				v.setFastTranslationY(pageHeight * scrollProgress);
-	        }
+			}
 		}
-		
+
 		v.fastInvalidate();
 	}
 
@@ -31,7 +31,6 @@ public class BounceScreenScrollAnimation implements ScreenScrollAnimation{
 	public void leftScreenOverScroll(float scrollProgress, View v) {
 		// TODO Auto-generated method stub
 
-		
 		CellLayout cl = (CellLayout) v;
 		int pageWidth = cl.getChildrenLayout().getMeasuredWidth();
 		int pageHeight = cl.getChildrenLayout().getMeasuredHeight();
@@ -43,7 +42,7 @@ public class BounceScreenScrollAnimation implements ScreenScrollAnimation{
 			v.setFastTranslationY(pageHeight * scrollProgress);
 			v.setFastTranslationX(pageWidth * -scrollProgress);
 		}
-		
+
 		v.fastInvalidate();
 	}
 
@@ -63,6 +62,13 @@ public class BounceScreenScrollAnimation implements ScreenScrollAnimation{
 		}
 		v.fastInvalidate();
 
+	}
+
+	@Override
+	public void resetAnimationData(View v) {
+		v.setFastTranslationX(0);
+		v.setFastTranslationY(0);
+		v.fastInvalidate();
 	}
 
 }

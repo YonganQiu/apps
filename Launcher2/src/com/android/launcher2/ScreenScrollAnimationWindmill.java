@@ -1,16 +1,15 @@
 package com.android.launcher2;
 
-import android.util.Log;
 import android.view.View;
+
 import com.android.launcher2.Workspace.ScreenScrollAnimation;
 
-
 /**
- * added by zhongheng.zheng 2012.7.12 for willmill screen scroll animation
- *
+ * added by zhongheng.zheng 2012.7.12 for Windmill screen scroll animation
+ * 
  */
 
-public class WillmillScreenScrollAnimation implements ScreenScrollAnimation {
+public class ScreenScrollAnimationWindmill implements ScreenScrollAnimation {
 	private static float TRANSITION_MAX_MULTIPLE = 0.3f;
 
 	@Override
@@ -22,7 +21,7 @@ public class WillmillScreenScrollAnimation implements ScreenScrollAnimation {
 				/ (pageHeight - pivotY)) * 180 / Math.PI);
 		if (Math.abs(scrollProgress) == 1.0f) {
 			v.setPivotX(pageWidth / 2.0f);
-			v.setPivotY(pivotY);
+			v.setPivotY(pageHeight / 2.0f);
 			v.setRotation(0);
 		} else {
 			if (scrollProgress > 0) {
@@ -65,6 +64,16 @@ public class WillmillScreenScrollAnimation implements ScreenScrollAnimation {
 		v.setPivotY(pivotY);
 		v.setRotation(angle * scrollProgress * TRANSITION_MAX_MULTIPLE);
 		v.setTranslationX(-scrollProgress * pageWidth * TRANSITION_MAX_MULTIPLE);
+	}
+
+	@Override
+	public void resetAnimationData(View v) {
+		int pageWidth = v.getMeasuredWidth();
+		int pageHeight = v.getMeasuredHeight();
+		v.setPivotX((pageWidth / 2.0f));
+		v.setPivotY(pageHeight / 2.0f);
+		v.setRotation(0);
+		v.setTranslationX(0);
 	}
 
 }
