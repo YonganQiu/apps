@@ -110,6 +110,13 @@
     <!--add by jingjiang.yu at 2012.06.25 begin for scale preview. -->
     <string name="delete_workspace_screen_title">删除屏幕</string>
     <string name="delete_workspace_screen_message">确定要删除非空白屏幕?</string>
+    <string name="workspace_random_scroll_anim_title">随机</string>
+    <string name="workspace_wheel_scroll_anim_title">车轮</string>
+    <string name="workspace_cube_scroll_anim_title">立方体</string>
+    <string name="workspace_bounce_scroll_anim_title">弹跳</string>
+    <string name="workspace_cascade_scroll_anim_title">层叠</string>
+    <string name="workspace_wave_scroll_anim_title">波浪</string>
+    <string name="workspace_windmill_scroll_anim_title">风车</string>
     <!--add by jingjiang.yu end -->
 
 </resources>

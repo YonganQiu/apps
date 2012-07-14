@@ -282,7 +282,6 @@ public class Workspace extends SmoothPagedView
 	private int mScreenCount;
 	private static final String WORKSPACE_SCREEN_COUNT_KEY = "workspace.screen.count.key";
 	private static final String WORKSPACE_DEFAULT_PAGE_KEY = "workspace.default.page.key";
-	private static final String WORKSPACE_SCROLL_ANIM_KEY = "workspace.scroll.anim.key";
 	private static final int MAX_SCREEN_COUNT = 9;
 	
 	private Drawable mHomeButton;
@@ -379,6 +378,12 @@ public class Workspace extends SmoothPagedView
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
 		mScrollAnimList = ((LauncherApplication) context
 				.getApplicationContext()).getScrollAnimList();
+		mScrollAnimId = null;
+		for (ScrollAnimStyleInfo scrollAnim : mScrollAnimList) {
+			if (scrollAnim.isSelected()) {
+				mScrollAnimId = scrollAnim.getAnimId();
+			}
+		}
         
         //mDefaultPage = a.getInt(R.styleable.Workspace_defaultScreen, 1);
 		SharedPreferences prefs = mLauncher.getSharedPreferences(
@@ -399,28 +404,12 @@ public class Workspace extends SmoothPagedView
 			}
 			editor.putInt(WORKSPACE_SCREEN_COUNT_KEY, mScreenCount);
 		}
-		
-		mScrollAnimId = prefs
-				.getString(WORKSPACE_SCROLL_ANIM_KEY, null);
-		if (mScrollAnimId == null) {
-			ScrollAnimStyleInfo defaultScrollAnimStyle = ScrollAnimStyleInfo
-					.getDefaultScrollAnim(mScrollAnimList);
-			if (defaultScrollAnimStyle == null) {
-				Log.e(TAG, "default workspace scroll anim is null.");
-			} else {
-				mScrollAnimId = defaultScrollAnimStyle.getAnimId();
-				if (editor == null) {
-					editor = prefs.edit();
-				}
-				editor.putString(WORKSPACE_SCROLL_ANIM_KEY, mScrollAnimId);
-			}
-		}
 
 		if (editor != null) {
 			editor.commit();
 		}
 		
-		updateScrollAnimObject();
+		updateScrollAnimObject(true);
         
       //}modify by jingjiang.yu end
         a.recycle();
@@ -932,7 +921,7 @@ public class Workspace extends SmoothPagedView
         }
         
       //{add by jingjiang.yu at 2012.07.09 begin for screen scroll.
-        updateScrollAnimObject();
+        updateScrollAnimObject(false);
       //}add by jingjiang.yu end
     }
 
@@ -4936,10 +4925,10 @@ public class Workspace extends SmoothPagedView
 		mAddScreenButton.setMinimumHeight(height);
 	}
 	
-	private void updateScrollAnimObject() {
+	private void updateScrollAnimObject(boolean force) {
 		if (mScrollAnim != null
 				&& !ScrollAnimStyleInfo.RANDOM_SCROLL_ANIM_ID
-						.equals(mScrollAnimId)) {
+						.equals(mScrollAnimId) && !force) {
 			return;
 		}
 
@@ -4963,6 +4952,37 @@ public class Workspace extends SmoothPagedView
 			}
 		}
 		mScrollAnim = animInfo.getAnimObject(mScrollAnimList);
+	}
+	
+	public void updateSelectedScrollAnimId(ScrollAnimStyleInfo selectedAnimInfo) {
+		if (selectedAnimInfo == null) {
+			return;
+		}
+
+		if (!selectedAnimInfo.getAnimId().equals(mScrollAnimId)) {
+			mScrollAnimId = selectedAnimInfo.getAnimId();
+			updateScrollAnimObject(true);
+			ScrollAnimStyleInfo.updateSelectedScrollAnimId(getContext(),
+					selectedAnimInfo, mScrollAnimList);
+		}
+		
+		tryoutScrollAnim();
+	}
+	
+	private boolean mForwardScroll = true;
+
+	public void tryoutScrollAnim() {
+		if (mCurrentPage == 0 && !mForwardScroll) {
+			mForwardScroll = true;
+		} else if (mCurrentPage == getPageCount() - 1 && mForwardScroll) {
+			mForwardScroll = false;
+		}
+
+		if (mForwardScroll) {
+			snapToPage(mCurrentPage + 1);
+		} else {
+			snapToPage(mCurrentPage - 1);
+		}
 	}
 	
 	public static class PreviewDragInfo {

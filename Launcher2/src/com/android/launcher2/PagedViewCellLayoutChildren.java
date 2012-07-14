@@ -192,7 +192,7 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
                 public void onAnimationEnd(android.animation.Animator animation) {
                     for (int i = 0; i < count; i++) {
                         final View child = getChildAt(i);
-                        if (child instanceof PagedViewIcon && child.getVisibility() != GONE) {
+                        if (child instanceof PagedViewIcon && child.getVisibility() != GONE&& child.getTag() instanceof ApplicationInfo) {
                             ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
                             appInfo.mOldLeft = mNewLefts[i];
                             appInfo.mOldTop = mNewTops[i];
@@ -213,7 +213,7 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
                     for (int i = 0; i < count; i++) {
                         final View child = getChildAt(i);
                         if(child instanceof PagedViewIcon
-                                && child.getVisibility() != GONE) {
+                                && child.getVisibility() != GONE && child.getTag() instanceof ApplicationInfo) {
                             ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
                             child.fastInvalidate();
                             int left = (int)(a * appInfo.mOldLeft + b * mNewLefts[i]);

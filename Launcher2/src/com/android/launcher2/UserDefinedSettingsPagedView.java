@@ -53,7 +53,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 
     private ArrayList<ApplicationInfo> mWallpapers;
     private ArrayList<ApplicationInfo> mThemes;
-    private ArrayList<ApplicationInfo> mEffects;
+    private ArrayList<ScrollAnimStyleInfo> mEffects;
 
     private int mNumWallpaperPages;
     private int mNumThemePages;
@@ -89,7 +89,8 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 
         mWallpapers = new ArrayList<ApplicationInfo>(10);
         mThemes = new ArrayList<ApplicationInfo>(1);
-        mEffects = new ArrayList<ApplicationInfo>(1);
+        mEffects = ((LauncherApplication) context.getApplicationContext()).getScrollAnimList();
+        updatePageCounts();
 
         // Save the default widget preview background
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AppsCustomizePagedView, 0,
@@ -280,39 +281,31 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         layout.createHardwareLayers();
     }
 
-    private void syncEffectPageItems(int page, boolean immediate) {
-        // TODO
-        int numCells = mCellCountX * mCellCountY;
-        int startIndex = page * numCells;
-        int endIndex = Math.min(startIndex + numCells, mEffects.size());
-        PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page + mNumWallpaperPages
-                + mNumThemePages);
+	private void syncEffectPageItems(int page, boolean immediate) {
+		int numCells = mCellCountX * mCellCountY;
+		int startIndex = page * numCells;
+		int endIndex = Math.min(startIndex + numCells, mEffects.size());
+		PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page
+				+ mNumWallpaperPages + mNumThemePages);
 
-        layout.removeAllViewsOnPage();
-        ArrayList<Object> items = new ArrayList<Object>();
-        ArrayList<Bitmap> images = new ArrayList<Bitmap>();
-        for (int i = startIndex; i < endIndex; ++i) {
-            ApplicationInfo info = mEffects.get(i);
-            PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
-                    R.layout.apps_customize_application, layout, false);
-            icon.applyFromApplicationInfo(info, true, null);
-            icon.setOnClickListener(this);
-            // icon.setOnLongClickListener(this);
-            // icon.setOnTouchListener(this);
-            // icon.setOnKeyListener(this);
+		layout.removeAllViewsOnPage();
+		for (int i = startIndex; i < endIndex; ++i) {
+			ScrollAnimStyleInfo animInfo = mEffects.get(i);
+			PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
+					R.layout.apps_customize_application, layout, false);
+			icon.applyFromScrollAnimInfo(animInfo);
+			icon.setOnClickListener(this);
 
-            int index = i - startIndex;
-            int x = index % mCellCountX;
-            int y = index / mCellCountX;
-            layout.addViewToCellLayout(icon, -1, i,
-                    new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
+			int index = i - startIndex;
+			int x = index % mCellCountX;
+			int y = index / mCellCountX;
+			layout.addViewToCellLayout(icon, -1, i,
+					new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
+		}
 
-            items.add(info);
-            images.add(info.iconBitmap);
-        }
-
-        layout.createHardwareLayers();
-    }
+		layout.getChildrenLayout().mChildrenDoAnim = false;
+		layout.createHardwareLayers();
+	}
 
     private void setupPage(PagedViewCellLayout layout) {
         layout.setCellCount(mCellCountX, mCellCountY);
@@ -465,15 +458,9 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             mThemes = new ArrayList<ApplicationInfo>();
         }
         mThemes.clear();
-        if (null == mEffects) {
-            mEffects = new ArrayList<ApplicationInfo>();
-        }
-        mEffects.clear();
         setWallpapers();
 
         setThemes();
-
-        setEffects();
     }
 
     public void setWallpapers() {
@@ -607,44 +594,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             requestLayout();
     }
 
-    public void setEffects() {
-        int ids[] = new int[] {
-                R.drawable.effect_ball, R.drawable.effect_cylinder,
-                R.drawable.effect_moren, R.drawable.effect_roll,
-                R.drawable.effect_wallpicroll, R.drawable.effect_wave
-        };
-        String names[] = new String[] {
-                "Ball", "Cylinder", "Moren",
-                "Roll", "Wallpicroll", "Wave"
-        };
-        ApplicationInfo appInfo;
-        int i = 0;
-        SharedPreferences prefs =
-                mLauncher.getSharedPreferences("com.android.launcher2.prefs", Context.MODE_PRIVATE);
-        int selectedEffect = prefs.getInt("selected_effect", -1);
-        for (int id : ids)
-        {
-            appInfo = new ApplicationInfo();
-            appInfo.title = names[i];
-            i++;
-            appInfo.id = id;
-            appInfo.componentName = new ComponentName("Effect", "Effect");
-            appInfo.iconBitmap = createIconBitmap(id, mContext, selectedEffect == id, false);
-            mEffects.add(appInfo);
-        }
-
-        Collections.sort(mEffects, LauncherModel.APP_NAME_COMPARATOR);
-
-        updatePageCounts();
-
-        // The next layout pass will trigger data-ready if both widgets and apps
-        // are set, so
-        // request a layout to do this test and invalidate the page data when
-        // ready.
-        if (checkDataReady())
-            requestLayout();
-    }
-
     Bitmap createIconBitmap(int resId, Context context, boolean isSelected, boolean isHot) {
         Resources resources = getResources();
 
@@ -733,76 +682,94 @@ public class UserDefinedSettingsPagedView extends PagedView implements
     private boolean mBack = false;
 
     @Override
-    public void onClick(View v) {
+	public void onClick(View v) {
 
-        if (!mLauncher.isUserDefinedOpen())
-            return;
+		if (!mLauncher.isUserDefinedOpen())
+			return;
 
-        if (v instanceof PagedViewIcon) {
-            // Animate some feedback to the click
-            final ApplicationInfo appInfo = (ApplicationInfo) v.getTag();
-            animateClickFeedback(v, new Runnable() {
-                @Override
-                public void run() {
-                    if (null != appInfo.intent) {
-                        mLauncher.startActivitySafely(appInfo.intent, appInfo);
-                    } else {
-                        try {
-                            ComponentName cn = appInfo.componentName;
-                            SharedPreferences prefs =
-                                    mLauncher.getSharedPreferences("com.android.launcher2.prefs",
-                                            Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = prefs.edit();
-                            if (null != cn && "Wallpaper".equals(cn.getClassName())) {
-                                WallpaperManager wpm = (WallpaperManager) mContext
-                                        .getSystemService(Context.WALLPAPER_SERVICE);
-                                wpm.setResource((int) appInfo.id);
-                                editor.putInt("selected_wallpaper", (int) appInfo.id);
-                                editor.commit();
-                                UserDefinedSettingsPagedView.this.initData();
-                                UserDefinedSettingsPagedView.this.invalidatePageData();
-                            } else {
-                                if ("Theme".equals(cn.getClassName())) {
-                                    editor.putInt("selected_theme", (int) appInfo.id);
-                                    editor.commit();
-                                    UserDefinedSettingsPagedView.this.initData();
-                                    UserDefinedSettingsPagedView.this.invalidatePageData();
-                                } else {
-                                    editor.putInt("selected_effect", (int) appInfo.id);
-                                    editor.commit();
-                                    UserDefinedSettingsPagedView.this.initData();
-                                    UserDefinedSettingsPagedView.this.invalidatePageData();
-                                }
-                                Workspace w = mLauncher.getWorkspace();
-                                int pages = w.getPageCount();
-                                int cPage = w.getCurrentPage();
-                                if (!mBack) {
-                                    cPage++;
-                                } else {
-                                    cPage--;
-                                }
-                                if (cPage == pages) {
-                                    mBack = true;
-                                    cPage -= 2;
-                                }
-                                if (cPage < 0) {
-                                    mBack = false;
-                                    cPage += 2;
-                                }
-                                cPage = Math.min(cPage, pages - 1);
-                                cPage = Math.max(cPage, 0);
+		if (v instanceof PagedViewIcon) {
+			Object tag = v.getTag();
+			if (tag instanceof ScrollAnimStyleInfo) {
+				effectIconOnClick(v);
+				return;
+			}
+			
+			// Animate some feedback to the click
+			final ApplicationInfo appInfo = (ApplicationInfo) v.getTag();
+			animateClickFeedback(v, new Runnable() {
+				@Override
+				public void run() {
+					if (null != appInfo.intent) {
+						mLauncher.startActivitySafely(appInfo.intent, appInfo);
+					} else {
+						try {
+							ComponentName cn = appInfo.componentName;
+							SharedPreferences prefs = mLauncher
+									.getSharedPreferences(
+											"com.android.launcher2.prefs",
+											Context.MODE_PRIVATE);
+							SharedPreferences.Editor editor = prefs.edit();
+							if (null != cn
+									&& "Wallpaper".equals(cn.getClassName())) {
+								WallpaperManager wpm = (WallpaperManager) mContext
+										.getSystemService(Context.WALLPAPER_SERVICE);
+								wpm.setResource((int) appInfo.id);
+								editor.putInt("selected_wallpaper",
+										(int) appInfo.id);
+								editor.commit();
+								UserDefinedSettingsPagedView.this.initData();
+								UserDefinedSettingsPagedView.this
+										.invalidatePageData();
+							} else {
+								if ("Theme".equals(cn.getClassName())) {
+									editor.putInt("selected_theme",
+											(int) appInfo.id);
+									editor.commit();
+									UserDefinedSettingsPagedView.this
+											.initData();
+									UserDefinedSettingsPagedView.this
+											.invalidatePageData();
+								}
+								Workspace w = mLauncher.getWorkspace();
+								int pages = w.getPageCount();
+								int cPage = w.getCurrentPage();
+								if (!mBack) {
+									cPage++;
+								} else {
+									cPage--;
+								}
+								if (cPage == pages) {
+									mBack = true;
+									cPage -= 2;
+								}
+								if (cPage < 0) {
+									mBack = false;
+									cPage += 2;
+								}
+								cPage = Math.min(cPage, pages - 1);
+								cPage = Math.max(cPage, 0);
 
-                                w.snapToPage(cPage);
-                            }
-                        } catch (IOException e) {
-                        }
-                    }
+								w.snapToPage(cPage);
+							}
+						} catch (IOException e) {
+						}
+					}
 
-                }
-            });
-        }
+				}
+			});
+		}
 
-    }
+	}
+    
+	private void effectIconOnClick(View v) {
+		final ScrollAnimStyleInfo animInfo = (ScrollAnimStyleInfo) v.getTag();
+		animateClickFeedback(v, new Runnable() {
+			@Override
+			public void run() {
+				mLauncher.getWorkspace().updateSelectedScrollAnimId(animInfo);
+			}
+		});
+	}
 
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         return FocusHelper.handleAppsCustomizeKeyEvent(v, keyCode, event);

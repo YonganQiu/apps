@@ -7,8 +7,11 @@ import java.util.Random;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources.NotFoundException;
 import android.content.res.XmlResourceParser;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.android.launcher.R;
@@ -23,6 +26,8 @@ public class ScrollAnimStyleInfo {
 	private String mIconId;
 	private String mClassName;
 	private boolean mIsDefault;
+	private boolean mIsSelected;
+
 	private ScreenScrollAnimation mAnimObject;
 	private static final String TAG = "Launcher.ScrollAnimStyleInfo";
 	private static final String WORKSPACE_SCROLL_ANIM_XML_TAG = "anim";
@@ -32,6 +37,7 @@ public class ScrollAnimStyleInfo {
 	private static final String WORKSPACE_SCROLL_ANIM_XML_ATTR_CLASS_NAME = "class";
 	private static final String WORKSPACE_SCROLL_ANIM_XML_ATTR_DEFAULT_ANIM = "default_anim";
 	public static final String RANDOM_SCROLL_ANIM_ID = "random";
+	private static final String WORKSPACE_SELECTED_SCROLL_ANIM_ID = "workspace.selected_scroll.anim.id";
 
 	public boolean isDefault() {
 		return mIsDefault;
@@ -39,6 +45,10 @@ public class ScrollAnimStyleInfo {
 
 	public void setDefault(boolean isDefault) {
 		this.mIsDefault = isDefault;
+	}
+
+	public boolean isSelected() {
+		return mIsSelected;
 	}
 
 	public String getAnimId() {
@@ -228,7 +238,78 @@ public class ScrollAnimStyleInfo {
 		} catch (IOException ex) {
 			Log.w(TAG, "parser workspace_scroll_anim.xml is failed.", ex);
 		}
+		
+		setSelectedScrollAnimId(context, anims);
 		return anims;
+	}
+
+	private static void setSelectedScrollAnimId(Context context,
+			ArrayList<ScrollAnimStyleInfo> list) {
+		if (list == null || list.size() <= 0) {
+			return;
+		}
+
+		SharedPreferences prefs = context.getSharedPreferences(
+				"com.android.launcher2.prefs", Context.MODE_PRIVATE);
+		String selectedId = prefs.getString(WORKSPACE_SELECTED_SCROLL_ANIM_ID,
+				null);
+		if (selectedId == null) {
+			// find default scroll anim.
+			for (ScrollAnimStyleInfo anim : list) {
+				if (anim.isDefault()) {
+					selectedId = anim.mAnimId;
+					anim.mIsSelected = true;
+				}
+			}
+
+			if (selectedId != null) {
+				Editor editor = prefs.edit();
+				editor.putString(WORKSPACE_SELECTED_SCROLL_ANIM_ID, selectedId);
+				editor.commit();
+			}
+		} else {
+			ScrollAnimStyleInfo anim = findScrollAnimByAnimId(selectedId, list);
+			if (anim != null) {
+				anim.mIsSelected = true;
+			}
+		}
+	}
+	
+	public static void updateSelectedScrollAnimId(final Context context,
+			final ScrollAnimStyleInfo selectedInfo,
+			ArrayList<ScrollAnimStyleInfo> list) {
+		if (selectedInfo == null || list == null || list.size() <= 0) {
+			return;
+		}
+		ScrollAnimStyleInfo originalSelectedInfo = null;
+		for (ScrollAnimStyleInfo info : list) {
+			if (info.isSelected()) {
+				originalSelectedInfo = info;
+				break;
+			}
+		}
+
+		if (!selectedInfo.equals(originalSelectedInfo)) {
+			if (originalSelectedInfo != null) {
+				originalSelectedInfo.mIsSelected = false;
+			}
+			selectedInfo.mIsSelected = true;
+
+			new AsyncTask<Void, Void, Void>() {
+				@Override
+				protected Void doInBackground(Void... params) {
+					SharedPreferences prefs = context
+							.getSharedPreferences(
+									"com.android.launcher2.prefs",
+									Context.MODE_PRIVATE);
+					Editor editor = prefs.edit();
+					editor.putString(WORKSPACE_SELECTED_SCROLL_ANIM_ID,
+							selectedInfo.mAnimId);
+					editor.commit();
+					return null;
+				}
+			}.execute();
+		}
 	}
 
 	public static ScrollAnimStyleInfo findScrollAnimByAnimId(String animId,
@@ -239,20 +320,6 @@ public class ScrollAnimStyleInfo {
 
 		for (ScrollAnimStyleInfo anim : list) {
 			if (animId.equals(anim.getAnimId())) {
-				return anim;
-			}
-		}
-		return null;
-	}
-
-	public static ScrollAnimStyleInfo getDefaultScrollAnim(
-			ArrayList<ScrollAnimStyleInfo> list) {
-		if (list == null || list.size() <= 0) {
-			return null;
-		}
-
-		for (ScrollAnimStyleInfo anim : list) {
-			if (anim.isDefault()) {
 				return anim;
 			}
 		}

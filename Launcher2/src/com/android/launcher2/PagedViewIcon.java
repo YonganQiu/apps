@@ -20,6 +20,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -126,6 +127,20 @@ public class PagedViewIcon extends TextView implements Checkable {
 		}
       //}add by zhongheng.zheng end
     }
+    
+	// {add by jingjiang.yu at 2012.07.09 begin for screen scroll.
+	public void applyFromScrollAnimInfo(ScrollAnimStyleInfo animInfo) {
+		setText(animInfo.getTitleId(getContext()));
+		setTag(animInfo);
+
+		Resources resources = getResources();
+		mIcon = Utilities.createIconBitmap(
+				resources.getDrawable(animInfo.getIconId(getContext())), 0, 0,
+				getContext());
+		setCompoundDrawablesWithIntrinsicBounds(null, new FastBitmapDrawable(
+				mIcon), null, null);
+	}
+  //}add by jingjiang.yu end
 
     public void setHolographicOutline(Bitmap holoOutline) {
         mHolographicOutline = holoOutline;

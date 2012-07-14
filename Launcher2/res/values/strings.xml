@@ -257,6 +257,13 @@ s -->
     <!--add by jingjiang.yu at 2012.06.25 begin for scale preview. -->
     <string name="delete_workspace_screen_title">Delete screen</string>
     <string name="delete_workspace_screen_message">Delete not empty screen?</string>
+    <string name="workspace_random_scroll_anim_title">Random</string>
+    <string name="workspace_wheel_scroll_anim_title">Wheel</string>
+    <string name="workspace_cube_scroll_anim_title">Cube</string>
+    <string name="workspace_bounce_scroll_anim_title">Bounce</string>
+    <string name="workspace_cascade_scroll_anim_title">Cascade</string>
+    <string name="workspace_wave_scroll_anim_title">Wave</string>
+    <string name="workspace_windmill_scroll_anim_title">Windmill</string>
     <!--add by jingjiang.yu end -->
     
     <string name="user_defined_wallpaper">\u0020\u0020\u0020\u0020\u0020壁纸\u0020\u0020\u0020\u0020\u0020</string>
