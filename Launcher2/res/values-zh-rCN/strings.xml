@@ -117,6 +117,7 @@
     <string name="workspace_cascade_scroll_anim_title">层叠</string>
     <string name="workspace_wave_scroll_anim_title">波浪</string>
     <string name="workspace_windmill_scroll_anim_title">风车</string>
+    <string name="workspace_push_scroll_anim_title">推压</string>
     <!--add by jingjiang.yu end -->
 
 </resources>

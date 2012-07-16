@@ -13,4 +13,6 @@
 		icon_id="workspace_wave_scroll_anim_icon" class="com.android.launcher2.ScreenScrollAnimationWave" />
 	<anim id="windmill" title_id="workspace_windmill_scroll_anim_title"
 		icon_id="workspace_windmill_scroll_anim_icon" class="com.android.launcher2.ScreenScrollAnimationWindmill" />
+	<anim id="push" title_id="workspace_push_scroll_anim_title"
+		icon_id="workspace_push_scroll_anim_icon" class="com.android.launcher2.ScreenScrollAnimationPush" />
 </anims>

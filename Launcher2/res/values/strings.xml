@@ -264,6 +264,7 @@ s -->
     <string name="workspace_cascade_scroll_anim_title">Cascade</string>
     <string name="workspace_wave_scroll_anim_title">Wave</string>
     <string name="workspace_windmill_scroll_anim_title">Windmill</string>
+    <string name="workspace_push_scroll_anim_title">Push</string>
     <!--add by jingjiang.yu end -->
     
     <string name="user_defined_wallpaper">\u0020\u0020\u0020\u0020\u0020壁纸\u0020\u0020\u0020\u0020\u0020</string>
