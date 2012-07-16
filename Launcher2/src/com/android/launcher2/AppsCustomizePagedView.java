@@ -1823,7 +1823,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     
     private int mSelectIndex;
 //    private boolean mChildrenDoAnim;
-    private Comparator<ApplicationInfo> mComparator;
+    private Comparator<ApplicationInfo> mComparator = LauncherModel.APP_NAME_COMPARATOR;
     private static final String COMPARATOR_KEY = "comparator_key";
     private ArrayList<ArrayList<ApplicationInfo>> mPagesAppsList;
     private ArrayList<PagedViewCellLayout> mPagesLayoutsList;
