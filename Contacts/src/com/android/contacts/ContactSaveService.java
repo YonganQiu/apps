@@ -44,6 +44,8 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.AggregationExceptions;
 import android.provider.ContactsContract.CommonDataKinds.GroupMembership;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
@@ -54,6 +56,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -398,10 +401,43 @@ public class ContactSaveService extends IntentService {
             }
         }
 
+        //{Added by yongan.qiu on 2012-7-15 begin.
+        if (isSimContact(state)) {
+            boolean success = callbackIntent.getBooleanExtra(EXTRA_SAVE_SUCCEEDED, false);
+            boolean exist = (lookupUri != null);
+            String name = null;
+            String number = null;
+            if (success) {
+                //write to sim.
+                HashMap<String, Object> keyValueSet = state.get(0).getMimeEntries(StructuredName.CONTENT_ITEM_TYPE).get(0).keyValueSet();
+                name = (String) keyValueSet.get(StructuredName.DISPLAY_NAME);
+                keyValueSet = state.get(0).getMimeEntries(Phone.CONTENT_ITEM_TYPE).get(0).keyValueSet();
+                number = (String) keyValueSet.get(Phone.NUMBER);
+                Log.i(TAG, "name = " + name + ", number = " + number + ", exist ? " + exist);
+                if (exist) {
+                    //delete sim contact
+                } else {
+                    //update sim contact
+                }
+            }
+        }
+        //}Added by yongan.qiu end.
+
         callbackIntent.setData(lookupUri);
 
         deliverCallback(callbackIntent);
     }
+
+    //{Added by yongan.qiu on 2012-7-15 begin.
+    private boolean isSimContact(EntityDeltaList state) {
+        if (state != null && state.size() == 1) {
+            if (AccountTypeManager.ACCOUNT_TYPE_SIM.equals(state.get(0).getValues().getAsString(RawContacts.ACCOUNT_TYPE))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //}Added by yongan.qiu end.
 
     private long getRawContactId(EntityDeltaList state,
             final ArrayList<ContentProviderOperation> diff,

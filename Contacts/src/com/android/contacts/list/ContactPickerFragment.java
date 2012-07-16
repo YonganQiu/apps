@@ -70,6 +70,14 @@ public class ContactPickerFragment extends ContactEntryListFragment<ContactEntry
 	}
 	//end: added by yunzhou.song
 
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private ContactListFilter mFilter;
+
+    public void setFilter(ContactListFilter filter) {
+        mFilter = filter;
+    }
+    //}Added by yongan.qiu end.
+
     public ContactPickerFragment() {
         setPhotoLoaderEnabled(true);
         setSectionHeaderDisplayEnabled(true);
@@ -209,6 +217,10 @@ public class ContactPickerFragment extends ContactEntryListFragment<ContactEntry
             if(mAccountType != null && mAccountName != null) {
 				adapter.setFilter(ContactListFilter.createAccountFilter(
 						mAccountType, mAccountName, null, null));
+			//{Added by yongan.qiu on 2012-7-16 begin.
+            } else if (mFilter != null) {
+                adapter.setFilter(mFilter);
+            //}Added by yongan.qiu end.
             } else {
             //end: added by yunzhou.song
             adapter.setFilter(ContactListFilter.createFilterWithType(
@@ -231,6 +243,12 @@ public class ContactPickerFragment extends ContactEntryListFragment<ContactEntry
 				adapter.setFilter(ContactListFilter.createAccountFilter(
 						mAccountType, mAccountName, null, null));
             }
+            //{Added by yongan.qiu on 2012-7-16 begin.
+            else if (mFilter != null) {
+                adapter.setFilter(mFilter);
+            }
+            //}Added by yongan.qiu end.
+
             adapter.setExcludeUris(mExcludeUris);
             //end: added by yunzhou.song
             adapter.setSectionHeaderDisplayEnabled(false);

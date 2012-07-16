@@ -655,9 +655,9 @@ public abstract class ContactEntryListAdapter extends IndexerListAdapter {
 		Log.d(TAG, "accountIconDraw:" + accountIconDraw);
 		QuickContactBadgeWithAccount quickContact = view.getQuickContact();
 		
-		if(accountIconDraw != null){
+		//if(accountIconDraw != null){
 			quickContact.setAccountDrawable(accountIconDraw);
-		}
+		//}
 		//Ended by gangzhou.qi at 2012-7-11 上午10:53:05
 		
         quickContact.assignContactUri(

@@ -1900,6 +1900,9 @@
 
     <string name="account_sim">Sim-only, unsynced</string>
 
+    <string name="menu_msg">Send Message</string>
+    <string name="menu_email">Send Email</string>
+
     <!-- Added by yongan.qiu end. -->
 
 </resources>

@@ -15,6 +15,9 @@
  */
 package com.android.contacts.list;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -24,7 +27,10 @@ import android.net.Uri.Builder;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.ContactCounts;
+import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
+import android.provider.ContactsContract.Directory;
+import android.provider.ContactsContract.RawContacts;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,6 +84,12 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
             builder.appendPath(TextUtils.isEmpty(query) ? "" : query);
         } else {
             builder = Email.CONTENT_URI.buildUpon();
+            //{Added by yongan.qiu on 2012-7-16 begin.
+            if (isSectionHeaderDisplayEnabled()) {
+                builder.appendQueryParameter(ContactCounts.ADDRESS_BOOK_INDEX_EXTRAS, "true");
+            }
+            configureSelection(loader, directoryId, getFilter());
+            //}Added by yongan.qiu end.
         }
         builder.appendQueryParameter(ContactsContract.DIRECTORY_PARAM_KEY,
                 String.valueOf(directoryId));
@@ -96,6 +108,47 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
             loader.setSortOrder(Email.SORT_KEY_ALTERNATIVE);
         }
     }
+
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private void configureSelection(
+            CursorLoader loader, long directoryId, ContactListFilter filter) {
+        if (filter == null || directoryId != Directory.DEFAULT) {
+            return;
+        }
+
+        final StringBuilder selection = new StringBuilder();
+        final List<String> selectionArgs = new ArrayList<String>();
+
+        switch (filter.filterType) {
+        case ContactListFilter.FILTER_TYPE_CUSTOM: {
+            selection.append(Contacts.IN_VISIBLE_GROUP + "=1");
+            break;
+        }
+        case ContactListFilter.FILTER_TYPE_ACCOUNT: {
+            selection.append("(");
+
+            selection.append(RawContacts.ACCOUNT_TYPE + "=?"
+                    + " AND " + RawContacts.ACCOUNT_NAME + "=?");
+            selectionArgs.add(filter.accountType);
+            selectionArgs.add(filter.accountName);
+            if (filter.dataSet != null) {
+                selection.append(" AND " + RawContacts.DATA_SET + "=?");
+                selectionArgs.add(filter.dataSet);
+            } else {
+                selection.append(" AND " + RawContacts.DATA_SET + " IS NULL");
+            }
+            selection.append(")");
+            break;
+        }
+        default:
+            // No selection.
+            break;
+        }
+    loader.setSelection(selection.toString());
+    loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
+
+    }
+    //}Added by yongan.qiu end.
 
     protected static Builder buildSectionIndexerUri(Uri uri) {
         return uri.buildUpon()
@@ -122,6 +175,9 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
         final ContactListItemView view = new ContactListItemView(context, null);
         view.setUnknownNameText(mUnknownNameText);
         view.setQuickContactEnabled(isQuickContactEnabled());
+        //{Added by yongan.qiu on 2012-7-16 begin.
+        view.setActivatedStateSupported(true);
+        //}Added by yongan.qiu end.
         return view;
     }
 
@@ -149,6 +205,7 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
 
     protected void bindSectionHeaderAndDivider(final ContactListItemView view, int position) {
         final int section = getSectionForPosition(position);
+        int pos = getPositionForSection(section);
         if (getPositionForSection(section) == position) {
             String title = (String)getSections()[section];
             view.setSectionHeader(title);

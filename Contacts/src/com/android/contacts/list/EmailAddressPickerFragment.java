@@ -15,18 +15,30 @@
  */
 package com.android.contacts.list;
 
+import java.util.Set;
+
 import com.android.contacts.R;
 
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ListView;
 
 /**
  * Fragment containing an email list for picking.
  */
 public class EmailAddressPickerFragment extends ContactEntryListFragment<ContactEntryListAdapter> {
     private OnEmailAddressPickerActionListener mListener;
+
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private ContactListFilter mFilter;
+
+    public void setFilter(ContactListFilter filter) {
+        mFilter = filter;
+    }
+    //}Added by yongan.qiu end.
 
     public EmailAddressPickerFragment() {
         setQuickContactEnabled(false);
@@ -42,6 +54,31 @@ public class EmailAddressPickerFragment extends ContactEntryListFragment<Contact
     @Override
     protected void onItemClick(int position, long id) {
         EmailAddressListAdapter adapter = (EmailAddressListAdapter)getAdapter();
+        //{Added by yongan.qiu on 2012-7-16 begin.
+        Uri dataUri = adapter.getDataUri(position);
+        if (dataUri != null) {
+            ListView listView = getListView();
+            if(listView.getChoiceMode() == ListView.CHOICE_MODE_MULTIPLE) {
+                int adjPosition = position + listView.getHeaderViewsCount();
+                boolean isChecked = listView.isItemChecked(adjPosition);
+
+                Set<Uri> selectedUriSet = getSelectedUriSet();
+                if(isChecked) {
+                    selectedUriSet.add(dataUri);
+                } else {
+                    selectedUriSet.remove(dataUri);
+                }
+
+                View buttonsLayout = getActivity().findViewById(R.id.layout_bottom);
+                if(buttonsLayout != null) {
+                    Button okBtn = (Button)buttonsLayout.findViewById(R.id.btn_ok);
+                    if(okBtn != null) {
+                        okBtn.setEnabled(!selectedUriSet.isEmpty());
+                    }
+                }
+            }
+        }
+        //}Added by yongan.qiu end.
         pickEmailAddress(adapter.getDataUri(position));
     }
 
@@ -50,6 +87,11 @@ public class EmailAddressPickerFragment extends ContactEntryListFragment<Contact
         EmailAddressListAdapter adapter = new EmailAddressListAdapter(getActivity());
         adapter.setSectionHeaderDisplayEnabled(true);
         adapter.setDisplayPhotos(true);
+        //{Added by yongan.qiu on 2012-7-16 begin.
+        if (mFilter != null) {
+            adapter.setFilter(mFilter);
+        }
+        //}Added by yongan.qiu end.
         return adapter;
     }
 

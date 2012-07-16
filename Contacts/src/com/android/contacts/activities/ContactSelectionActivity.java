@@ -106,6 +106,10 @@ public class ContactSelectionActivity extends ContactsActivity
     }
     //end:added by yunzhou.song
 
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private ContactListFilter mContactListFilter;
+    //}Added by yongan.qiu end.
+
     public ContactSelectionActivity() {
         mIntentResolver = new ContactsIntentResolver(this);
     }
@@ -173,7 +177,11 @@ public class ContactSelectionActivity extends ContactsActivity
             	buttonsLayout.findViewById(R.id.btn_cancel).setOnClickListener(this);
             }
             //end: added by yunzhou.song
-            
+
+            //{Added by yongan.qiu on 2012-7-16 begin.
+            mContactListFilter = (ContactListFilter) intent.getParcelableExtra(Constants.EXTRA_CONTACT_LIST_FILTER);
+            //}Added by yongan.qiu end.
+
             configureListFragment();
         }
 
@@ -385,6 +393,11 @@ public class ContactSelectionActivity extends ContactsActivity
                 fragment.setExcludeUris(mExcludeUris);
             	//end: added by yunzhou.song
                 fragment.setIncludeProfile(mRequest.shouldIncludeProfile());
+                //{Added by yongan.qiu on 2012-7-16 begin.
+                if (mContactListFilter != null) {
+                    fragment.setFilter(mContactListFilter);
+                }
+                //}Added by yongan.qiu end.
                 mListFragment = fragment;
                 break;
             }
@@ -422,12 +435,35 @@ public class ContactSelectionActivity extends ContactsActivity
                 fragment.setAccountName(mAccountName);
                 fragment.setExcludeUris(mExcludeUris);
             	//end: added by yunzhou.song
+                //{Added by yongan.qiu on 2012-7-16 begin.
+                if (mContactListFilter != null) {
+                    fragment.setFilter(mContactListFilter);
+                }
+                //}Added by yongan.qiu end.
                 mListFragment = fragment;
                 break;
             }
 
             case ContactsRequest.ACTION_PICK_EMAIL: {
-                mListFragment = new EmailAddressPickerFragment();
+                //{Modified by yongan.qiu on 2012-7-16 begin.
+                //old:
+                /*mListFragment = new EmailAddressPickerFragment();*/
+                //new:
+                EmailAddressPickerFragment fragment = new EmailAddressPickerFragment() {
+                    @Override
+                    protected void onCreateView(LayoutInflater inflater,
+                            ViewGroup container) {
+                        super.onCreateView(inflater, container);
+                        if(mMultipleChoice) {
+                            getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+                        }
+                    }
+                };
+                if (mContactListFilter != null) {
+                    fragment.setFilter(mContactListFilter);
+                }
+                mListFragment = fragment;
+                //}Modified by yongan.qiu end.
                 break;
             }
 
@@ -633,6 +669,12 @@ public class ContactSelectionActivity extends ContactsActivity
     }
 
     public void returnPickerResult(Uri data) {
+        //{Added by yongan.qiu on 2012-7-16 begin.
+        //For saving time and memory, do nothing in multiple choice mode.
+        if (mMultipleChoice) {
+            return;
+        }
+        //}Added by yongan.qiu end.
         Intent intent = new Intent();
         intent.setData(data);
         returnPickerResult(intent);
@@ -670,6 +712,11 @@ public class ContactSelectionActivity extends ContactsActivity
                     	break;
                     case ContactsRequest.ACTION_PICK_PHONE:
                     	extraName = Intents.EXTRA_PHONE_URIS;
+                    	//{Added by yongan.qiu on 2012-7-16 begin.
+                    	break;
+                    case ContactsRequest.ACTION_PICK_EMAIL:
+                        extraName = Constants.EXTRA_EMAIL_URIS;
+                    	//}Added by yongan.qiu end.
                     	break;
                     }
             		intent.putExtra(extraName, uris);

@@ -84,6 +84,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnCancelListener;
+import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -92,6 +93,8 @@ import android.os.Parcelable;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Intents;
 import android.provider.ContactsContract.ProviderStatus;
@@ -143,6 +146,11 @@ public class PeopleActivity extends ContactsActivity
     private static final int SUBACTIVITY_NEW_GROUP = 4;
     private static final int SUBACTIVITY_EDIT_GROUP = 5;
     private static final int SUBACTIVITY_ACCOUNT_FILTER = 6;
+
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private static final int REQUEST_CODE_PICK_PHONE = 7;
+    private static final int REQUEST_CODE_PICK_EMAIL = 8;
+    //}Added by yongan.qiu end.
 
     private final DialogManager mDialogManager = new DialogManager(this);
 
@@ -1552,6 +1560,10 @@ public class PeopleActivity extends ContactsActivity
         }
 
         final MenuItem addContactMenu = menu.findItem(R.id.menu_add_contact);
+        //{Added by yongan.qiu on 2012-7-16 begin.
+        final MenuItem messageMenu = menu.findItem(R.id.menu_msg);
+        final MenuItem emailMenu = menu.findItem(R.id.menu_email);
+        //}Added by yongan.qiu end.
         final MenuItem contactsFilterMenu = menu.findItem(R.id.menu_contacts_filter);
         final MenuItem dialpadMenu = menu.findItem(R.id.menu_dialpad);
         final MenuItem callTypeMenu = menu.findItem(R.id.menu_call_type);
@@ -1566,6 +1578,10 @@ public class PeopleActivity extends ContactsActivity
         if (isSearchMode) {
             addContactMenu.setVisible(false);
             addGroupMenu.setVisible(false);
+            //{Added by yongan.qiu on 2012-7-16 begin.
+            messageMenu.setVisible(false);
+            emailMenu.setVisible(false);
+            //}Added by yongan.qiu end.
             contactsFilterMenu.setVisible(false);
             dialpadMenu.setVisible(false);
             callTypeMenu.setVisible(false);
@@ -1582,6 +1598,10 @@ public class PeopleActivity extends ContactsActivity
                 case FAVORITES:
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
+                    //{Added by yongan.qiu on 2012-7-16 begin.
+                    messageMenu.setVisible(false);
+                    emailMenu.setVisible(false);
+                    //}Added by yongan.qiu end.
                     contactsFilterMenu.setVisible(false);
                     dialpadMenu.setVisible(false);
                     callTypeMenu.setVisible(false);
@@ -1595,6 +1615,10 @@ public class PeopleActivity extends ContactsActivity
                 case ALL:
                     addContactMenu.setVisible(true);
                     addGroupMenu.setVisible(false);
+                    //{Added by yongan.qiu on 2012-7-16 begin.
+                    messageMenu.setVisible(true);
+                    emailMenu.setVisible(true);
+                    //}Added by yongan.qiu end.
                     contactsFilterMenu.setVisible(true);
                     dialpadMenu.setVisible(false);
                     callTypeMenu.setVisible(false);
@@ -1613,6 +1637,10 @@ public class PeopleActivity extends ContactsActivity
                         addGroupMenu.setVisible(false);
                     }
                     addContactMenu.setVisible(false);
+                    //{Added by yongan.qiu on 2012-7-16 begin.
+                    messageMenu.setVisible(false);
+                    emailMenu.setVisible(false);
+                    //}Added by yongan.qiu end.
                     contactsFilterMenu.setVisible(false);
                     dialpadMenu.setVisible(false);
                     callTypeMenu.setVisible(false);
@@ -1749,6 +1777,24 @@ public class PeopleActivity extends ContactsActivity
                 mDialerFragment.onAnimationFragment();
                 return true;
             }
+            //{Added by yongan.qiu on 2012-7-16 begin.
+            case R.id.menu_msg: {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                startActivityForResult(intent, REQUEST_CODE_PICK_PHONE);
+                return true;
+            }
+            case R.id.menu_email: {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                startActivityForResult(intent, REQUEST_CODE_PICK_EMAIL);
+                return true;
+            }
+            //}Added by yongan.qiu end.
         }
         return false;
     }
@@ -1923,6 +1969,22 @@ public class PeopleActivity extends ContactsActivity
                 }
                 break;
             }
+            //{Added by yongan.qiu on 2012-7-16 begin.
+            case REQUEST_CODE_PICK_PHONE: {
+                if (resultCode == RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_PHONE_URIS);
+                    wrapFromPhoneUris(uris);
+                }
+                break;
+            }
+            case REQUEST_CODE_PICK_EMAIL: {
+                if (resultCode == RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Constants.EXTRA_EMAIL_URIS);
+                    wrapFromEmailUris(uris);
+                }
+                break;
+            }
+            //}Added by yongan.qiu end.
 
             // TODO: Using the new startActivityWithResultFromFragment API this should not be needed
             // anymore
@@ -1940,6 +2002,98 @@ public class PeopleActivity extends ContactsActivity
 //                break;
         }
     }
+
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private static final String[] PHONE_PROJECTION = {
+        Phone._ID,
+        Phone.DISPLAY_NAME,
+        Phone.NUMBER
+    };
+    private static final int PHONE_ID = 0;
+    private static final int PHONE_DISPLAY_NAME = 1;
+    private static final int PHONE_NUMBER = 2;
+
+    private static final String[] EMAIL_PROJECTION = {
+        Email._ID,
+        Email.DISPLAY_NAME,
+        Email.ADDRESS
+    };
+    private static final int EMAIL_ID = 0;
+    private static final int EMAIL_DISPLAY_NAME = 1;
+    private static final int EMAIL_ADDRESS = 2;
+
+    private Uri[] wrapFromPhoneUris(Parcelable[] uris) {
+        if (uris == null || uris.length < 1) {
+            return null;
+        }
+        StringBuilder idSet = new StringBuilder();
+        boolean needComma = false;
+        for (Parcelable uri : uris) {
+            ((Uri) uri).getLastPathSegment();
+            if (needComma) {
+                idSet.append(',');
+            } else {
+                needComma = true;
+            }
+            idSet.append(((Uri) uri).getLastPathSegment());
+        }
+        final String where = Phone._ID + " IN (" + idSet.toString() + ")";
+        Cursor cursor = getContentResolver().query(Phone.CONTENT_URI, PHONE_PROJECTION, where, null, null);
+        if (cursor == null) {
+            return null;
+        }
+        
+        Uri[] newUris = new Uri[cursor.getCount()];
+        try {
+            while(cursor.moveToNext()) {
+                Log.i(TAG, "id = " + cursor.getLong(PHONE_ID)
+                        + "dispaly_name = " + cursor.getString(PHONE_DISPLAY_NAME)
+                        + "number = " + cursor.getString(PHONE_NUMBER));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+        return newUris;
+    }
+
+    private Uri[] wrapFromEmailUris(Parcelable[] uris) {
+        if (uris == null || uris.length < 1) {
+            return null;
+        }
+        StringBuilder idSet = new StringBuilder();
+        boolean needComma = false;
+        for (Parcelable uri : uris) {
+            ((Uri) uri).getLastPathSegment();
+            if (needComma) {
+                idSet.append(',');
+            } else {
+                needComma = true;
+            }
+            idSet.append(((Uri) uri).getLastPathSegment());
+        }
+        final String where = Email._ID + " IN (" + idSet.toString() + ")";
+        Cursor cursor = getContentResolver().query(Email.CONTENT_URI, PHONE_PROJECTION, where, null, null);
+        if (cursor == null) {
+            return null;
+        }
+        
+        Uri[] newUris = new Uri[cursor.getCount()];
+        try {
+            while(cursor.moveToNext()) {
+                Log.i(TAG, "id = " + cursor.getLong(EMAIL_ID)
+                        + "dispaly_name = " + cursor.getString(EMAIL_DISPLAY_NAME)
+                        + "number = " + cursor.getString(EMAIL_ADDRESS));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+        return newUris;
+    }
+    //}Added by yongan.qiu end.
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

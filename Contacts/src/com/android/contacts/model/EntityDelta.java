@@ -781,6 +781,26 @@ public class EntityDelta implements Parcelable {
             return keys;
         }
 
+        //{Added by yongan.qiu on 2012-7-13 begin.
+        public HashMap<String, Object> keyValueSet() {
+            final HashMap<String, Object> map = new HashMap<String, Object>();
+
+            if (mBefore != null) {
+                for (Map.Entry<String, Object> entry : mBefore.valueSet()) {
+                    map.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            if (mAfter != null) {
+                for (Map.Entry<String, Object> entry : mAfter.valueSet()) {
+                    map.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            return map;
+        }
+        //}Added by yongan.qiu end.
+
         /**
          * Return complete set of "before" and "after" values mixed together,
          * giving full state regardless of edits.

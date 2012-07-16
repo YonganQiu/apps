@@ -625,6 +625,9 @@
 
     <string name="account_sim">"仅保存在SIM卡中，不同步"</string>
 
+    <string name="menu_msg">发送信息</string>
+    <string name="menu_email">发送邮件</string>
+
     <!-- Added by yongan.qiu end. -->
 
 </resources>
