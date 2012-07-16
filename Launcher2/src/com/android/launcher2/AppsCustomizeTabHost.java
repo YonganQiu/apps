@@ -30,14 +30,17 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TabWidget;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import com.android.launcher.R;
-import com.android.launcher2.LauncherModel.ComparatorIndex;
 
 import java.util.ArrayList;
 
@@ -117,11 +120,24 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
         // Create the tabs
         TextView tabView;
         String label;
+        // {modified by zhong.chen 2012-7-14 for launcher apps sort
         label = mContext.getString(R.string.all_apps_button_label);
-        tabView = (TextView) mLayoutInflater.inflate(R.layout.tab_widget_indicator, tabs, false);
+        View tabAppsView =  mLayoutInflater.inflate(R.layout.tab_apps_indicator, tabs, false);
+        mLetterSwitcher = (TextSwitcher) tabAppsView.findViewById(R.id.app_label_switcher);
+        mLetterSwitcher.setFactory(factory);
+      
+        Animation in = AnimationUtils.loadAnimation(mContext,
+              android.R.anim.fade_in);
+        Animation out = AnimationUtils.loadAnimation(mContext,
+              android.R.anim.fade_out);
+        mLetterSwitcher.setInAnimation(in);
+        mLetterSwitcher.setOutAnimation(out);
+      
+        tabView = (TextView) tabAppsView.findViewById(R.id.apps_label);
         tabView.setText(label);
         tabView.setContentDescription(label);
-        addTab(newTabSpec(APPS_TAB_TAG).setIndicator(tabView).setContent(contentFactory));
+        addTab(newTabSpec(APPS_TAB_TAG).setIndicator(tabAppsView).setContent(contentFactory));
+        // }modified by zhong.chen 2012-7-14 for launcher apps sort end
         label = mContext.getString(R.string.widgets_tab_label);
         tabView = (TextView) mLayoutInflater.inflate(R.layout.tab_widget_indicator, tabs, false);
         tabView.setText(label);
@@ -441,26 +457,58 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
     }
     
     // {added by zhong.chen 2012-7-12 for launcher apps sort begin
-    private String mLetterIndexCharacter = "#";
-    private Paint mEventTextPaint = new Paint();
     
     void updateLetterIndex(int mSelectIndex, final int y, int count) {
         int charIndex = 63 + mSelectIndex;
-        mLetterIndexCharacter = "#";
+        String letterIndexCharacter = "#";
         if((charIndex >= 'a' && charIndex <= 'z')
                 || (charIndex >= 'A' && charIndex <= 'Z')) {
-            mLetterIndexCharacter = Character.toString((char)(charIndex));
+            letterIndexCharacter = Character.toString((char)(charIndex));
         }
+        /*if(null != letterIndexCharacter) {
+            mAppsLabelPrefix.concat(letterIndexCharacter);
+        }*/
+        
+        showLetterView(mSelectIndex, letterIndexCharacter);
         //mAppTab.setText(mAppTabLabel + mLetterIndexCharacter);
         mAppsCustomizePane.highlightCurrentLetterIndex(mSelectIndex, count);
     }
     
+    private TextSwitcher mLetterSwitcher;
+    private void showLetterView(int mSelectIndex, String label) {
+        if(mSelectIndex > 0) {
+            mLetterSwitcher.setVisibility(View.VISIBLE);
+            mLetterSwitcher.setText(label);
+        } else {
+            mLetterSwitcher.setVisibility(View.INVISIBLE);
+            mLetterSwitcher.setText(" ");
+        }
+        
+    }
+    
+    private ViewSwitcher.ViewFactory factory = new ViewSwitcher.ViewFactory() {
+        @Override
+        public View makeView() {
+            TextView tv = new TextView(mContext);
+            //tv.setGravity(Gravity.BOTTOM);
+            //tv.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            tv.setTextSize(24);
+            tv.setTypeface(Typeface.DEFAULT_BOLD);
+            return tv;
+        }
+        
+    };
+    
+    /*
+    private Paint mEventTextPaint = new Paint();
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        
         if(mAppsCustomizePane.getComparatorOrder() == ComparatorIndex.LETTER_INDEX
                 && mAppsCustomizePane.getLetterSelectIndexIndex() > 0
                 && mAppsCustomizePane.isAllAppPage()) {
+            canvas.save();
             int color = getResources().getColor(R.color.drag_view_multiply_color);
             int width = canvas.getWidth();
             int height = canvas.getHeight();
@@ -473,8 +521,9 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
             mEventTextPaint.setTextAlign(Paint.Align.CENTER);
             
             canvas.drawText(mLetterIndexCharacter, width / 2, height / 2 + textSize / 3, mEventTextPaint);
+            canvas.restore();
         }
         
-    }
+    }*/
     // }added by zhong.chen 2012-7-12 for launcher apps sort end
 }

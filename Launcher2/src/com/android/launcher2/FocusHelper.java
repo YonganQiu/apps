@@ -433,6 +433,62 @@ public class FocusHelper {
         }
         return wasHandled;
     }
+    //{added by zhong.chen 2012.07.14 for app sort
+    /**
+     * Handles key events in the tab apps.
+     */
+    static boolean handleTabKeyEvent(AccessibleTabAppsView v, int keyCode, KeyEvent e) {
+        if (!LauncherApplication.isScreenLarge()) return false;
+
+        final FocusOnlyTabWidget parent = (FocusOnlyTabWidget) v.getParent();
+        final TabHost tabHost = findTabHostParent(parent);
+        final ViewGroup contents = (ViewGroup)
+                tabHost.findViewById(com.android.internal.R.id.tabcontent);
+        final int tabCount = parent.getTabCount();
+        final int tabIndex = parent.getChildTabIndex(v);
+
+        final int action = e.getAction();
+        final boolean handleKeyEvent = (action != KeyEvent.ACTION_UP);
+        boolean wasHandled = false;
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                if (handleKeyEvent) {
+                    // Select the previous tab
+                    if (tabIndex > 0) {
+                        parent.getChildTabViewAt(tabIndex - 1).requestFocus();
+                    }
+                }
+                wasHandled = true;
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                if (handleKeyEvent) {
+                    // Select the next tab, or if the last tab has a focus right id, select that
+                    if (tabIndex < (tabCount - 1)) {
+                        parent.getChildTabViewAt(tabIndex + 1).requestFocus();
+                    } else {
+                        if (v.getNextFocusRightId() != View.NO_ID) {
+                            tabHost.findViewById(v.getNextFocusRightId()).requestFocus();
+                        }
+                    }
+                }
+                wasHandled = true;
+                break;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                // Do nothing
+                wasHandled = true;
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                if (handleKeyEvent) {
+                    // Select the content view
+                    contents.requestFocus();
+                }
+                wasHandled = true;
+                break;
+            default: break;
+        }
+        return wasHandled;
+    }
+	//}added by zhong.chen 2012.07.14 for app sort
 
     /**
      * Handles key events in the tab widget.

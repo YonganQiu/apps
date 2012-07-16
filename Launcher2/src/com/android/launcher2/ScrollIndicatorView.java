@@ -36,7 +36,7 @@ public class ScrollIndicatorView extends View {
 
     private Launcher mLauncher;
     private AppsCustomizeTabHost mAppsCustomizeTabHost;
-    private boolean mShowLetterPopuWindow = false;
+    private boolean mShowLetterPopuWindow = true;
     
     private int mPaddingTop;
     
@@ -103,11 +103,11 @@ public class ScrollIndicatorView extends View {
             mPaddingBottom = mLetterWindowHeight / 2 - mIconHeight / 2;
         }
 
-        int residueHeight = height - mPaddingTop -mPaddingBottom - mIconHeight * mIconCount;
+        int residueHeight = height - mPaddingTop - mPaddingBottom - mIconHeight * mIconCount;
         if (residueHeight <= 0) {
             mSpaceHeight = 0;
         } else {
-            mSpaceHeight = residueHeight / (mIconCount - 1);
+            mSpaceHeight = residueHeight / (mIconCount + 1);
         }
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -116,8 +116,7 @@ public class ScrollIndicatorView extends View {
     protected void onDraw(Canvas canvas) {
         canvas.translate(0, getWidth() / 2 - mIconWidth / 2);
         for (int i = 0; i < mIconCount; i++) {
-            int top = mPaddingTop + i * (mIconHeight + mSpaceHeight);
-            
+            int top = mPaddingTop + i * (mIconHeight + mSpaceHeight) + mSpaceHeight;
             if (mSelectIndex == i) {
                 canvas.drawBitmap(mLetterBitmaps[i], 5, top, null);
             } else if(mEnables[i] == ENABLE){
@@ -173,9 +172,7 @@ public class ScrollIndicatorView extends View {
         }
         if (mSelectIndex == focusIndex) {
             int y = mIconHeight / 2 + (mSelectIndex * (mIconHeight + mSpaceHeight) + mPaddingTop);
-            if(mSelectIndex > 0 && mShowLetterPopuWindow) {
-                mLauncher.showLetterPopuWindow(mSelectIndex, y);
-            }
+            mLauncher.showLetterPopuWindow(mSelectIndex, y);
             mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y, mIconCount);
             return;
         }
@@ -184,11 +181,8 @@ public class ScrollIndicatorView extends View {
 
         int y = mIconHeight / 2 + /*mLetterWindowHeight / 2 +*/ (mSelectIndex
                 * (mIconHeight + mSpaceHeight) + mPaddingTop);
-        if(mSelectIndex > 0 && mShowLetterPopuWindow) {
-            mLauncher.showLetterPopuWindow(mSelectIndex, y);
-        }
-        
-       mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y, mIconCount);
+        mLauncher.showLetterPopuWindow(mSelectIndex, y);
+        mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y, mIconCount);
     }
     
     public void setSelectIndex(int selectIndex){

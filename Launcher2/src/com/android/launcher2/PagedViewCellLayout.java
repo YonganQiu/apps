@@ -46,6 +46,8 @@ public class PagedViewCellLayout extends ViewGroup implements Page {
     private int mHeightGap;
     private int mMaxGap;
     protected PagedViewCellLayoutChildren mChildren;
+    
+    int mGap;
 
     public PagedViewCellLayout(Context context) {
         this(context, null);
@@ -205,7 +207,7 @@ public class PagedViewCellLayout extends ViewGroup implements Page {
             mWidthGap = Math.min(mMaxGap, numWidthGaps > 0 ? (hFreeSpace / numWidthGaps) : 0);
             mHeightGap = Math.min(mMaxGap,numHeightGaps > 0 ? (vFreeSpace / numHeightGaps) : 0);
 
-            mChildren.setGap(mWidthGap, mHeightGap);
+            mChildren.setGap(mWidthGap - mGap, mHeightGap);
         } else {
             mWidthGap = mOriginalWidthGap;
             mHeightGap = mOriginalHeightGap;

@@ -275,6 +275,9 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         mWidgetPreviewIconPaddedDimension =
             (int) (mAppIconSize * (1 + (2 * sWidgetPreviewIconPaddingPercentage)));
         mFadeInAdjacentScreens = false;
+        // {added by zhong.chen 2012-7-14 for launcher apps sort begin
+        mSortAppsBarWidth = resources.getDimensionPixelSize(R.dimen.sort_apps_bar_width);
+        // }added by zhong.chen 2012-7-14 for launcher apps sort end
         
     }
 
@@ -766,7 +769,14 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     }
     private void setupPage(PagedViewCellLayout layout) {
         layout.setCellCount(mCellCountX, mCellCountY);
+        // {modified by zhong.chen 2012-7-14 for launcher apps sort
+        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
+            layout.mGap = mSortAppsBarWidth / mCellCountX;
+        } else {
+            layout.mGap = 0;
+        }
         layout.setGap(mPageLayoutWidthGap, mPageLayoutHeightGap);
+        // }modified by zhong.chen 2012-7-14 for launcher apps sort end
         layout.setPadding(mPageLayoutPaddingLeft, mPageLayoutPaddingTop,
                 mPageLayoutPaddingRight, mPageLayoutPaddingBottom);
 
@@ -792,12 +802,8 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         int endIndex = Math.min(startIndex + numCells, appSize);
         PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page);
 //        layout.mChildren.mChildrenDoAnim = mChildrenDoAnim;
-        
-        
-        ArrayList<Object> items = new ArrayList<Object>();
-        ArrayList<Bitmap> images = new ArrayList<Bitmap>();
+        layout.removeAllViewsOnPage();
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR && mSelectIndex > 0) {
-            layout.removeAllViewsOnPage();
             apps = mPagesAppsList.get(mSelectIndex - 1);
             appSize = apps.size();
             for (int i = 0; i < appSize; i++) {
@@ -814,8 +820,6 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 int y = i / mCellCountX;
                 layout.addViewToCellLayout(icon, -1, i, new PagedViewCellLayout.LayoutParams(x,y, 1,1));
                 
-                items.add(info);
-                images.add(info.iconBitmap);
             }
             /*ArrayList<PagedViewIcon> appIcons = mPagedViewIconList.get(mSelectIndex - 1);
             appSize = appIcons.size();
@@ -826,7 +830,6 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
             }*/
             
         } else {
-            layout.removeAllViewsOnPage();
             for (int i = startIndex; i < endIndex; ++i) {
                 ApplicationInfo info = apps.get(i);
                 PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
@@ -841,9 +844,6 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 int x = index % mCellCountX;
                 int y = index / mCellCountX;
                 layout.addViewToCellLayout(icon, -1, i, new PagedViewCellLayout.LayoutParams(x,y, 1,1));
-                
-                items.add(info);
-                images.add(info.iconBitmap);
             }
         }
         layout.createHardwareLayers();
@@ -1828,6 +1828,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     private ArrayList<ArrayList<ApplicationInfo>> mPagesAppsList;
     private ArrayList<PagedViewCellLayout> mPagesLayoutsList;
     private ArrayList<ArrayList<PagedViewIcon>> mPagedViewIconList;
+    private int mSortAppsBarWidth;
     
     int getLetterSelectIndexIndex() {
         return mSelectIndex;

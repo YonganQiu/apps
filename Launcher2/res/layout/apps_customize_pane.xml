@@ -93,12 +93,15 @@
                 android:layout_gravity="bottom"/>
             <!-- added by zhong.chen 2012.07.12 begin-->  
 	        <com.android.launcher2.ScrollIndicatorView
-	            android:id="@+id/all_apps_search_view" android:layout_width="18dip"
-	            android:layout_height="match_parent" android:layout_gravity="right"
+	            android:id="@+id/all_apps_search_view" 
+	            android:layout_width="@dimen/sort_apps_bar_width"
+	            android:layout_height="match_parent" 
+	            android:layout_gravity="right"
 	            android:paddingLeft="6dip"
 	            android:paddingRight="0dip"
-	            android:layout_marginTop="12dp"
-	            android:layout_marginBottom="12dp"
+	            android:paddingTop="12dp"
+	            android:paddingBottom="12dp"
+	            android:visibility="invisible"
 	            android:background="@drawable/allapp_search_bar_bg" />
 	        <!-- added by zhong.chen 2012.07.12 end-->
         </FrameLayout>

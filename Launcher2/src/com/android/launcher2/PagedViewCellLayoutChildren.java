@@ -154,6 +154,8 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
         mNewBottoms = new int[count];
         //mRotations = new float[count];
         
+        int width = getWidth();
+        int height = getHeight();
         for (int i = 0; i < count; i++) {
             final View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
@@ -164,10 +166,29 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
                 int childTop = lp.y;
                 
                 if(mChildrenDoAnim && child instanceof PagedViewIcon) {
+                    ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
                     mNewLefts[i] = childLeft;
                     mNewTops[i] = childTop;
                     mNewRights[i] = childLeft + lp.width;
                     mNewBottoms[i] = childTop + lp.height;
+                    if(appInfo.mOldLeft == 0 && appInfo.mOldTop == 0
+                            && appInfo.mOldRight == 0
+                            && appInfo.mOldBottom == 0) {
+                        if(mNewLefts[i] > width / 2) {
+                            appInfo.mOldLeft = width + mCellWidth;
+                            appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
+                        } else {
+                            appInfo.mOldLeft = -mCellWidth;
+                            appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
+                        }
+                        if(mNewTops[i] > height / 2) {
+                            appInfo.mOldTop = height + mCellHeight;
+                            appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
+                        } else {
+                            appInfo.mOldTop = -mCellHeight;
+                            appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
+                        }
+                    }
                 } else {
                     child.layout(childLeft, childTop, childLeft + lp.width, childTop + lp.height);
                 }
