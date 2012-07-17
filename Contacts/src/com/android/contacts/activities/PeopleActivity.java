@@ -1664,6 +1664,10 @@ public class PeopleActivity extends ContactsActivity
                 case DIALER:
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
+                    //{Added by yongan.qiu on 2012-7-16 begin.
+                    messageMenu.setVisible(false);
+                    emailMenu.setVisible(false);
+                    //}Added by yongan.qiu end.
                     contactsFilterMenu.setVisible(false);
                     dialpadMenu.setVisible(false);
                     callTypeMenu.setVisible(false);
@@ -1990,7 +1994,18 @@ public class PeopleActivity extends ContactsActivity
             case REQUEST_CODE_PICK_EMAIL: {
                 if (resultCode == RESULT_OK && data != null) {
                     Parcelable[] uris = data.getParcelableArrayExtra(Constants.EXTRA_EMAIL_URIS);
-                    wrapFromEmailUris(uris);
+                    String[] addresses = getAddressesFromEmailUris(uris);
+                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                    Uri emailAddress = Uri.fromParts("mailto", "", null);
+                    emailIntent.setData(emailAddress);
+                    emailIntent.putExtra(Intent.EXTRA_EMAIL, addresses);
+                    try {
+                        startActivity(emailIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // TODO no activity to send email.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             }
@@ -2049,7 +2064,7 @@ public class PeopleActivity extends ContactsActivity
         }
         final String where = Phone._ID + " IN (" + idSet.toString() + ")";
         Cursor cursor = getContentResolver().query(Phone.CONTENT_URI, PHONE_PROJECTION, where, null, null);
-        if (cursor == null) {
+        if (cursor == null || cursor.getCount() <= 0) {
             return null;
         }
         
@@ -2068,7 +2083,7 @@ public class PeopleActivity extends ContactsActivity
         return newUris;
     }
 
-    private Uri[] wrapFromEmailUris(Parcelable[] uris) {
+    private String[] getAddressesFromEmailUris(Parcelable[] uris) {
         if (uris == null || uris.length < 1) {
             return null;
         }
@@ -2085,23 +2100,25 @@ public class PeopleActivity extends ContactsActivity
         }
         final String where = Email._ID + " IN (" + idSet.toString() + ")";
         Cursor cursor = getContentResolver().query(Email.CONTENT_URI, PHONE_PROJECTION, where, null, null);
-        if (cursor == null) {
+        if (cursor == null || cursor.getCount() <= 0) {
             return null;
         }
         
-        Uri[] newUris = new Uri[cursor.getCount()];
+        String[] addresses = new String[cursor.getCount()];
+        int i = 0;
         try {
             while(cursor.moveToNext()) {
                 Log.i(TAG, "id = " + cursor.getLong(EMAIL_ID)
                         + "dispaly_name = " + cursor.getString(EMAIL_DISPLAY_NAME)
                         + "number = " + cursor.getString(EMAIL_ADDRESS));
+                addresses[i++] = cursor.getString(EMAIL_ADDRESS);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             cursor.close();
         }
-        return newUris;
+        return addresses;
     }
     //}Added by yongan.qiu end.
 
