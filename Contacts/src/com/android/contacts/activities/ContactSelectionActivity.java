@@ -163,6 +163,11 @@ public class ContactSelectionActivity extends ContactsActivity
             case ContactsRequest.ACTION_PICK_PHONE:
             	extraName = Intents.EXTRA_PHONE_URIS;
             	break;
+            	//{Added by yongan.qiu on 2012-7-17 begin.
+            case ContactsRequest.ACTION_PICK_EMAIL:
+                extraName = Constants.EXTRA_EMAIL_URIS;
+                break;
+                //}Added by yongan.qiu end.
             }
             mExcludeUris = intent.getParcelableArrayExtra(extraName);
             mAccountType = intent.getStringExtra(Constants.EXTRA_ACCOUNT_TYPE);
