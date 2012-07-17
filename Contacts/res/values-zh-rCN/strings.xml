@@ -630,4 +630,19 @@
 
     <!-- Added by yongan.qiu end. -->
 
+ <!-- Added by Gangzhou.Qi 2012.07.12 -->
+    <string name="simContacts_empty">SIM卡无联系人！</string>
+    <string name="simContacts_airplaneMode">飞行模式开启！请先关闭飞行模式再试！</string>
+    <string name="importSimEntry">导入</string>
+    <string name="importAllSimEntries">导入所有</string>
+    <string name="importingSimContacts">正在导入SIM卡联系人！</string>
+    <string name="prepareImportSimContacts">正在准备导入SIM卡联系人！</string>
+     <string name="doingImportSimContacts">正在导入SIM卡联系人！</string>
+     <string name="finishImportSimContacts">SIM卡联系人导入完毕</string>
+     
+     <string name="prepareExportSimContacts">正在准备导出SIM卡联系人！</string>
+     <string name="doingExportSimContacts">正在导出SIM卡联系人！</string>
+     <string name="finishExportSimContacts">SIM卡联系人导出完毕！</string>
+     
+    <!-- Added by Gangzhou.Qi -->
 </resources>

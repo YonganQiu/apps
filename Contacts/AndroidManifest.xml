@@ -621,6 +621,11 @@
             android:exported="false"/>
         
 		<!-- begin : JiangzhouQ 2012.03.01 -->
+		
+		<service android:name=".sim.SIMOperationService"
+		    android:exported="false"></service>
+		
+		
 		 <service
             android:name=".sim.SIMPrepareService"
             android:exported="false"/>
@@ -658,6 +663,19 @@
 				<data android:mimeType="vnd.android.cursor.dir/phone_v2" />
 			</intent-filter>
 		</activity>
+		
+		<activity android:name="ADNList" />
+
+        <activity android:name=".sim.SimContactsImport"
+            android:label="@string/contactsList"
+            android:configChanges="orientation|keyboardHidden|screenSize">
+
+            <intent-filter>
+                <action android:name="android.intent.action.IMPORT_SIM_CONTACTS" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.item/sim-contact" />
+            </intent-filter>
+        </activity>
 		<!-- end : JiangzhouQ 2012.03.01 -->
 
        <!-- begin: added by yunzhou.song -->

@@ -114,7 +114,7 @@
 
         <activity android:name="ADNList" />
 
-        <activity android:name="SimContacts"
+<!--         <activity android:name="SimContacts"
             android:label="@string/simContacts_title"
             android:theme="@style/SimImportTheme"
             android:icon="@mipmap/ic_launcher_contacts_add"
@@ -125,7 +125,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="vnd.android.cursor.item/sim-contact" />
             </intent-filter>
-        </activity>
+        </activity> -->
 
         <activity android:name="FdnList" android:label="@string/fdnListLabel">
             <intent-filter>

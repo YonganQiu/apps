@@ -65,4 +65,16 @@ public class Constants {
     //Added by gangzhou.qi at 2012-7-5 上午9:59:42
     public static final boolean TOTAL_DEBUG = true;
 	//Ended by gangzhou.qi at 2012-7-5 上午9:59:42
+    //Begin by gangzhou.qi at 2012-7-13 上午10:09:04
+    public static final String SIM_OPERATION_TYPE = "sim_operation_type";
+    public static final String SIM_OPERATION_ARRAY = "sim_operation_array";
+    public static final int SIM_OPERATION_UNKNOWN = 0;
+    public static final int SIM_OPERATION_IMPORT = 1;
+    public static final int SIM_OPERATION_EXPORT = 2;
+    public static final int SIM_OPERATION_DELETE = 3;
+    public static final int SIM_OPERATION_CANCEL = 4;
+    public static final int SIM_OPERATION_IMPORT_ALL = 5;
+    
+    public static final String SIM_READING_STATE = "sim_reading_state";
+	//Ended by gangzhou.qi at 2012-7-13 上午10:09:04
 }

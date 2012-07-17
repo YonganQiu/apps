@@ -17,6 +17,7 @@ package com.android.contacts.list;
 
 import java.util.HashSet;
 
+import com.android.contacts.ContactsApplication;
 import com.android.contacts.R;
 import com.android.contacts.editor.ContactEditorFragment;
 import com.android.contacts.interactions.ContactDeletionInteraction;
@@ -59,6 +60,9 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
     private TextView mCounterHeaderView;
     private View mSearchHeaderView;
     private View mAccountFilterHeader;
+    //Begin by gangzhou.qi at 2012-7-16 上午10:00:12
+    private View mSIMStateView;
+	//Ended by gangzhou.qi at 2012-7-16 上午10:00:12
     private FrameLayout mProfileHeaderContainer;
     private View mProfileHeader;
     private Button mProfileMessage;
@@ -128,6 +132,9 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
         mAccountFilterHeader.setOnClickListener(mFilterHeaderClickListener);
         mCounterHeaderView = (TextView) getView().findViewById(R.id.contacts_count);
 
+        //Begin by gangzhou.qi at 2012-7-16 上午10:00:39
+        mSIMStateView = getView().findViewById(R.id.sim_reading_state_container);
+		//Ended by gangzhou.qi at 2012-7-16 上午10:00:39
         // Create an empty user profile header and hide it for now (it will be visible if the
         // contacts list will have no user profile).
         addEmptyUserProfileHeader(inflater);
@@ -140,6 +147,9 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
         headerContainer.addView(mSearchHeaderView);
         getListView().addHeaderView(headerContainer, null, false);
         checkHeaderViewVisibility();
+        //Begin by gangzhou.qi at 2012-7-16 上午10:03:17
+        setSIMStateView();
+		//Ended by gangzhou.qi at 2012-7-16 上午10:03:17
         
         //begin: added by yunzhou.song
         getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -147,6 +157,21 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
         //end: added by yunzhou.song
     }
 
+    //Begin by gangzhou.qi at 2012-7-16 上午10:36:00
+    public void setSIMStateView(){
+    	if(mSIMStateView == null){
+    		return ;
+    	}
+    	final ContactListFilter filter = getFilter();
+        if (filter != null && !isSearchMode()) {
+            final boolean shouldShowSIMReading =((ContactsApplication) getActivity().getApplication()).SIMPreparing;
+            mSIMStateView.setVisibility(shouldShowSIMReading ? View.VISIBLE : View.GONE);
+        } else {
+        	mSIMStateView.setVisibility(View.GONE);
+        }
+    }
+    //Ended by gangzhou.qi at 2012-7-16 上午10:36:00
+    
     @Override
     protected void setSearchMode(boolean flag) {
         super.setSearchMode(flag);

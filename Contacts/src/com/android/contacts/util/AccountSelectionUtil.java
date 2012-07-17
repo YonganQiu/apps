@@ -170,7 +170,8 @@ public class AccountSelectionUtil {
             importIntent.putExtra("account_type", account.type);
             importIntent.putExtra("data_set", account.dataSet);
         }
-        importIntent.setClassName("com.android.phone", "com.android.phone.SimContacts");
+//        importIntent.setClassName("com.android.contacts.sim", "com.android.contacts.sim.SimContactsImport");
+        importIntent.setAction("android.intent.action.IMPORT_SIM_CONTACTS");
         context.startActivity(importIntent);
     }
 

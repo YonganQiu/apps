@@ -78,10 +78,13 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnCancelListener;
 import android.database.Cursor;
@@ -330,6 +333,13 @@ public class PeopleActivity extends ContactsActivity
         if (Log.isLoggable(Constants.PERFORMANCE_TAG, Log.DEBUG)) {
             Log.d(Constants.PERFORMANCE_TAG, "PeopleActivity.onCreate finish");
         }
+        //Begin by gangzhou.qi at 2012-7-16 上午11:17:02
+        simStateReceiver mSimStateReceiver = new simStateReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.SIM_READING_STATE);
+        registerReceiver(mSimStateReceiver, filter);
+        Log.d("^^", "register the broadcast");
+        //Ended by gangzhou.qi at 2012-7-16 上午11:17:02
     }
 
     @Override
@@ -2240,4 +2250,20 @@ public class PeopleActivity extends ContactsActivity
 		mCallLogPhoneNumberFragment.onQueryTextChange(input.toString());
 	}
 	//}Added by yongan.qiu end.
+	
+	//Begin by gangzhou.qi at 2012-7-16 上午11:06:38
+	private class simStateReceiver extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if(Constants.SIM_READING_STATE.equals(intent.getAction())){
+				if(mAllFragment != null){
+					mAllFragment.setSIMStateView();
+					Log.d("^^", "peopleactivity onreceive the broadcastreceiver");
+				}
+			}
+		}
+		
+	}
+	//Ended by gangzhou.qi at 2012-7-16 上午11:06:38
 }

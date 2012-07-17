@@ -9,6 +9,8 @@ import java.util.Set;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.AsyncQueryHandler;
 import android.content.DialogInterface;
@@ -58,7 +60,7 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 	Cursor mCursor ;
 	
 	private int QUERY_TOKEN = 1;
-	private ProgressDialog mProgressDialog;
+//	private ProgressDialog mProgressDialog;
 	private Set<String> mIndexSet = new HashSet<String>();
 	private final static int TOAST_EXPORT = 1;
 	private ExportAsyncTask mExportAsyncTask;
@@ -72,7 +74,8 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 	private boolean isExporting = false;
 	private List<String[]> exportQueue = new ArrayList<String[]>(); 
 	Uri uri = Phone.CONTENT_URI.buildUpon().appendQueryParameter(ContactsContract.DIRECTORY_PARAM_KEY, String.valueOf(Directory.DEFAULT)).build();
-	
+	private int mCount = 0;
+	private NotificationManager mNotificationManager;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +96,7 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
         listview.setAdapter(sAdapter);
         listview.setOnItemClickListener(this);
 		 checkSIMState();
+		 mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
     }
     
     private class CreateIndexAsyncTask extends AsyncTask<Integer, Integer, Integer>{
@@ -131,6 +135,41 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
     	return sb.toString();
     	
     }
+    
+    private Notification createPrepareNotification(){
+    	Notification.Builder builder = new Notification.Builder(this);
+    	builder.setOngoing(true)
+    	.setSmallIcon(android.R.drawable.stat_notify_sdcard)
+    	.setContentText(getString(R.string.percentage,
+                String.valueOf(mCount * 100 / mCursor.getCount())))
+    	.setContentTitle(getString(R.string.prepareExportSimContacts))
+    	.setTicker(getString(R.string.prepareExportSimContacts))
+    	.setProgress(mCursor.getCount(), 0, false);
+    	return builder.getNotification();
+    }
+    
+    private Notification createProgressNotification(){
+    	Notification.Builder builder = new Notification.Builder(this);
+    	builder.setOngoing(true)
+    	.setSmallIcon(android.R.drawable.stat_notify_sdcard)
+    	.setContentText(getString(R.string.percentage,
+                String.valueOf(mCount * 100 / mCursor.getCount())))
+    	.setContentTitle(getString(R.string.doingExportSimContacts))
+    	.setTicker(getString(R.string.doingExportSimContacts))
+    	.setProgress(mCursor.getCount(), mCount, false);
+    	return builder.getNotification();
+    }
+    
+    private Notification createFinishNotification(){
+    	Notification.Builder builder = new Notification.Builder(this);
+    	builder.setSmallIcon(android.R.drawable.stat_notify_sdcard)
+    	.setContentText(getString(R.string.percentage,
+                String.valueOf(mCount * 100 / mCursor.getCount())))
+    	.setContentTitle(getString(R.string.finishExportSimContacts))
+    	.setTicker(getString(R.string.finishExportSimContacts));
+    	return builder.getNotification();
+    }
+    
     private class ExportAsyncTask extends AsyncTask<Integer, Integer, Integer>{
 
     	String name;
@@ -139,6 +178,7 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 		protected Integer doInBackground(Integer... params) {
 			successCount = 0;
 			failedCount = 0;
+			mNotificationManager.notify(0, createPrepareNotification());
 			for(int i = 0; i < mCursor.getCount(); i++){
 				mCursor.moveToPosition(i);
 				name = mCursor.getString(mCursor.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
@@ -155,30 +195,15 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 				}else{
 					return null;
 				}
+				mCount ++;
+				if((mCount % 5) == 0){
+					mNotificationManager.notify(0, createProgressNotification());
+				}
 			}
-			Message msg = new Message();
-			msg.what = TOAST_EXPORT;
-			nHandler.sendMessage(msg);
 			
+			mNotificationManager.notify(0, createFinishNotification());
 			return null;
 		}
-		
-    	@Override
-    	protected void onProgressUpdate(Integer... values) {
-    		mProgressDialog.setProgress(values[0]);
-    		if(values[0] == mCursor.getCount()){
-    			mProgressDialog.dismiss();
-    		}
-    		super.onProgressUpdate(values);
-    	}
-		
-    	@Override
-    	protected void onCancelled() {
-    		if(mProgressDialog!=null){
-    			mProgressDialog.dismiss();
-    		}
-    		super.onCancelled();
-    	}
     }
     
     private void checkSIMState(){
@@ -253,30 +278,6 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
     		mExportAsyncTask = new ExportAsyncTask();
     		mExportAsyncTask.execute(1);
     		
-    		mProgressDialog = new ProgressDialog(ExportSIMContacts.this);
-			mProgressDialog.setTitle(R.string.export_to_sim);
-			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-			mProgressDialog.setProgress(0);
-			mProgressDialog.setCanceledOnTouchOutside(false);
-			mProgressDialog.setOnCancelListener( new OnCancelListener() {
-				@Override
-				public void onCancel(DialogInterface dialog) {
-					// TODO Auto-generated method stub
-					mExportAsyncTask.cancel(true);
-					ResumeExport = false;
-					
-				}
-			});
-			mProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(android.R.string.cancel), new DialogInterface.OnClickListener(){
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
-					mExportAsyncTask.cancel(true);
-					ResumeExport = false;
-				}
-			});
-			mProgressDialog.setMax(mCursor.getCount());
-			mProgressDialog.show();
     		break;
     	}
     	}
@@ -320,7 +321,6 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 		try {
 			exportOneContact(exportQueue.get(0)[0], exportQueue.get(0)[1]);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 		
 		Message msg = new Message();
@@ -362,11 +362,6 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 			Runnable exportRunnable = new Runnable() {
 				@Override
 				public void run() {
-					if (mProgressDialog != null) {
-						if (mProgressDialog.isShowing()) {
-							mProgressDialog.dismiss();
-						}
-					}
 					showDialog();
 					
 				}
@@ -459,6 +454,5 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		ResumeExport = false;
 	}
 }

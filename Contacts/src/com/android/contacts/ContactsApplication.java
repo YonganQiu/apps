@@ -41,6 +41,9 @@ public final class ContactsApplication extends Application {
     private ContactPhotoManager mContactPhotoManager;
     private ContactListFilterController mContactListFilterController;
 
+    //Begin by gangzhou.qi at 2012-7-15 下午11:54:48
+    public boolean SIMPreparing = false;
+	//Ended by gangzhou.qi at 2012-7-15 下午11:54:48
     /**
      * Overrides the system services with mocks for testing.
      */

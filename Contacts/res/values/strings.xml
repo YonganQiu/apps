@@ -1905,4 +1905,20 @@
 
     <!-- Added by yongan.qiu end. -->
 
+
+    <!-- Added by Gangzhou.Qi 2012.07.12 -->
+    <string name="simContacts_empty">No contacts on your SIM card.</string>
+    <string name="simContacts_airplaneMode">To import contacts from SIM card, please turn off Airplane mode.</string>
+    <string name="importSimEntry">Import</string>
+    <string name="importAllSimEntries">Import all</string>
+    <string name="importingSimContacts">Importing SIM contacts!</string>
+    <string name="prepareImportSimContacts">Prepare to import SIM Contacts!</string>
+     <string name="doingImportSimContacts">Importing SIM Contacts!</string>
+     <string name="finishImportSimContacts">SIM contacts import completed!</string>
+     
+     <string name="prepareExportSimContacts">Prepare to export SIM Contacts!</string>
+     <string name="doingExportSimContacts">Exporting SIM Contacts!</string>
+     <string name="finishExportSimContacts">SIM contacts export completed!</string>
+     
+    <!-- Added by Gangzhou.Qi -->
 </resources>
