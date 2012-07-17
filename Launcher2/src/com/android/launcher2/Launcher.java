@@ -3085,6 +3085,19 @@ public final class Launcher extends Activity
                 case AddAdapter.ITEM_APPLICATION: {
                     if (mAppsCustomizeTabHost != null) {
                         mAppsCustomizeTabHost.selectAppsTab();
+                        // {added by zhong.chen 2012-7-17 for launcher apps sort
+                        // begin
+                        updateSortAppsIcon(false, View.VISIBLE);
+                        if(null != mAppsCustomizeContent) {
+                            int order = mAppsCustomizeContent.getComparatorOrder();
+                            if(order == ComparatorIndex.LETTER_INDEX) {
+                                setLetterOrderViewVisibility(View.VISIBLE);
+                            } else {
+                                setLetterOrderViewVisibility(View.INVISIBLE);
+                            }
+                        }
+                        // }added by zhong.chen 2012-7-17 for launcher apps sort
+                        // end
                     }
                     showAllApps(true);
                     break;
@@ -3092,6 +3105,12 @@ public final class Launcher extends Activity
                 case AddAdapter.ITEM_APPWIDGET: {
                     if (mAppsCustomizeTabHost != null) {
                         mAppsCustomizeTabHost.selectWidgetsTab();
+                        // {added by zhong.chen 2012-7-17 for launcher apps sort
+                        // begin
+                        updateSortAppsIcon(false, View.INVISIBLE);
+                        setLetterOrderViewVisibility(View.INVISIBLE);
+                        // }added by zhong.chen 2012-7-17 for launcher apps sort
+                        // end
                     }
                     showAllApps(true);
                     break;

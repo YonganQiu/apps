@@ -277,6 +277,11 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         mFadeInAdjacentScreens = false;
         // {added by zhong.chen 2012-7-14 for launcher apps sort begin
         mSortAppsBarWidth = resources.getDimensionPixelSize(R.dimen.sort_apps_bar_width);
+        
+        SharedPreferences prefs =
+                context.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
+        int comparator = prefs.getInt(COMPARATOR_KEY, ComparatorIndex.NAME);
+        mComparator = getComparator(comparator);
         // }added by zhong.chen 2012-7-14 for launcher apps sort end
         
     }
@@ -412,7 +417,15 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         mWidgetSpacingLayout.calculateCellCount(width, height, maxCellCountX, maxCellCountY);
         mCellCountX = mWidgetSpacingLayout.getCellCountX();
         mCellCountY = mWidgetSpacingLayout.getCellCountY();
-        updatePageCounts();
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort begin
+        boolean flag = false;
+        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
+            flag = sort(mComparator);
+        }
+        if(!flag) {
+            updatePageCounts();
+        }
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
 
         // Force a measure to update recalculate the gaps
         int widthSpec = MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.AT_MOST);
@@ -425,7 +438,12 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
 
         // Restore the page
         int page = getPageForComponent(mSaveInstanceStateItemIndex);
-        invalidatePageData(Math.max(0, page), hostIsTransitioning);
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
+        if(!flag) {
+            invalidatePageData(Math.max(0, page), hostIsTransitioning);
+        }
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
+        
 
         // Show All Apps cling if we are finished transitioning, otherwise, we will try again when
         // the transition completes in AppsCustomizeTabHost (otherwise the wrong offsets will be
@@ -705,11 +723,25 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     }
 
     public void setContentType(ContentType type) {
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
         if (type == ContentType.Widgets) {
             invalidatePageData(mNumAppsPages, true);
+            updateSortAppsIcon(View.INVISIBLE);
+            setLetterOrderViewVisibility(View.INVISIBLE);
         } else if (type == ContentType.Applications) {
+            updateSortAppsIcon(View.VISIBLE);
+            if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
+                setLetterOrderViewVisibility(View.VISIBLE);
+                if(sort(mComparator)) {
+                    return;
+                }
+                
+            } else {
+                setLetterOrderViewVisibility(View.INVISIBLE);
+            }
             invalidatePageData(0, true);
         }
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
     }
 
     protected void snapToPage(int whichPage, int delta, int duration) {
@@ -739,14 +771,16 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                         !tag.equals(tabHost.getTabTagForContentType(ContentType.Widgets))) {
                     tabHost.setCurrentTabFromContent(ContentType.Widgets);
                     // {added by zhong.chen 2012-7-12 for launcher apps sort
-                    mLauncher.updateSortAppsIcon(false, View.INVISIBLE);
+                    //mLauncher.updateSortAppsIcon(false, View.INVISIBLE);
+                    updateSortAppsIcon(View.INVISIBLE);
                     setLetterOrderViewVisibility(View.INVISIBLE);
                     // }added by zhong.chen 2012-7-12 for launcher apps sort end
                 } else if (currentPage < mNumAppsPages &&
                         !tag.equals(tabHost.getTabTagForContentType(ContentType.Applications))) {
                     tabHost.setCurrentTabFromContent(ContentType.Applications);
                     // {added by zhong.chen 2012-7-12 for launcher apps sort
-                    mLauncher.updateSortAppsIcon(false, View.VISIBLE);
+                    //mLauncher.updateSortAppsIcon(false, View.VISIBLE);
+                    updateSortAppsIcon(View.VISIBLE);
                     if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
                         setLetterOrderViewVisibility(View.VISIBLE);
                     } else {
@@ -1481,10 +1515,10 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         mLauncher = launcher;
         mDragController = dragController;
         // {added by zhong.chen 2012-7-12 for launcher apps sort
-        SharedPreferences prefs =
+        /*SharedPreferences prefs =
                 mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
-        int comparator = prefs.getInt(COMPARATOR_KEY, ComparatorIndex.NAME);
-        sort(comparator);
+        int comparator = prefs.getInt(COMPARATOR_KEY, ComparatorIndex.NAME);*/
+        //sort(mComparator);
         // }added by zhong.chen 2012-7-12 for launcher apps sort end
     }
     @Override
@@ -1504,9 +1538,12 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         mApps = list;
         // {modified by zhong.chen 2012-7-12 for launcher apps sort
         //Collections.sort(mApps, LauncherModel.APP_NAME_COMPARATOR);
-        sort(mComparator);
-        // }modified by zhong.chen 2012-7-12 for launcher apps sort end
+        if(null == mComparator) {
+            mComparator = LauncherModel.APP_NAME_COMPARATOR;
+        }
+        Collections.sort(mApps, mComparator);
         updatePageCounts();
+        // }modified by zhong.chen 2012-7-12 for launcher apps sort end
 
         // The next layout pass will trigger data-ready if both widgets and apps are set, so 
         // request a layout to do this test and invalidate the page data when ready.
@@ -1531,8 +1568,13 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     @Override
     public void addApps(ArrayList<ApplicationInfo> list) {
         addAppsWithoutInvalidate(list);
-        updatePageCounts();
-        invalidatePageData();
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
+        if(!sort(mComparator)) {
+            updatePageCounts();
+            invalidatePageData();
+        }
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
+        
     }
     private int findAppByComponent(List<ApplicationInfo> list, ApplicationInfo item) {
         ComponentName removeComponent = item.intent.getComponent();
@@ -1559,8 +1601,12 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     @Override
     public void removeApps(ArrayList<ApplicationInfo> list) {
         removeAppsWithoutInvalidate(list);
-        updatePageCounts();
-        invalidatePageData();
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
+        if(!sort(mComparator)) {
+            updatePageCounts();
+            invalidatePageData();
+        }
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
     }
     @Override
     public void updateApps(ArrayList<ApplicationInfo> list) {
@@ -1569,29 +1615,41 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         // place in the list.
         removeAppsWithoutInvalidate(list);
         addAppsWithoutInvalidate(list);
-        updatePageCounts();
-
-        invalidatePageData();
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
+        if(!sort(mComparator)) {
+            updatePageCounts();
+            invalidatePageData();
+        }
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
     }
 
     @Override
     public void reset() {
         AppsCustomizeTabHost tabHost = getTabHost();
         String tag = tabHost.getCurrentTabTag();
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
+        boolean invalidate = false;
         if (tag != null) {
             if (!tag.equals(tabHost.getTabTagForContentType(ContentType.Applications))) {
                 tabHost.setCurrentTabFromContent(ContentType.Applications);
                 // {added by zhong.chen 2012-7-12 for launcher apps sort
-                mLauncher.updateSortAppsIcon(false, View.VISIBLE);
+                //mLauncher.updateSortAppsIcon(false, View.VISIBLE);
+                updateSortAppsIcon(View.VISIBLE);
                 if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
                     setLetterOrderViewVisibility(View.VISIBLE);
+                    if(!sort(mComparator)) {
+                        invalidatePageData(0);
+                    }
+                    invalidate = true;
+                    
                 } else {
                     setLetterOrderViewVisibility(View.INVISIBLE);
                 }
                 // }added by zhong.chen 2012-7-12 for launcher apps sort end
             }
         }
-        if (mCurrentPage != 0) {
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
+        if (mCurrentPage != 0 && !invalidate) {
             invalidatePageData(0);
         }
     }
@@ -1678,6 +1736,29 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         return mComparator;
     }
     
+    // {modified by zhong.chen 2012-7-17 for launcher apps sort
+    public Comparator<ApplicationInfo> getComparator(int order) {
+        switch (order) {
+            case ComparatorIndex.NAME:
+                mComparator = LauncherModel.APP_NAME_COMPARATOR;
+                break;
+            case ComparatorIndex.LETTER_INDEX:
+                mComparator = LauncherModel.APP_LETTER_COMPARATOR;
+                break; 
+            case ComparatorIndex.INSTALL_TIME:
+                mComparator = LauncherModel.APP_INSTALL_TIME_COMPARATOR;
+                break;
+            case ComparatorIndex.LAUNCH_COUNT:
+                mComparator = LauncherModel.APP_LAUNCH_COUNT_COMPARATOR;
+                break;
+            case ComparatorIndex.LAST_UPDATE_TIME:
+                mComparator = LauncherModel.APP_LAST_UPDATE_TIME_COMPARATOR;
+                break;
+        }
+        return mComparator;
+    }
+    // }modified by zhong.chen 2012-7-17 for launcher apps sort end
+    
     public int getComparatorOrder() {
         int order = ComparatorIndex.NAME;
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
@@ -1688,7 +1769,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
             order = ComparatorIndex.LAUNCH_COUNT;
         } else if(mComparator == LauncherModel.APP_LAST_UPDATE_TIME_COMPARATOR) {
             order = ComparatorIndex.LAST_UPDATE_TIME;
-        } 
+        }
         return order;
     }
     
@@ -1727,6 +1808,12 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         mLauncher.setLetterOrderViewVisibility(visibility);
     }
     
+    // {added by zhong.chen 2012-7-17 for launcher apps sort begin
+    void updateSortAppsIcon(int visibility) {
+        mLauncher.updateSortAppsIcon(false, visibility);
+    }
+    // }added by zhong.chen 2012-7-17 for launcher apps sort end
+    
     public boolean sort(int comparator) {
         if(isAllAppPage()) {
             switch (comparator) {
@@ -1752,7 +1839,16 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     }
     
     public boolean isAllAppPage() {
+        // {modified by zhong.chen 2012-7-17 for launcher apps sort
+        AppsCustomizeTabHost tabHost = getTabHost();
+        if (tabHost != null) {
+            String tag = tabHost.getCurrentTabTag();
+            if (tag != null) {
+                return tag.equals(tabHost.getTabTagForContentType(ContentType.Applications));
+            }
+        }
         return getCurrentPage() < mNumAppsPages;
+        // }modified by zhong.chen 2012-7-17 for launcher apps sort end
     }
     
     public long getLastUpdateTime(String packageName) {
@@ -1823,7 +1919,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     
     private int mSelectIndex;
 //    private boolean mChildrenDoAnim;
-    private Comparator<ApplicationInfo> mComparator = LauncherModel.APP_NAME_COMPARATOR;
+    private Comparator<ApplicationInfo> mComparator;
     private static final String COMPARATOR_KEY = "comparator_key";
     private ArrayList<ArrayList<ApplicationInfo>> mPagesAppsList;
     private ArrayList<PagedViewCellLayout> mPagesLayoutsList;
