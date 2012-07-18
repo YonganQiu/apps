@@ -69,7 +69,7 @@
                 android:id="@+id/animation_buffer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#FF000000"
+                android:background="#00000000"
                 android:visibility="gone" />
 
             <include

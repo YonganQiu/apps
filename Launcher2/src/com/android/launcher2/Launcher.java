@@ -1862,6 +1862,11 @@ public final class Launcher extends Activity
                     pos[0] + v.getWidth(), pos[1] + v.getHeight()));
             boolean success = startActivitySafely(intent, tag);
 
+            // {added by zhong.chen 2012-7-16 for launcher apps sort begin
+            if(null != mAppsCustomizeContent) {
+                mAppsCustomizeContent.updateAppsLaunchCount();                
+            }
+            //}added by zhong.chen 2012-7-16 for launcher apps sort end
             if (success && v instanceof BubbleTextView) {
                 mWaitingForResume = (BubbleTextView) v;
                 mWaitingForResume.setStayPressed(true);
@@ -4177,9 +4182,13 @@ public final class Launcher extends Activity
         mSearchIndicatorView.setVisibility(visibility);
     }
     
-    public void setLetterOrderEnable(int[] enables) {
+    public void setLetterOrderEnable(boolean[] enables) {
         mSearchIndicatorView.setEnables(enables);
         mSearchIndicatorView.invalidate();
+    }
+    
+    public int setSelectIndex(int selectIndex, boolean zOrder) {
+        return mSearchIndicatorView.setSelectIndex(selectIndex, zOrder);
     }
     
     int getSearchViewLeft() {

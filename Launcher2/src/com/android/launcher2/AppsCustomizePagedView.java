@@ -376,17 +376,15 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         // {modified by zhong.chen 2012-7-12 for launcher apps sort
         //mNumAppsPages = (int) Math.ceil((float) mApps.size() / (mCellCountX * mCellCountY));
         int perPage = (mCellCountX * mCellCountY);
-        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR && mSelectIndex > 0) {
-            ArrayList<ApplicationInfo> list = mPagesAppsList.get(mSelectIndex - 1);
-            if(null != list
-                    && list.size() > perPage) {
-                mNumAppsPages = (int) Math.ceil((float) list.size() / perPage);
-            } else {
-                mNumAppsPages = 1;
-            }
-        } else {
-            mNumAppsPages = (int) Math.ceil((float) mApps.size() / perPage);
+        int pageSize = mApps.size();
+        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR 
+                && mSelectIndex >= 0
+                && null != mPagesAppsList 
+                && mPagesAppsList.size() > 0) {
+            ArrayList<ApplicationInfo> list = mPagesAppsList.get(mSelectIndex);
+            pageSize = list.size();
         }
+        mNumAppsPages = (int) Math.ceil((float) pageSize / perPage);
         // }modified by zhong.chen 2012-7-12 for launcher apps sort end
     }
 
@@ -456,6 +454,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 }
             });
         }
+        mChildrenDoAnim = true;
     }
 
     void showAllAppsCling() {
@@ -545,6 +544,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 @Override
                 public void run() {
                     mLauncher.startActivitySafely(appInfo.intent, appInfo);
+                    updateAppsLaunchCount();
                 }
             });
         } else if (v instanceof PagedViewWidget) {
@@ -835,12 +835,13 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         int appSize = apps.size();
         int endIndex = Math.min(startIndex + numCells, appSize);
         PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page);
-//        layout.mChildren.mChildrenDoAnim = mChildrenDoAnim;
+        layout.mChildren.mChildrenDoAnim = mChildrenDoAnim;
         layout.removeAllViewsOnPage();
-        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR && mSelectIndex > 0) {
-            apps = mPagesAppsList.get(mSelectIndex - 1);
+        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR && mSelectIndex >= 0) {
+            apps = mPagesAppsList.get(mSelectIndex);
             appSize = apps.size();
-            for (int i = 0; i < appSize; i++) {
+            endIndex = Math.min(startIndex + numCells, appSize);
+            for (int i = startIndex; i < endIndex; i++) {
                 ApplicationInfo info = apps.get(i);
                 PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
                         R.layout.apps_customize_application, layout, false);
@@ -850,12 +851,13 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 icon.setOnTouchListener(this);
                 icon.setOnKeyListener(this);
 
-                int x = i % mCellCountX;
-                int y = i / mCellCountX;
+                int index = i - startIndex;
+                int x = index % mCellCountX;
+                int y = index / mCellCountX;
                 layout.addViewToCellLayout(icon, -1, i, new PagedViewCellLayout.LayoutParams(x,y, 1,1));
                 
             }
-            /*ArrayList<PagedViewIcon> appIcons = mPagedViewIconList.get(mSelectIndex - 1);
+            /*ArrayList<PagedViewIcon> appIcons = mPagedViewIconList.get(mSelectIndex);
             appSize = appIcons.size();
             for (int i = 0; i < appSize; i++) {
                 int x = i % mCellCountX;
@@ -1541,6 +1543,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if(null == mComparator) {
             mComparator = LauncherModel.APP_NAME_COMPARATOR;
         }
+        updateAppsLaunchCount(mApps);
         Collections.sort(mApps, mComparator);
         updatePageCounts();
         // }modified by zhong.chen 2012-7-12 for launcher apps sort end
@@ -1777,7 +1780,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if(isAllAppPage()) {
             mComparator = comparator;
             prepareSort();
-            
+            AppsCustomizeTabHost tabHost = getTabHost();
             if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
 //                mChildrenDoAnim = true;
                 Collections.sort(mApps, comparator);
@@ -1785,8 +1788,14 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 updatePageCounts();
                 invalidatePageData(0);
 //                mChildrenDoAnim = false;
+                if(null != tabHost) {
+                    tabHost.showLetterView(mSelectIndex);
+                }
                 setLetterOrderViewVisibility(View.VISIBLE);
             } else {
+                if(null != tabHost) {
+                    tabHost.showLetterView(-1);
+                }
 //                mChildrenDoAnim = true;
                 Collections.sort(mApps, comparator);
                 updatePageCounts();
@@ -1884,6 +1893,29 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         }
     }
     
+    public void updateAppsLaunchCount() {
+        int size = mApps.size();
+        ApplicationInfo appInfo = null;
+        ComponentName componentName = null;
+        String pkgName = null;
+        PkgUsageStats[] stats = mLauncher.getPkgUsageStats();
+        int pkgStatsLen = stats.length;
+        if(null != stats && pkgStatsLen > 0)
+        for (int i = 0; i < size; i++) {
+            appInfo = mApps.get(i);
+            if (null != appInfo && null != (componentName = appInfo.componentName)
+                    && null != (pkgName = componentName.getPackageName())) {
+                for (PkgUsageStats stat : stats) {
+                    if(stat.packageName.equals(pkgName)) {
+                        appInfo.launchCount = stat.launchCount;
+                    }
+                }
+                
+            }
+        }
+        invalidate();
+    }
+    
     public void updateAppsLaunchCount(ArrayList<ApplicationInfo> apps) {
         int size = apps.size();
         ApplicationInfo appInfo = null;
@@ -1917,8 +1949,8 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         }
     }
     
-    private int mSelectIndex;
-//    private boolean mChildrenDoAnim;
+    private int mSelectIndex = -1;
+    private boolean mChildrenDoAnim = false;
     private Comparator<ApplicationInfo> mComparator;
     private static final String COMPARATOR_KEY = "comparator_key";
     private ArrayList<ArrayList<ApplicationInfo>> mPagesAppsList;
@@ -1929,18 +1961,29 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     int getLetterSelectIndexIndex() {
         return mSelectIndex;
     }
-    public void highlightCurrentLetterIndex(final int selectIndex, int pageCount) {
+    public void highlightCurrentLetterIndex(final int selectIndex) {
         if(mSelectIndex == selectIndex) {
             return;
         }
-        if(mSelectIndex == 0 || selectIndex == 0) {
+        
+        int perPage = (mCellCountX * mCellCountY);
+        ArrayList<ApplicationInfo> list = mPagesAppsList.get(selectIndex);
+        int numAppsPages = (int) Math.ceil((float) list.size() / perPage);
+        mSelectIndex = selectIndex;
+        if(numAppsPages != mNumAppsPages) {
+            updatePageCounts();
+            invalidatePageData(0);
+        } else {
+            syncAppsPageItems(0, true);
+        }
+        /*if(mSelectIndex == 0 || selectIndex == 0) {
             mSelectIndex = selectIndex;
             updatePageCounts();
             invalidatePageData(0);
         } else {
             mSelectIndex = selectIndex;
             syncAppsPageItems(0, true);
-        }
+        }*/
         
     }
     
@@ -1950,12 +1993,12 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         int size = apps.size();
         
         mPagesAppsList = new ArrayList<ArrayList<ApplicationInfo>>();
-        int perPageCount = (mCellCountX * mCellCountY);
         //# or any other character except a-z
         int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
         int zIndex = Utilities.getSearchLetterIndexByTitle("z");
-        int[] enables = new int[zIndex - othersIndex + 1];
+        boolean[] enables = new boolean[zIndex - othersIndex + 1];
         int pos = 0;
+        mPagesAppsList.add(apps);
         for(int i = othersIndex; i <= zIndex; i++) {
             pageList = new ArrayList<ApplicationInfo>();
             mPagesAppsList.add(pageList);
@@ -1966,14 +2009,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                     continue;
                 }
                 if(letterIndex == i) {
-                    if(pageList.size() < perPageCount) {
-                        pageList.add(appInfo);
-                    } else {
-                        pageList = new ArrayList<ApplicationInfo>();
-                        pageList.add(appInfo);
-                        mPagesAppsList.add(pageList);                    
-                    }
-                    
+                    pageList.add(appInfo);
                 } else {
                     break;
                 }
@@ -1997,7 +2033,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         //# or any other character except a-z
         int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
         int zIndex = Utilities.getSearchLetterIndexByTitle("z");
-        int[] enables = new int[zIndex - othersIndex + 1];
+        boolean[] enables = new boolean[zIndex - othersIndex + 1];
         int pos = 0;
         for(int i = othersIndex; i <= zIndex; i++) {
             pageList = new ArrayList<PagedViewIcon>();
@@ -2052,7 +2088,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         //# or any other character except a-z
         int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
         int zIndex = Utilities.getSearchLetterIndexByTitle("z");
-        int[] enables = new int[zIndex - othersIndex + 1];
+        boolean[] enables = new boolean[zIndex - othersIndex + 1];
         int pos = 0;
         int perPageappCount = 0;
         PagedViewCellLayout layout = null;

@@ -42,10 +42,10 @@ public class ScrollIndicatorView extends View {
     
     private int mPaddingBottom;
     
-    private int[] mEnables;
+    private boolean[] mEnables;
     
-    public static final int ENABLE = 1;
-    public static final int DISABLE = 2;
+    public static final boolean ENABLE = true;
+    public static final boolean DISABLE = false;
 
     public ScrollIndicatorView(Context context) {
         super(context);
@@ -76,7 +76,7 @@ public class ScrollIndicatorView extends View {
             }
         }
 
-        mEnables = new int[mIconCount];
+        mEnables = new boolean[mIconCount];
         mEnables[0] = ENABLE;
         mUnSelectPaint = new Paint();
         mUnSelectPaint.setAlpha(120);
@@ -131,6 +131,9 @@ public class ScrollIndicatorView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if(getVisibility() != View.VISIBLE) {
+            return true;
+        }
         final int action = event.getActionMasked();
         final float x = event.getX();
         final float y = event.getY();
@@ -170,31 +173,57 @@ public class ScrollIndicatorView extends View {
         if (focusIndex == -1 || mEnables[focusIndex] != ENABLE) {
             return;
         }
-        if (mSelectIndex == focusIndex) {
+        /*if (mSelectIndex == focusIndex) {
             int y = mIconHeight / 2 + (mSelectIndex * (mIconHeight + mSpaceHeight) + mPaddingTop);
             mLauncher.showLetterPopuWindow(mSelectIndex, y);
-            mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y, mIconCount);
+            mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
             return;
-        }
+        }*/
         mSelectIndex = focusIndex;
         invalidate();
 
         int y = mIconHeight / 2 + /*mLetterWindowHeight / 2 +*/ (mSelectIndex
                 * (mIconHeight + mSpaceHeight) + mPaddingTop);
         mLauncher.showLetterPopuWindow(mSelectIndex, y);
-        mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y, mIconCount);
+        mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
     }
     
-    public void setSelectIndex(int selectIndex){
-        mSelectIndex = selectIndex;
-        invalidate();
+    public int setSelectIndex(int selectIndex, boolean zOrder){
+        if(selectIndex < 0) {
+            selectIndex = 0;
+        }
+        if(selectIndex >= mEnables.length) {
+            selectIndex = mEnables.length - 1;
+        }
+        int index = selectIndex;
+        if(zOrder){
+            selectIndex--;
+            for(; selectIndex > 0; selectIndex--) {
+                if(mEnables[selectIndex]) {
+                    mSelectIndex = selectIndex;
+                    invalidate();
+                    return selectIndex;
+                }
+            }
+        } else {
+            selectIndex++;
+            for(; selectIndex < mEnables.length; selectIndex++) {
+                if(mEnables[selectIndex]) {
+                    mSelectIndex = selectIndex;
+                    invalidate();
+                    return selectIndex;
+                }
+            }
+        }
+        return index;
+        
     }
 
     public int getSelectIndex(){
         return mSelectIndex;
     }
     
-    public void setEnables(int[] enables) {
+    public void setEnables(boolean[] enables) {
         System.arraycopy(enables, 0, mEnables, 1, enables.length);
     }
 }

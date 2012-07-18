@@ -119,7 +119,7 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
     //private float[] mRotations;
     //private final float START_ROTATION = .9999f;
     //private final float FINAL_ROTATION = 360f;
-    boolean mChildrenDoAnim = true;
+    boolean mChildrenDoAnim = false;
     // }added by zhong.chen 2012-7-12 for launcher apps sort end
 
     @Override

@@ -458,27 +458,23 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
     
     // {added by zhong.chen 2012-7-12 for launcher apps sort begin
     
-    void updateLetterIndex(int mSelectIndex, final int y, int count) {
-        int charIndex = 63 + mSelectIndex;
-        String letterIndexCharacter = "#";
-        if((charIndex >= 'a' && charIndex <= 'z')
-                || (charIndex >= 'A' && charIndex <= 'Z')) {
-            letterIndexCharacter = Character.toString((char)(charIndex));
-        }
-        /*if(null != letterIndexCharacter) {
-            mAppsLabelPrefix.concat(letterIndexCharacter);
-        }*/
-        
-        showLetterView(mSelectIndex, letterIndexCharacter);
+    void updateLetterIndex(int mSelectIndex, final int y) {
+        showLetterView(mSelectIndex);
         //mAppTab.setText(mAppTabLabel + mLetterIndexCharacter);
-        mAppsCustomizePane.highlightCurrentLetterIndex(mSelectIndex, count);
+        mAppsCustomizePane.highlightCurrentLetterIndex(mSelectIndex);
     }
     
     private TextSwitcher mLetterSwitcher;
-    private void showLetterView(int mSelectIndex, String label) {
+    void showLetterView(int mSelectIndex) {
         if(mSelectIndex > 0) {
+            int charIndex = 63 + mSelectIndex;
+            String letterIndexCharacter = "#";
+            if((charIndex >= 'a' && charIndex <= 'z')
+                    || (charIndex >= 'A' && charIndex <= 'Z')) {
+                letterIndexCharacter = Character.toString((char)(charIndex));
+            }
             mLetterSwitcher.setVisibility(View.VISIBLE);
-            mLetterSwitcher.setText(label);
+            mLetterSwitcher.setText(letterIndexCharacter);
         } else {
             mLetterSwitcher.setVisibility(View.INVISIBLE);
             mLetterSwitcher.setText(" ");
