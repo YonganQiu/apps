@@ -643,6 +643,6 @@
      <string name="prepareExportSimContacts">正在准备导出SIM卡联系人！</string>
      <string name="doingExportSimContacts">正在导出SIM卡联系人！</string>
      <string name="finishExportSimContacts">SIM卡联系人导出完毕！</string>
-     
+     <string name="preparingSimContacts">正在准备SIM卡联系人!</string>
     <!-- Added by Gangzhou.Qi -->
 </resources>

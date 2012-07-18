@@ -1919,6 +1919,6 @@
      <string name="prepareExportSimContacts">Prepare to export SIM Contacts!</string>
      <string name="doingExportSimContacts">Exporting SIM Contacts!</string>
      <string name="finishExportSimContacts">SIM contacts export completed!</string>
-     
+     <string name="preparingSimContacts">Preparing SIM Contacts!</string>
     <!-- Added by Gangzhou.Qi -->
 </resources>

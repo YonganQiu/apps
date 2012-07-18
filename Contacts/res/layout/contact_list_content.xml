@@ -31,7 +31,7 @@
          - paddingTop should be here to show "shade" effect correctly. -->
     <include
         android:id="@+id/sim_reading_state_container"
-        layout="@layout/account_filter_header" />
+        layout="@layout/sim_reading_state" />
     <include
         android:id="@+id/account_filter_header_container"
         layout="@layout/account_filter_header" />
