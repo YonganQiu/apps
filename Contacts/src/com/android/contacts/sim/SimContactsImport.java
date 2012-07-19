@@ -361,10 +361,10 @@ public class SimContactsImport extends ADNList {
                 return true;
             case MENU_IMPORT_ALL:
             	
-            	Intent operationIntent = new Intent(this,SIMOperationService.class);
-            	operationIntent.putExtra(Constants.SIM_OPERATION_TYPE, Constants.SIM_OPERATION_IMPORT_ALL);
-            	operationIntent.putExtra("account_name", mAccount.name);
-            	operationIntent.putExtra("account_type", mAccount.type);
+            	Intent operationIntent = new Intent(this,SimHelperService.class);
+            	operationIntent.setAction(SimHelperService.ACTION_IMPORT_ALL);
+            	operationIntent.putExtra(SimHelperService.EXTRA_ACCOUNT_NAME, mAccount.name);
+            	operationIntent.putExtra(SimHelperService.EXTRA_ACCOUNT_TYPE, mAccount.type);
             	startService(operationIntent);
 //                CharSequence title = getString(R.string.importAllSimEntries);
 //                CharSequence message = getString(R.string.importingSimContacts);
