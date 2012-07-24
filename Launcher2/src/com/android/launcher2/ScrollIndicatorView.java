@@ -173,12 +173,12 @@ public class ScrollIndicatorView extends View {
         if (focusIndex == -1 || mEnables[focusIndex] != ENABLE) {
             return;
         }
-        /*if (mSelectIndex == focusIndex) {
-            int y = mIconHeight / 2 + (mSelectIndex * (mIconHeight + mSpaceHeight) + mPaddingTop);
-            mLauncher.showLetterPopuWindow(mSelectIndex, y);
-            mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
+        if (mSelectIndex == focusIndex) {
+//            int y = mIconHeight / 2 + (mSelectIndex * (mIconHeight + mSpaceHeight) + mPaddingTop);
+//            mLauncher.showLetterPopuWindow(mSelectIndex, y);
+//            mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
             return;
-        }*/
+        }
         mSelectIndex = focusIndex;
         invalidate();
 
