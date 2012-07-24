@@ -24,7 +24,7 @@ import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import com.android.contacts.R;
 import com.android.contacts.calllog.CallLogFragment;
-import com.android.contacts.list.CallLogPhoneNumberFragment;
+import com.android.contacts.list.FilteredResultsFragment;
 import com.android.contacts.util.Constants;
 import com.android.contacts.view.SlipMenuRelativeLayout;
 
@@ -42,7 +42,7 @@ public class DialerFragment extends Fragment {
 	OnFragmentReadyListener mOnFragmentReadyListener;
 	
 	private CallLogFragment mCallLogFragment;
-	private CallLogPhoneNumberFragment mCallLogPhoneNumberFragment;
+	private FilteredResultsFragment mCallLogPhoneNumberFragment;
 	private DialpadFragment mDialpadFragment;
 	//}Added by yongan.qiu end.
 
@@ -134,7 +134,7 @@ public class DialerFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mCallLogFragment = (CallLogFragment) getFragmentManager().findFragmentById(R.id.call_log_fragment);
-		mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment) getFragmentManager().findFragmentById(R.id.call_log_phone_number_fragment);
+		mCallLogPhoneNumberFragment = (FilteredResultsFragment) getFragmentManager().findFragmentById(R.id.filtered_results_fragment);
 		mDialpadFragment = (DialpadFragment) getFragmentManager().findFragmentById(R.id.dialpad_fragment);
 		if (mOnFragmentReadyListener != null) {
 			mOnFragmentReadyListener.onFragmentReady();

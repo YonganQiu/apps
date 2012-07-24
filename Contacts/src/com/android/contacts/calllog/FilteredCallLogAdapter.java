@@ -22,7 +22,7 @@ import com.android.contacts.PhoneCallDetails;
 import com.android.contacts.PhoneCallDetailsHelper;
 import com.android.contacts.PhoneCallDetailsViews;
 import com.android.contacts.R;
-import com.android.contacts.calllog.SimpleCallLogQueryHandler.SimpleCallLogQuery;
+import com.android.contacts.calllog.UnknownNumberCallLogQueryHandler.UnknownNumberCallLogQuery;
 import com.android.contacts.format.PrefixHighlighter;
 import com.android.contacts.util.ExpirableCache;
 import com.android.contacts.util.UriUtils;
@@ -53,9 +53,11 @@ import java.util.LinkedList;
 import libcore.util.Objects;
 
 /**
- * Adapter class to fill in data for the Call Log.
+ * 
+ * @author yongan.qiu
+ *
  */
-    public class SimpleCallLogAdapter extends CursorAdapter {
+public class FilteredCallLogAdapter extends CursorAdapter {
     /** Interface used to initiate a refresh of the content. */
     public interface CallFetcher {
         public void fetchCalls();
@@ -85,7 +87,7 @@ import libcore.util.Objects;
         }
     };
 
-    public SimpleCallLogAdapter(Context context, CallFetcher callFetcher,
+    public FilteredCallLogAdapter(Context context, CallFetcher callFetcher,
             ContactInfoHelper contactInfoHelper, Cursor cursor) {
         super(context, cursor);
 
@@ -137,7 +139,7 @@ import libcore.util.Objects;
 
     @Override
 	public void bindView(View view, Context context, Cursor cursor) {
-        bindView(view, cursor, 1);
+        bindView(view, cursor);
     }
 
     /**
@@ -145,15 +147,14 @@ import libcore.util.Objects;
      *
      * @param view the view corresponding to this entry
      * @param c the cursor pointing to the entry in the call log
-     * @param count the number of entries in the current item, greater than 1 if it is a group
      */
-    private void bindView(View view, Cursor c, int count) {
+    private void bindView(View view, Cursor c) {
         QuickContactBadge badgeView = (QuickContactBadge) view.findViewById(R.id.quick_contact_photo);
         View primaryView = view.findViewById(R.id.primary_action_view);
         TextView nameView = (TextView) view.findViewById(R.id.name);
         TextView numberView = (TextView) view.findViewById(R.id.number);
 
-        final String number = c.getString(SimpleCallLogQuery.NUMBER);
+        final String number = c.getString(UnknownNumberCallLogQuery.NUMBER);
         final String name = new String(number);
         int first = -1, last = -1;
         boolean nameSet = false;
@@ -173,8 +174,6 @@ import libcore.util.Objects;
                     nameView.setText(mPrefixHighligher.apply(name, first, last + 1));
                     nameSet = true;
                 }
-                
-
             }
         } else {
             // No action enabled.

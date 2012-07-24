@@ -23,7 +23,7 @@ import com.android.contacts.activities.DialtactsActivity;
 import com.android.contacts.activities.IpNumberSetting;
 import com.android.contacts.activities.ViewPagerVisibilityListener;
 import com.android.contacts.activities.OneKeyDialSetting.PhoneItem;
-import com.android.contacts.list.SimplePhoneNumberCache;
+import com.android.contacts.list.PatternAndResultHelper;
 import com.android.contacts.util.Constants;
 import com.android.contacts.util.PhoneNumberFormatter;
 import com.android.internal.telephony.ITelephony;
@@ -254,7 +254,7 @@ public class DialpadFragment extends Fragment
             for (String sub : subs) {
                 sb.append(sub);
             }*/
-            mOnDightsChangedListener.onDightsChanged(SimplePhoneNumberCache.removeAll(input.toString(), ' '));
+            mOnDightsChangedListener.onDightsChanged(PatternAndResultHelper.removeAll(input.toString(), ' '));
         }
         //fix the bug that when delete button long clicked, the text still visible.
         mDigits.invalidate();

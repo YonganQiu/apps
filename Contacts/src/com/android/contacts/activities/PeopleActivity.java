@@ -37,7 +37,7 @@ import com.android.contacts.group.GroupDetailFragment;
 import com.android.contacts.interactions.ContactDeletionInteraction;
 import com.android.contacts.interactions.ImportExportDialogFragment;
 import com.android.contacts.interactions.PhoneNumberInteraction;
-import com.android.contacts.list.CallLogPhoneNumberFragment;
+import com.android.contacts.list.FilteredResultsFragment;
 import com.android.contacts.list.ContactBrowseListFragment;
 import com.android.contacts.list.ContactEntryListFragment;
 import com.android.contacts.list.ContactListFilter;
@@ -193,7 +193,7 @@ public class PeopleActivity extends ContactsActivity
     private GroupBrowseListFragment mGroupsFragment;
     private DialerFragment mDialerFragment;
     //{Added by yongan.qiu on 2012.6.21 begin.
-    private CallLogPhoneNumberFragment mCallLogPhoneNumberFragment;
+    private FilteredResultsFragment mFilteredResultsFragment;
     //}Added by yongan.qiu end.
 
     private View mFavoritesView;
@@ -301,12 +301,12 @@ public class PeopleActivity extends ContactsActivity
                     new ContactsUnavailableFragmentListener());
         }
         //{Added by yongan.qiu on 2012.6.26 begin.
-        else if (fragment instanceof CallLogPhoneNumberFragment) {
-          mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment) fragment;
-          mCallLogPhoneNumberFragment.setListener(mCallLogPhoneNumberListener);
+        else if (fragment instanceof FilteredResultsFragment) {
+          mFilteredResultsFragment = (FilteredResultsFragment) fragment;
+          mFilteredResultsFragment.setListener(mCallLogPhoneNumberListener);
           if (mContactListFilterController != null
                   && mContactListFilterController.getFilter() != null) {
-              mCallLogPhoneNumberFragment.setFilter(mContactListFilterController.getFilter());
+              mFilteredResultsFragment.setFilter(mContactListFilterController.getFilter());
               }
         }
         //}Added by yongan.qiu end.
@@ -420,7 +420,7 @@ public class PeopleActivity extends ContactsActivity
             mAllFragment = getFragment(R.id.all_fragment);
             mDialerFragment = getFragment(R.id.dialer_fragment);
             //{Added by yongan.qiu on 2012.6.21 begin.
-            mCallLogPhoneNumberFragment = getFragment(R.id.call_log_phone_number_fragment);
+            mFilteredResultsFragment = getFragment(R.id.filtered_results_fragment);
             //}Added by yongan.qiu end.
 
         } else {
@@ -450,8 +450,8 @@ public class PeopleActivity extends ContactsActivity
             mDialerFragment = (DialerFragment)
                     fragmentManager.findFragmentByTag(DIALER_TAG);
             //{Added by yongan.qiu on 2012.6.21 begin.
-            mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment)
-                    fragmentManager.findFragmentById(R.id.call_log_phone_number_fragment);
+            mFilteredResultsFragment = (FilteredResultsFragment)
+                    fragmentManager.findFragmentById(R.id.filtered_results_fragment);
             //}Added by yongan.qiu end.
 
             if (mFavoritesFragment == null) {
@@ -690,8 +690,8 @@ public class PeopleActivity extends ContactsActivity
         }
 
         //{Added by yongan.qiu on 2012.6.21 begin.
-        if (mCallLogPhoneNumberFragment != null && mCallLogPhoneNumberFragment.isAdded()) {
-            mCallLogPhoneNumberFragment.setFilter(mContactListFilterController.getFilter());
+        if (mFilteredResultsFragment != null && mFilteredResultsFragment.isAdded()) {
+            mFilteredResultsFragment.setFilter(mContactListFilterController.getFilter());
             doInvalidateOptionsMenu = true;
         }
         //}Added by yongan.qiu end.
@@ -1122,8 +1122,8 @@ public class PeopleActivity extends ContactsActivity
         //mAllFragment.setFilter(mContactListFilterController.getFilter());
         //end: remarked by yunzhou.song
         //{Added by yongan.qiu on 2012.6.21 begin.
-        if (mCallLogPhoneNumberFragment != null && mCallLogPhoneNumberFragment.isAdded()) {
-            mCallLogPhoneNumberFragment.setFilter(filter);
+        if (mFilteredResultsFragment != null && mFilteredResultsFragment.isAdded()) {
+            mFilteredResultsFragment.setFilter(filter);
         }
         //}Added by yongan.qiu end.
         setQueryTextToFragment(mActionBarAdapter.getQueryString());
@@ -1150,8 +1150,8 @@ public class PeopleActivity extends ContactsActivity
         //mAllFragment.setFilter(mContactListFilterController.getFilter());
         //end: remarked by yunzhou.song
         //{Added by yongan.qiu on 2012.6.21 begin.
-        if (mCallLogPhoneNumberFragment != null && mCallLogPhoneNumberFragment.isAdded()) {
-            mCallLogPhoneNumberFragment.setFilter(filter);
+        if (mFilteredResultsFragment != null && mFilteredResultsFragment.isAdded()) {
+            mFilteredResultsFragment.setFilter(filter);
         }
         //}Added by yongan.qiu end.
 
@@ -2216,7 +2216,7 @@ public class PeopleActivity extends ContactsActivity
 
     //{Added by yongan.qiu on 2012.6.21 begin.
 	public static final String CALL_ORIGIN_DIALTACTS = "com.android.contacts.activities.PeopleActivity";
-	private CallLogPhoneNumberFragment.Listener mCallLogPhoneNumberListener = new CallLogPhoneNumberFragment.Listener() {
+	private FilteredResultsFragment.Listener mCallLogPhoneNumberListener = new FilteredResultsFragment.Listener() {
 		@Override
 		public void onContactSelected(Uri contactUri) {
 			PhoneNumberInteraction.startInteractionForPhoneCall(
@@ -2227,18 +2227,18 @@ public class PeopleActivity extends ContactsActivity
 	@Override
 	public void onFragmentReady() {
 		// TODO Auto-generated method stub
-		mCallLogPhoneNumberFragment = (CallLogPhoneNumberFragment) 
-				getFragmentManager().findFragmentById(R.id.call_log_phone_number_fragment);
+		mFilteredResultsFragment = (FilteredResultsFragment) 
+				getFragmentManager().findFragmentById(R.id.filtered_results_fragment);
 		DialpadFragment dialpadFragment = (DialpadFragment) getFragmentManager().findFragmentById(R.id.dialpad_fragment);
-		Log.i(TAG, "mCallLogPhoneNumberFragment " + mCallLogPhoneNumberFragment + ", dialpadFragment " + dialpadFragment
+		Log.i(TAG, "mCallLogPhoneNumberFragment " + mFilteredResultsFragment + ", dialpadFragment " + dialpadFragment
 				+ ", dialpadFragment isAdded() " + dialpadFragment.isAdded());
 		Log.i(TAG, "mDialerFragment " + mDialerFragment);
-		if (mCallLogPhoneNumberFragment != null
-				&& mCallLogPhoneNumberFragment.isAdded()) {
+		if (mFilteredResultsFragment != null
+				&& mFilteredResultsFragment.isAdded()) {
 			if (mContactListFilterController == null) {
 				mContactListFilterController = ContactListFilterController.getInstance(this);
 			}
-			mCallLogPhoneNumberFragment.setFilter(mContactListFilterController
+			mFilteredResultsFragment.setFilter(mContactListFilterController
 					.getFilter());
 		}
 		if (dialpadFragment != null && dialpadFragment.isAdded()) {
@@ -2266,7 +2266,7 @@ public class PeopleActivity extends ContactsActivity
 		}
 		fragmentManager.executePendingTransactions();
 
-		mCallLogPhoneNumberFragment.onQueryTextChange(input.toString());
+		mFilteredResultsFragment.onQueryTextChange(input.toString());
 	}
 	//}Added by yongan.qiu end.
 	

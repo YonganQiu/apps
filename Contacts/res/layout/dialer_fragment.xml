@@ -51,11 +51,11 @@
                 class="com.android.contacts.calllog.CallLogFragment" />
 
             <fragment
-                android:id="@+id/call_log_phone_number_fragment"
+                android:id="@+id/filtered_results_fragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
-                class="com.android.contacts.list.CallLogPhoneNumberFragment" />
+                class="com.android.contacts.list.FilteredResultsFragment" />
 
             <LinearLayout
                 android:id="@+id/call_log_fragment_touch_area"

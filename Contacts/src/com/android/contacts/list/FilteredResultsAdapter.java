@@ -17,7 +17,7 @@
 package com.android.contacts.list;
 
 import com.android.contacts.R;
-import com.android.contacts.calllog.SimpleCallLogAdapter;
+import com.android.contacts.calllog.FilteredCallLogAdapter;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -30,10 +30,10 @@ import android.widget.FrameLayout;
 
 /**
  * An adapter that combines items from {@link ContactTileAdapter} and
- * {@link SimplePhoneNumberListAdapter} into a single list. In between those two results,
+ * {@link FilteredPhoneNumberAdapter} into a single list. In between those two results,
  * an account filter header will be inserted.
  */
-public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
+public class FilteredResultsAdapter extends BaseAdapter {
 
     private class CustomDataSetObserver extends DataSetObserver {
         @Override
@@ -42,8 +42,8 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
         }
     }
 
-    private final SimpleCallLogAdapter mCallLogAdapter;
-    private final SimplePhoneNumberListAdapter mPhoneNumberListAdapter;
+    private final FilteredCallLogAdapter mCallLogAdapter;
+    private final FilteredPhoneNumberAdapter mPhoneNumberAdapter;
     private final View mAccountFilterHeaderContainer;
 
     private final int mItemPaddingLeft;
@@ -54,48 +54,48 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
 
     private final DataSetObserver mObserver;
 
-    public CallLogPhoneNumberMergedAdapter(Context context,
-            SimpleCallLogAdapter contactTileAdapter,
+    public FilteredResultsAdapter(Context context,
+            FilteredCallLogAdapter contactTileAdapter,
             View accountFilterHeaderContainer,
-            SimplePhoneNumberListAdapter MyPhoneNumberListAdapter) {
+            FilteredPhoneNumberAdapter MyPhoneNumberListAdapter) {
         Resources resources = context.getResources();
         mItemPaddingLeft = resources.getDimensionPixelSize(R.dimen.detail_item_side_margin);
         mItemPaddingRight = resources.getDimensionPixelSize(R.dimen.list_visible_scrollbar_padding);
         mFrequentHeaderPaddingTop = resources.getDimensionPixelSize(
                 R.dimen.contact_browser_list_top_margin);
         mCallLogAdapter = contactTileAdapter;
-        mPhoneNumberListAdapter = MyPhoneNumberListAdapter;
+        mPhoneNumberAdapter = MyPhoneNumberListAdapter;
 
         mAccountFilterHeaderContainer = accountFilterHeaderContainer;
 
         mObserver = new CustomDataSetObserver();
         mCallLogAdapter.registerDataSetObserver(mObserver);
-        mPhoneNumberListAdapter.registerDataSetObserver(mObserver);
+        mPhoneNumberAdapter.registerDataSetObserver(mObserver);
     }
 
     @Override
     public int getCount() {
         final int callLogAdapterCount = mCallLogAdapter.getCount();
-        final int MyPhoneNumberListAdapterCount = mPhoneNumberListAdapter.getCount();
-        if (mPhoneNumberListAdapter.isLoading()) {
+        final int phoneNumberAdapterCount = mPhoneNumberAdapter.getCount();
+        if (mPhoneNumberAdapter.isLoading()) {
             // Hide "all" contacts during its being loaded.
             return callLogAdapterCount + 1;
         } else {
-            return callLogAdapterCount + MyPhoneNumberListAdapterCount + 1;
+            return callLogAdapterCount + phoneNumberAdapterCount + 1;
         }
     }
 
     @Override
     public Object getItem(int position) {
-        final int contactTileAdapterCount = mCallLogAdapter.getCount();
-        final int MyPhoneNumberListAdapterCount = mPhoneNumberListAdapter.getCount();
-        if (position < contactTileAdapterCount) {
+        final int callLogAdapterCount = mCallLogAdapter.getCount();
+        final int phoneNumberAdapterCount = mPhoneNumberAdapter.getCount();
+        if (position < callLogAdapterCount) {
             return mCallLogAdapter.getItem(position);
-        } else if (position == contactTileAdapterCount) {
+        } else if (position == callLogAdapterCount) {
             return mAccountFilterHeaderContainer;
         } else {
-            final int localPosition = position - contactTileAdapterCount - 1;
-            return mCallLogAdapter.getItem(localPosition);
+            final int localPosition = position - callLogAdapterCount - 1;
+            return mPhoneNumberAdapter.getItem(localPosition);
         }
     }
 
@@ -107,22 +107,21 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
     @Override
     public int getViewTypeCount() {
         return (mCallLogAdapter.getViewTypeCount()
-                + mPhoneNumberListAdapter.getViewTypeCount()
+                + mPhoneNumberAdapter.getViewTypeCount()
                 + 1);
     }
 
     @Override
     public int getItemViewType(int position) {
         final int contactTileAdapterCount = mCallLogAdapter.getCount();
-        final int MyPhoneNumberListAdapterCount = mPhoneNumberListAdapter.getCount();
         if (position < contactTileAdapterCount) {
             return mCallLogAdapter.getItemViewType(position);
         } else if (position == contactTileAdapterCount) {
             return mCallLogAdapter.getViewTypeCount()
-                    + mPhoneNumberListAdapter.getViewTypeCount();
+                    + mPhoneNumberAdapter.getViewTypeCount();
         } else {
             final int localPosition = position - contactTileAdapterCount - 1;
-            final int type = mPhoneNumberListAdapter.getItemViewType(localPosition);
+            final int type = mPhoneNumberAdapter.getItemViewType(localPosition);
             // IGNORE_ITEM_VIEW_TYPE must be handled differently.
             return (type < 0) ? type : type + mCallLogAdapter.getViewTypeCount();
         }
@@ -131,30 +130,10 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         final int contactTileAdapterCount = mCallLogAdapter.getCount();
-        final int MyPhoneNumberListAdapterCount = mPhoneNumberListAdapter.getCount();
-
         // Obtain a View relevant for that position, and adjust its horizontal padding. Each
         // View has different implementation, so we use different way to control those padding.
         if (position < contactTileAdapterCount) {
-            final View view = mCallLogAdapter.getView(position, convertView, parent);
-            //TODO
-            /*final int frequentHeaderPosition = mContactTileAdapter.getFrequentHeaderPosition();
-            if (position < frequentHeaderPosition) {  // "starred" contacts
-                // No padding adjustment.
-            } else if (position == frequentHeaderPosition) {
-                view.setPadding(mItemPaddingLeft, mFrequentHeaderPaddingTop,
-                        mItemPaddingRight, view.getPaddingBottom());
-            } else {
-                // Views for "frequent" contacts use FrameLayout's margins instead of padding.
-                final FrameLayout frameLayout = (FrameLayout) view;
-                final View child = frameLayout.getChildAt(0);
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT);
-                params.setMargins(mItemPaddingLeft, 0, mItemPaddingRight, 0);
-                child.setLayoutParams(params);
-            }*/
-            return view;
+            return mCallLogAdapter.getView(position, convertView, parent);
         } else if (position == contactTileAdapterCount) {
             mAccountFilterHeaderContainer.setPadding(mItemPaddingLeft,
                     mAccountFilterHeaderContainer.getPaddingTop(),
@@ -163,7 +142,7 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
             return mAccountFilterHeaderContainer;
         } else {
             final int localPosition = position - contactTileAdapterCount - 1;
-            final View itemView = mPhoneNumberListAdapter.getView(localPosition, convertView, null);
+            final View itemView = mPhoneNumberAdapter.getView(localPosition, convertView, null);
             // TODO
             //itemView.setPadding(mItemPaddingLeft, itemView.getPaddingTop(),
             //        mItemPaddingRight, itemView.getPaddingBottom());
@@ -176,13 +155,12 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
     public boolean areAllItemsEnabled() {
         return (mCallLogAdapter.areAllItemsEnabled()
                 && mAccountFilterHeaderContainer.isEnabled()
-                && mPhoneNumberListAdapter.areAllItemsEnabled());
+                && mPhoneNumberAdapter.areAllItemsEnabled());
     }
 
     @Override
     public boolean isEnabled(int position) {
         final int contactTileAdapterCount = mCallLogAdapter.getCount();
-        final int MyPhoneNumberListAdapterCount = mPhoneNumberListAdapter.getCount();
         if (position < contactTileAdapterCount) {
             return mCallLogAdapter.isEnabled(position);
         } else if (position == contactTileAdapterCount) {
@@ -190,12 +168,11 @@ public class CallLogPhoneNumberMergedAdapter extends BaseAdapter {
             return false;
         } else {
             final int localPosition = position - contactTileAdapterCount - 1;
-            return mPhoneNumberListAdapter.isEnabled(localPosition);
+            return mPhoneNumberAdapter.isEnabled(localPosition);
         }
     }
 
     public boolean shouldShowFirstScroller(int firstVisibleItem) {
-        final int contactTileAdapterCount = mCallLogAdapter.getCount();
-        return firstVisibleItem > contactTileAdapterCount;
+        return true;
     }
 }

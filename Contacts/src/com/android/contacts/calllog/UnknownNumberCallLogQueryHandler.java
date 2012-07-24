@@ -17,6 +17,7 @@
 package com.android.contacts.calllog;
 
 import com.android.common.io.MoreCloseables;
+import com.android.contacts.util.Constants;
 import com.android.contacts.voicemail.VoicemailStatusHelperImpl;
 import com.google.android.collect.Lists;
 
@@ -47,12 +48,12 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.GuardedBy;
 
 /** Handles asynchronous queries to the call log. */
-    public class SimpleCallLogQueryHandler extends AsyncQueryHandler {
+    public class UnknownNumberCallLogQueryHandler extends AsyncQueryHandler {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     private static final String TAG = "CallLogQueryHandler";
 
-    private static final int QUERY_ALL_UNKNOWN_CALLS_TOKEN = 55;
+    private static final int QUERY_ALL_UNKNOWN_CALLS_TOKEN = 1;
     /**
      * The time window from the current time within which an unread entry will be added to the new
      * section.
@@ -61,10 +62,8 @@ import javax.annotation.concurrent.GuardedBy;
 
     private final WeakReference<Listener> mListener;
 
-    /** The cursor containing the new calls, or null if they have not yet been fetched. */
+    /** The cursor containing the unknown-number-calls, or null if they have not yet been fetched. */
     @GuardedBy("this") private Cursor mAllUnknownCallsCursor;
-    /** The cursor containing the old calls, or null if they have not yet been fetched. */
-    @GuardedBy("this") private Cursor mOldCallsCursor;
 
     /**
      * Simple handler that wraps background calls to catch
@@ -96,7 +95,7 @@ import javax.annotation.concurrent.GuardedBy;
         return new CatchingWorkerHandler(looper);
     }
 
-    public SimpleCallLogQueryHandler(ContentResolver contentResolver, Listener listener) {
+    public UnknownNumberCallLogQueryHandler(ContentResolver contentResolver, Listener listener) {
         super(contentResolver);
         mListener = new WeakReference<Listener>(listener);
     }
@@ -116,13 +115,10 @@ import javax.annotation.concurrent.GuardedBy;
         if (!TextUtils.isEmpty(mQueryString)) {
             selection = String.format("%s AND %s LIKE '%%%s%%'", selection, Calls.NUMBER, mQueryString);
         }
-        //selection = String.format("%s) GROUP BY (%s", selection, Calls.NUMBER);
         Log.i(TAG, selection);
-        Uri uri = Uri.parse("content://call_log/calls/group_by_number").buildUpon()
-                .appendQueryParameter(CallLog.Calls.ALLOW_VOICEMAILS_PARAM_KEY, "true")
-                .build();
-        startQuery(QUERY_ALL_UNKNOWN_CALLS_TOKEN, null, /*Calls.CONTENT_URI_WITH_VOICEMAIL*/uri,
-                SimpleCallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
+        startQuery(QUERY_ALL_UNKNOWN_CALLS_TOKEN, null,
+                /*Calls.CONTENT_URI_WITH_VOICEMAIL*/Constants.CALL_LOG_GROUP_BY_NUMBER,
+                UnknownNumberCallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
                 Calls.DEFAULT_SORT_ORDER);
     }
 
@@ -146,9 +142,7 @@ import javax.annotation.concurrent.GuardedBy;
      */
     private synchronized void invalidate() {
         MoreCloseables.closeQuietly(mAllUnknownCallsCursor);
-        MoreCloseables.closeQuietly(mOldCallsCursor);
         mAllUnknownCallsCursor = null;
-        mOldCallsCursor = null;
     }
 
     @Override
@@ -170,23 +164,22 @@ import javax.annotation.concurrent.GuardedBy;
     /**
      * Updates the adapter in the call log fragment to show the new cursor data.
      */
-    private void updateAdapterData(Cursor combinedCursor) {
+    private void updateAdapterData(Cursor cursor) {
         final Listener listener = mListener.get();
         if (listener != null) {
-            listener.onCallsFetched(combinedCursor);
+            listener.onCallsFetched(cursor);
         }
     }
 
     /** Listener to completion of various queries. */
     public interface Listener {
         /**
-         * Called when {@link CallLogQueryHandler#fetchAllCalls()} or
-         * {@link CallLogQueryHandler#fetchVoicemailOnly()} complete.
+         * Called when {@link UnknownNumberCallLogQueryHandler#fetchAllUnknownCalls()} complete.
          */
-        void onCallsFetched(Cursor combinedCursor);
+        void onCallsFetched(Cursor cursor);
     }
 
-    public static final class SimpleCallLogQuery {
+    public static final class UnknownNumberCallLogQuery {
         public static final String[] _PROJECTION = new String[] {
                 Calls._ID,                       // 0
                 Calls.NUMBER,                    // 1

@@ -16,6 +16,8 @@
 
 package com.android.contacts.util;
 
+import android.net.Uri;
+
 public class Constants {
     public static final String MIME_TYPE_VIDEO_CHAT = "vnd.android.cursor.item/video-chat-address";
 
@@ -54,6 +56,12 @@ public class Constants {
     public static final String EXTRA_CONTACT_LIST_FILTER = "contact_list_filter";
     public static final String EXTRA_EMAIL_URIS =
             "com.android.contacts.extra.EMAIL_URIS";
+
+    /**
+     * The URI of call log that can return query cursor grouping by number.
+     */
+    public static final Uri CALL_LOG_GROUP_BY_NUMBER =
+            Uri.parse("content://call_log/calls/group_by_number");
     //}Added by yongan.qiu end.
     
     //Added by gangzhou.qi at 2012-6-27 下午8:22:57

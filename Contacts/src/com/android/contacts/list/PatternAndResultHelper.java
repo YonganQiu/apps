@@ -5,19 +5,20 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.android.contacts.list.SimplePhoneNumberListAdapter.PhoneQuery;
+import com.android.contacts.list.FilteredPhoneNumberAdapter.PhoneQuery;
+import com.android.contacts.util.SimpleHanziToPinyin;
+import com.android.contacts.util.SimpleHanziToPinyin.Token;
 
 import android.database.Cursor;
-import android.media.HanziToPinyin;
-import android.media.HanziToPinyin.Token;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class SimplePhoneNumberCache {
+public class PatternAndResultHelper {
 	
-	private static final String TAG = SimplePhoneNumberCache.class.getSimpleName();
+	private static final String TAG = PatternAndResultHelper.class.getSimpleName();
 	
-	private ArrayList<PhoneNumberRefInfo> mPhoneNumberRefInfos = new ArrayList<PhoneNumberRefInfo>();
+	private HashMap<Long, PhoneNumberRefInfo> mPhoneNumberRefInfos = new HashMap<Long, PhoneNumberRefInfo>();
+	private HashMap<Long, PhoneNumberRefInfo> mOldInfos;
 	private HashMap<Long, String> mResultCache = new HashMap<Long, String>();
 
 	private Object mLock = new Object();
@@ -34,16 +35,16 @@ public class SimplePhoneNumberCache {
 		"8tuv",
 		"9wxyz"
 	};
-	public SimplePhoneNumberCache() {
+	public PatternAndResultHelper() {
 	}
 
-	public ArrayList<PhoneNumberRefInfo> getCachedInfos() {
+	public HashMap<Long, PhoneNumberRefInfo> getCachedInfos() {
 		synchronized (mLock) {
 			return mPhoneNumberRefInfos;
 		}
 	}
 	
-	public HashMap<Long, String> search(ArrayList<PhoneNumberRefInfo> infos, String key) {
+	public HashMap<Long, String> search(HashMap<Long, PhoneNumberRefInfo> infos, String key) {
 		HashMap<Long, String> result = mResultCache;
 		result.clear();
 		
@@ -64,24 +65,20 @@ public class SimplePhoneNumberCache {
 		//setup pattern.
 		String lettersPatternString = createLetterPatternFromKey(key);
 		String keyWithoutBlank = removeAll(key, ' ');
-		//String dightsPatternString = createDightsPatternFromKey(key);
 		Log.i(TAG, "search: letters pattern is " + lettersPatternString);
-		//Log.i(TAG, "search: dights pattern is " + dightsPatternString);
 		
 		Pattern lettersPattern = Pattern.compile(lettersPatternString);
 		Matcher lettersMatcher = lettersPattern.matcher("");
-		//Pattern dightsPattern = Pattern.compile(dightsPatternString);
-		//Matcher dightsMatcher = dightsPattern.matcher("");
 		String group;
-		for (PhoneNumberRefInfo info : infos) {
-			Log.i(TAG, "search: handling " + info.mSortKey + ", number " + info.mNumber + ", id " + info.mDataId);
-			lettersMatcher.reset(toPinYin(info.mSortKey));
+		for (PhoneNumberRefInfo info : infos.values()) {
+			//Log.i(TAG, "search: handling " + info.mLowerCasePinYinOfDisplayName + ", number " + info.mNumber + ", id " + info.mDataId);
+			lettersMatcher.reset(info.mLowerCasePinYinOfDisplayName);
 			if (lettersMatcher.find()) {
 				group = lettersMatcher.group();
-				Log.i(TAG, "matcher string: " + group);
+				//Log.i(TAG, "matcher string: " + group);
 				result.put(info.mDataId, group);
 			} else if (onlyDightsAndPlus(info.mNumber).contains(keyWithoutBlank)) {
-				Log.i(TAG, "matcher string: " + keyWithoutBlank);
+				//Log.i(TAG, "matcher string: " + keyWithoutBlank);
 				result.put(info.mDataId, keyWithoutBlank);
 			}
 		}
@@ -91,22 +88,22 @@ public class SimplePhoneNumberCache {
 		return result;
 	}
 	
-    HanziToPinyin mHanziToPinyin;
-    private String toPinYin(String input) {
+    SimpleHanziToPinyin mHanziToPinyin;
+    private String toLowCasePinYin(String input) {
         if (TextUtils.isEmpty(input)) {
             return "";
         }
         if (mHanziToPinyin == null) {
-            mHanziToPinyin = HanziToPinyin.getInstance();
+            mHanziToPinyin = SimpleHanziToPinyin.getInstance();
         }
         ArrayList<Token> tokens = mHanziToPinyin.get(input);
         StringBuilder output = new StringBuilder();
         if (tokens != null && tokens.size() > 0) {
             for (Token token : tokens) {
-                output.append(token.target.toLowerCase()).append(' ');
+                output.append(token.target).append(' ');
             }
         }
-        Log.i(TAG, "toPinYin(): input(" + input + "), output(" + output.toString() + ")");
+        //Log.i(TAG, "toPinYin(): input(" + input + "), output(" + output.toString() + ")");
         return output.toString();
     }
 
@@ -138,7 +135,6 @@ public class SimplePhoneNumberCache {
 				builder.append("\\").append(c);
 			}
 		}
-		//builder.append("([a-z0-9]*[^a-z0-9]*)?");
 		return builder.toString();
 	}
 	
@@ -182,29 +178,27 @@ public class SimplePhoneNumberCache {
 		return new String(s, 0, j);
 	}
 
-/*	public void reset() {
-		if (mPhoneNumberRefInfos.size() > 0) {
-			mPhoneNumberRefInfos.clear();
-		}
-	}
-*/	
 	public void addInCache(PhoneNumberRefInfo info) {
-		mPhoneNumberRefInfos.add(info);
+		mPhoneNumberRefInfos.put(info.mDataId, info);
 	}
-	
-	public void addInCache(String sortKey, String number, long dataId) {
-		//Log.i(TAG, "sortkey " + sortKey + ", number " + number + ", id " + contactId);
-		mPhoneNumberRefInfos.add(new PhoneNumberRefInfo(sortKey, number, dataId));
-	}
+
+    public void addInCache(String lowerCasePinYinOfDisplayName, String number, long dataId, boolean useCache) {
+        Long id = dataId;
+        if (useCache && mOldInfos != null && mOldInfos.containsKey(id)) {
+            mPhoneNumberRefInfos.put(id, mOldInfos.get(id));
+        } else {
+            mPhoneNumberRefInfos.put(dataId, new PhoneNumberRefInfo(lowerCasePinYinOfDisplayName, number, dataId));
+        }
+    }
 	
 	private void swapCache() {
 		synchronized (mLock) {
-			mPhoneNumberRefInfos = new ArrayList<PhoneNumberRefInfo>();
+		    mOldInfos = mPhoneNumberRefInfos;
+			mPhoneNumberRefInfos = new HashMap<Long, PhoneNumberRefInfo>();
 		}
 	}
 	
-	public void loadPhoneNumberRefInfos(Cursor cursor) {
-		//reset();
+	public void loadPhoneNumberRefInfos(Cursor cursor, boolean withCache) {
 		swapCache();
 		
 		if (cursor == null) {
@@ -216,31 +210,18 @@ public class SimplePhoneNumberCache {
 			return;
 		}
 		do {
-			addInCache(cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME).toLowerCase(), 
+			addInCache(toLowCasePinYin(cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME)), 
 					cursor.getString(PhoneQuery.PHONE_NUMBER), 
-					cursor.getLong(PhoneQuery.PHONE_ID));
+					cursor.getLong(PhoneQuery.PHONE_ID), withCache);
 		} while (cursor.moveToNext());
 	}
-	
-/*	public void sort() {
-		PhoneNumberRefInfo[] infos = new PhoneNumberRefInfo[mPhoneNumberRefInfos.size()];
-		mPhoneNumberRefInfos.toArray(infos);
-		Arrays.sort(infos, new SortComparator());
-	}
 
-	class SortComparator implements Comparator<PhoneNumberRefInfo> {
-		@Override
-		public int compare(PhoneNumberRefInfo lhs, PhoneNumberRefInfo rhs) {
-			return lhs.mSortKey.compareToIgnoreCase(rhs.mSortKey);
-		}
-	}
-*/	
 	class PhoneNumberRefInfo {
-		private String mSortKey;
+		private String mLowerCasePinYinOfDisplayName;
 		private String mNumber;
 		private long mDataId;
-		public PhoneNumberRefInfo(String sortKey, String number, long dataId) {
-			mSortKey = sortKey;
+		public PhoneNumberRefInfo(String lowerCasePinYinOfDisplayName, String number, long dataId) {
+			mLowerCasePinYinOfDisplayName = lowerCasePinYinOfDisplayName;
 			mNumber = number;
 			mDataId = dataId;
 		}

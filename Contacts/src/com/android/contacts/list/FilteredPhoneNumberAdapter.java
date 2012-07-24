@@ -52,16 +52,19 @@ import java.util.Set;
 import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.editor.AggregationSuggestionEngine.RawContact;
 import com.android.contacts.format.PrefixHighlighter;
-import com.android.contacts.list.SimplePhoneNumberListAdapter.OnItemActionListener;
+import com.android.contacts.list.FilteredPhoneNumberAdapter.OnItemActionListener;
 import com.android.contacts.util.SimpleHanziToPinyin;
 import com.android.contacts.util.SimpleHanziToPinyin.Token;
 
 import com.android.contacts.R;
+
 /**
- * A cursor adapter for the {@link Phone#CONTENT_TYPE} content type.
+ * 
+ * @author yongan.qiu
+ *
  */
-public class SimplePhoneNumberListAdapter extends CursorAdapter{
-    private static final String TAG = SimplePhoneNumberListAdapter.class.getSimpleName();
+public class FilteredPhoneNumberAdapter extends CursorAdapter{
+    private static final String TAG = FilteredPhoneNumberAdapter.class.getSimpleName();
 
     protected static class PhoneQuery {
         private static final String[] PROJECTION_PRIMARY = new String[] {
@@ -73,9 +76,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
             Phone.LOOKUP_KEY,                   // 5
             Phone.PHOTO_ID,                     // 6
             Phone.DISPLAY_NAME_PRIMARY,         // 7
-            //{yongan.qiu
             Phone.SORT_KEY_PRIMARY,             // 8
-            //}yongan.qiu
         };
 
         private static final String[] PROJECTION_ALTERNATIVE = new String[] {
@@ -87,9 +88,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
             Phone.LOOKUP_KEY,                   // 5
             Phone.PHOTO_ID,                     // 6
             Phone.DISPLAY_NAME_ALTERNATIVE,     // 7
-            //{yongan.qiu
             Phone.SORT_KEY_ALTERNATIVE,         // 8
-            //}yongan.qiu
         };
 
         public static final int PHONE_ID           = 0;
@@ -100,36 +99,20 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         public static final int PHONE_LOOKUP_KEY   = 5;
         public static final int PHONE_PHOTO_ID     = 6;
         public static final int PHONE_DISPLAY_NAME = 7;
-        //{yongan.qiu
         public static final int PHONE_SORT_KEY     = 8;
-        //}yongan.qiu
-
     }
 
     private final CharSequence mUnknownNameText;
 
-    public SimplePhoneNumberListAdapter(Context context, Cursor cursor) {
-    	super(context, cursor);
-        //begin: added by yunzhou.song
-        mFragment = null;
-        //end: added by yunzhou.song
+    public FilteredPhoneNumberAdapter(Context context, Cursor cursor) {
+        super(context, cursor);
         mUnknownNameText = context.getText(android.R.string.unknownName);
     }
-    
-    //begin: added by yunzhou.song
-    private final PhoneNumberPickerFragment mFragment;
-    public SimplePhoneNumberListAdapter(Context context, Cursor cursor, PhoneNumberPickerFragment fragment) {
-    	super(context, cursor);
-        mFragment = fragment;
-        mUnknownNameText = context.getText(android.R.string.unknownName);
-    }
-    //end: added by yunzhou.song
 
     protected CharSequence getUnknownNameText() {
         return mUnknownNameText;
     }
 
-    //{yongan.qiu
     String mQueryString;
     public String getQueryString() {
     	return mQueryString;
@@ -153,74 +136,72 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
     }
 
     private ContactPhotoManager mPhotoManager;
+
     public ContactPhotoManager getPhotoLoader() {
-    	return mPhotoManager;
+        return mPhotoManager;
     }
+
     public void setPhotoLoader(ContactPhotoManager photoManager) {
-    	mPhotoManager = photoManager;
+        mPhotoManager = photoManager;
     }
+
     public void changeCursor(Cursor c) {
-    	mLoading = false;
-    	super.changeCursor(c);
+        mLoading = false;
+        super.changeCursor(c);
     }
+
     private boolean mLoading;
+
     public boolean isLoading() {
-    	return mLoading;
+        return mLoading;
     }
+
     private ContactListFilter mFilter;
+
     public void setContactFilter(ContactListFilter filter) {
-    	mFilter = filter;
+        mFilter = filter;
     }
+
     public ContactListFilter getContactFilter() {
-    	return mFilter;
+        return mFilter;
     }
+
     public void onDataReload() {
-    	mLoading = true;
+        mLoading = true;
     }
+
     private long mDirectoryId;
-    private boolean mDarkTheme = false;
-    
+
     private HashMap<Long, String> mId2Match;
-    
+
     public void setId2Match(HashMap<Long, String> map) {
         mId2Match = map;
         Log.i(TAG, "mId2Match " + mId2Match);
     }
-    //}yongan.qiu
-    
+
     public void configureLoader(CursorLoader loader, long directoryId) {
         configureLoader(loader, directoryId, null);
     }
     public void configureLoader(CursorLoader loader, long directoryId, Set<Long> ids) {
         Uri uri;
-        
-        //{yongan.qiu
+
         mDirectoryId = directoryId;
-        //}yongan.qiu
 
         if (directoryId != Directory.DEFAULT) {
-            Log.w(TAG, "MyPhoneNumberListAdapter is not ready for non-default directory ID ("
+            Log.w(TAG, "PhoneNumberListAdapter is not ready for non-default directory ID ("
                     + "directoryId: " + directoryId + ")");
         }
 
-        /*String query = getQueryString();
-        Log.i("<><><><>", "" + query);
-        if (!TextUtils.isEmpty(query)) {
-            Builder builder = Phone.CONTENT_FILTER_URI.buildUpon();
-            builder.appendPath(query);      // Builder will encode the query
+        uri = Phone.CONTENT_URI
+                .buildUpon()
+                .appendQueryParameter(ContactsContract.DIRECTORY_PARAM_KEY,
+                        String.valueOf(Directory.DEFAULT)).build();
 
-            builder.appendQueryParameter(ContactsContract.DIRECTORY_PARAM_KEY,
-                    String.valueOf(directoryId));
-            uri = builder.build();
-        } else*/ {
-            uri = Phone.CONTENT_URI.buildUpon().appendQueryParameter(
-                    ContactsContract.DIRECTORY_PARAM_KEY, String.valueOf(Directory.DEFAULT))
-                    .build();
-            if (ids == null) {
-                configureSelection(loader, directoryId, getContactFilter());
-            } else {
-                configureSelectionWithContactIds(loader, directoryId, getContactFilter(), ids);
-        	}
+        if (ids == null) {
+            configureSelection(loader, directoryId, getContactFilter());
+        } else {
+            configureSelectionWithContactIds(loader, directoryId,
+                    getContactFilter(), ids);
         }
 
         // Remove duplicates when it is possible.
@@ -235,7 +216,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         } else {
             loader.setProjection(PhoneQuery.PROJECTION_ALTERNATIVE);
         }
-        
+
         if (getSortOrder() == ContactsContract.Preferences.SORT_ORDER_PRIMARY) {
             loader.setSortOrder(Phone.SORT_KEY_PRIMARY);
         } else {
@@ -245,7 +226,10 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
 
     private void configureSelectionWithContactIds(
             CursorLoader loader, long directoryId, ContactListFilter filter, Set<Long> ids) {
-        if (ids == null) throw new IllegalArgumentException("Contact ids should not be null.");
+        if (ids == null) {
+            throw new IllegalArgumentException("Contact ids should not be null.");
+        }
+
         if (filter == null || directoryId != Directory.DEFAULT) {
             return;
         }
@@ -275,11 +259,6 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
                 selection.append(")");
                 break;
             }
-            case ContactListFilter.FILTER_TYPE_ALL_ACCOUNTS:
-            case ContactListFilter.FILTER_TYPE_DEFAULT:
-                break; // No selection needed.
-            case ContactListFilter.FILTER_TYPE_WITH_PHONE_NUMBERS_ONLY:
-                break; // This adapter is always "phone only", so no selection needed either.
             default:
                 Log.w(TAG, "Unsupported filter type came " +
                         "(type: " + filter.filterType + ", toString: " + filter + ")" +
@@ -289,7 +268,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         }
 
         if (filter.filterType == ContactListFilter.FILTER_TYPE_CUSTOM 
-        		|| filter.filterType == ContactListFilter.FILTER_TYPE_ACCOUNT) {
+                || filter.filterType == ContactListFilter.FILTER_TYPE_ACCOUNT) {
             selection.append(" AND ");
         }
         selection.append(Phone._ID + " IN (");
@@ -337,11 +316,6 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
                 selection.append(")");
                 break;
             }
-            case ContactListFilter.FILTER_TYPE_ALL_ACCOUNTS:
-            case ContactListFilter.FILTER_TYPE_DEFAULT:
-                break; // No selection needed.
-            case ContactListFilter.FILTER_TYPE_WITH_PHONE_NUMBERS_ONLY:
-                break; // This adapter is always "phone only", so no selection needed either.
             default:
                 Log.w(TAG, "Unsupported filter type came " +
                         "(type: " + filter.filterType + ", toString: " + filter + ")" +
@@ -364,16 +338,16 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         }
     }
 
-    OnClickListener mActionListener = new OnClickListener() {
-		
-		@Override
-		public void onClick(View v) {
-			if (mOnItemActionListener != null) {
-				int position = (Integer) v.getTag();
-				mOnItemActionListener.onItemAction(position);
-			}
-		}
-	};
+    private OnClickListener mActionListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (mOnItemActionListener != null) {
+                int position = (Integer) v.getTag();
+                mOnItemActionListener.onItemAction(position);
+            }
+        }
+    };
+
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         LayoutInflater inflater =
@@ -414,7 +388,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         QuickContactBadge quickContact = (QuickContactBadge) view.findViewById(R.id.quick_contact_badge);
         quickContact.assignContactUri(
                 getContactUri(cursor, contactIdColumn, lookUpKeyColumn));
-        getPhotoLoader().loadPhoto(quickContact, photoId, false, mDarkTheme);
+        getPhotoLoader().loadPhoto(quickContact, photoId, false, false);
     }
 
     protected Uri getContactUri(Cursor cursor,
@@ -440,6 +414,7 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         }
         ((TextView) view.findViewById(R.id.label)).setText(label);
     }
+
     private PrefixHighlighter mPrefixHighligher;
     protected boolean bindName(final View view, Cursor cursor, String match) {
         TextView nameField = (TextView) view.findViewById(R.id.name);
@@ -448,45 +423,6 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
         if (TextUtils.isEmpty(name)) {
             name = mUnknownNameText.toString();
         } else if (!TextUtils.isEmpty(match)) {
-            /*int index, first = -1, last = -1;
-            ArrayList<Token> s = toPinYin(name);
-            //char[] s = name.toCharArray();
-            int l = s.size();
-            String c = s.get(0).target.toLowerCase();
-            Log.i(TAG, "char " + 0 + " = " + c);
-            int i = 0;
-            index = match.indexOf(c);
-            if (index >= 0) {
-                first = last = i;
-                match = match.substring(index + 1);
-            }
-            for (i = 1; i < l && !TextUtils.isEmpty(match); i++) {
-                c = s.get(i).target.toLowerCase();
-                Log.i(TAG, "char " + i + " = " + c);
-                index = match.indexOf(c);
-                if (index >= 0) {
-                    if (first < 0) {
-                        first = i;
-                    }
-                    last = i;
-                    match = match.substring(index + 1);
-                } else {
-                    break;
-                }
-            }
-            
-            if (first >= 0 && last >= 0) {
-                //match success
-                if (mPrefixHighligher == null) {
-                    mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
-                }
-                Log.i(TAG, "bindName: first " + first + ", last " + last);
-                nameField.setText(mPrefixHighligher.apply(name, first, last + 1));
-                return true;
-            }
-
-            Log.i(TAG, "bindName: first " + first + ", last " + last);*/
-
             if (mHanziToPinyin == null) {
                 mHanziToPinyin = SimpleHanziToPinyin.getInstance();
             }
@@ -545,41 +481,13 @@ public class SimplePhoneNumberListAdapter extends CursorAdapter{
                     }
                 }
             }
-            
-            
         }
         nameField.setText(name);
         return false;
     }
 
-    SimpleHanziToPinyin mHanziToPinyin;
-    /*private ArrayList<Token> toPinYin(String input) {
-        if (TextUtils.isEmpty(input)) {
-            return null;
-        }
-        if (mHanziToPinyin == null) {
-            mHanziToPinyin = HanziToPinyin.getInstance();
-        }
-        ArrayList<Token> tokens = mHanziToPinyin.get(input);
-        StringBuilder output = new StringBuilder();
-        if (tokens != null && tokens.size() > 0) {
-            int oriLength = tokens.size();
-            int[] indexes = new int[oriLength];
-            Token token;
-            for (int i = 0; i < oriLength; i++) {
-                token = tokens.get(i);
-                if (token.type == HanziToPinyin.Token.PINYIN) {
-                    output.append(' ');
-                }
-                output.append(token.target.toLowerCase());
-                if (token.type == HanziToPinyin.Token.PINYIN) {
-                    output.append(' ');
-                }
-                indexes[i] = output.length() - 1;
-            }
-        }
-        return output.toString();
-    }*/
+    private SimpleHanziToPinyin mHanziToPinyin;
+
     protected boolean bindNumber(final View view, Cursor cursor, String match) {
         TextView numberField = (TextView) view.findViewById(R.id.number);
         String number = cursor.getString(PhoneQuery.PHONE_NUMBER);
