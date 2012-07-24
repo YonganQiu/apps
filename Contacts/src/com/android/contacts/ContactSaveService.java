@@ -415,9 +415,9 @@ public class ContactSaveService extends IntentService {
                 number = (String) keyValueSet.get(Phone.NUMBER);
                 Log.i(TAG, "name = " + name + ", number = " + number + ", exist ? " + exist);
                 if (exist) {
-                    //delete sim contact
-                } else {
                     //update sim contact
+                } else {
+                    //delete sim contact
                 }
             }
         }
