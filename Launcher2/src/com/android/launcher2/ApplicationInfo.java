@@ -71,6 +71,10 @@ class ApplicationInfo extends ItemInfo {
     
     int letterIndex;
     
+    /**
+     * Save last position of current application icon.
+     * Just for animation. {@link PagedViewCellLayoutChildren}
+     */
     int mOldLeft;
     int mOldRight;
     int mOldTop;

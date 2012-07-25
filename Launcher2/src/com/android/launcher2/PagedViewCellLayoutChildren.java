@@ -148,6 +148,7 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
         // }modified by zhong.chen 2012-7-12 for launcher apps sort end
         
         // {modified by zhong.chen 2012-7-12 for launcher apps sort begin animtion
+        boolean animEnable = false;
         mNewLefts = new int[count];
         mNewRights = new int[count];
         mNewTops = new int[count];
@@ -165,108 +166,112 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
                 int childLeft = offsetX + lp.x;
                 int childTop = lp.y;
                 
+                // {modified by zhong.chen 2012-7-25 for launcher apps sort
                 if(mChildrenDoAnim && child instanceof PagedViewIcon) {
                     ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
-                    mNewLefts[i] = childLeft;
-                    mNewTops[i] = childTop;
-                    mNewRights[i] = childLeft + lp.width;
-                    mNewBottoms[i] = childTop + lp.height;
-                    if(appInfo.mOldLeft == 0 && appInfo.mOldTop == 0
-                            && appInfo.mOldRight == 0
-                            && appInfo.mOldBottom == 0) {
-                        if(mNewLefts[i] > width / 2) {
-                            appInfo.mOldLeft = width + mCellWidth;
-                            appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
-                        } else {
-                            appInfo.mOldLeft = -mCellWidth;
-                            appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
-                        }
-                        if(mNewTops[i] > height / 2) {
-                            appInfo.mOldTop = height + mCellHeight;
-                            appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
-                        } else {
-                            appInfo.mOldTop = -mCellHeight;
-                            appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
-                        }
-                    }
+                    prepareAnimData(i, offsetX, child, width, height, appInfo, lp);
+                    animEnable = true;
                 } else {
                     child.layout(childLeft, childTop, childLeft + lp.width, childTop + lp.height);
                 }
+                // }modified by zhong.chen 2012-7-25 for launcher apps sort end
             }
         }
-        if(mChildrenDoAnim) {
-            if(null != mLayoutAnimation) {
-                mLayoutAnimation.cancel();
-                mLayoutAnimation = null;
-            }
-            
-            //mLayoutAnimation = new AnimatorSet();
-            //final int inDuration = getResources()
-            //        .getInteger(R.integer.config_appsCustomizeZoomInTime);
-            final int outDuration = getResources()
-                    .getInteger(R.integer.config_appsCustomizeZoomOutTime);
-            
-            mLayoutAnimation = ValueAnimator.ofFloat(0f, 1f).setDuration(outDuration);
-            mLayoutAnimation.setInterpolator(new Workspace.ZoomOutInterpolator());
-            mLayoutAnimation.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(android.animation.Animator animation) {
-                    for (int i = 0; i < count; i++) {
-                        final View child = getChildAt(i);
-                        if (child instanceof PagedViewIcon && child.getVisibility() != GONE&& child.getTag() instanceof ApplicationInfo) {
-                            ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
-                            appInfo.mOldLeft = mNewLefts[i];
-                            appInfo.mOldTop = mNewTops[i];
-                            appInfo.mOldRight = mNewRights[i];
-                            appInfo.mOldBottom = mNewBottoms[i];
-                            child.layout(mNewLefts[i], mNewTops[i], mNewRights[i], mNewBottoms[i]);
-                            child.setRotation(0f);
-                        }
-                    }
-                }
-            });
-            mLayoutAnimation.addUpdateListener(new LauncherAnimatorUpdateListener() {
-                public void onAnimationUpdate(float a, float b) {
-                    if (b == 0f) {
-                        return;
-                    }
-                    invalidate();
-                    for (int i = 0; i < count; i++) {
-                        final View child = getChildAt(i);
-                        if(child instanceof PagedViewIcon
-                                && child.getVisibility() != GONE && child.getTag() instanceof ApplicationInfo) {
-                            ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
-                            child.fastInvalidate();
-                            int left = (int)(a * appInfo.mOldLeft + b * mNewLefts[i]);
-                            int top = (int)(a * appInfo.mOldTop + b * mNewTops[i]);
-                            int right = (int) (a * appInfo.mOldRight + b * mNewRights[i]);
-                            int bottom = (int)(a * appInfo.mOldBottom + b * mNewBottoms[i]);
-                            
-                            child.layout(left, top, right, bottom);
-                            
-                            /*if(appInfo.mOldLeft != mNewLefts[i]
-                                    && appInfo.mOldTop != mNewTops[i]) {
-                                float distanceX = Math.abs(appInfo.mOldLeft - mNewLefts[i]) * 1.0f;
-                                float distanceY = Math.abs(appInfo.mOldTop - mNewTops[i]) * 1.0f;
-                                
-                                float rotation = (float)(Math.toDegrees(Math.atan(distanceY / distanceX)));
-                                float accelerateRotation = a * START_ROTATION + b * rotation;
-                                if(b > 0.5f) {
-                                    accelerateRotation = 1f - (b - a) * mRotations[i] + (b - a) * START_ROTATION;
-                                } else {
-                                    accelerateRotation = a * START_ROTATION + b * rotation;
-                                }
-                                child.setRotation(accelerateRotation);
-                                mRotations[i] = accelerateRotation;
-                            }*/
-                        }
-                    }
-                }
-            });
-            mLayoutAnimation.start();   
+        if(mChildrenDoAnim && animEnable) {
+            doLayoutAnim();
         }
         // }modified by zhong.chen 2012-7-12 for launcher apps sort end animation
     }
+    
+    // {added by zhong.chen 2012-7-25 for launcher apps sort begin
+    void prepareAnimData(int index, int offsetX,
+            final View child, int width, int height,
+            final ApplicationInfo appInfo,
+            final PagedViewCellLayout.LayoutParams lp) {
+
+        int childLeft = offsetX + lp.x;
+        int childTop = lp.y;
+
+        mNewLefts[index] = childLeft;
+        mNewTops[index] = childTop;
+        mNewRights[index] = childLeft + lp.width;
+        mNewBottoms[index] = childTop + lp.height;
+        if (appInfo.mOldLeft == 0 && appInfo.mOldTop == 0
+                && appInfo.mOldRight == 0
+                && appInfo.mOldBottom == 0) {
+            if (mNewLefts[index] > width / 2) {
+                appInfo.mOldLeft = width + mCellWidth;
+                appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
+            } else {
+                appInfo.mOldLeft = -mCellWidth;
+                appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
+            }
+            if (mNewTops[index] > height / 2) {
+                appInfo.mOldTop = height + mCellHeight;
+                appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
+            } else {
+                appInfo.mOldTop = -mCellHeight;
+                appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
+            }
+        }
+    }
+    
+    void doLayoutAnim() {
+        final int count = getChildCount();
+        if (null != mLayoutAnimation) {
+            mLayoutAnimation.cancel();
+            mLayoutAnimation = null;
+        }
+
+        final int outDuration = getResources()
+                .getInteger(R.integer.config_appsCustomizeZoomOutTime);
+
+        mLayoutAnimation = ValueAnimator.ofFloat(0f, 1f).setDuration(outDuration);
+        mLayoutAnimation.setInterpolator(new Workspace.ZoomOutInterpolator());
+        mLayoutAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                for (int i = 0; i < count; i++) {
+                    final View child = getChildAt(i);
+                    if (child instanceof PagedViewIcon
+                            && child.getVisibility() != GONE
+                            && child.getTag() instanceof ApplicationInfo) {
+                        ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
+                        appInfo.mOldLeft = mNewLefts[i];
+                        appInfo.mOldTop = mNewTops[i];
+                        appInfo.mOldRight = mNewRights[i];
+                        appInfo.mOldBottom = mNewBottoms[i];
+                        child.layout(mNewLefts[i], mNewTops[i], mNewRights[i], mNewBottoms[i]);
+                    }
+                }
+            }
+        });
+        mLayoutAnimation.addUpdateListener(new LauncherAnimatorUpdateListener() {
+            public void onAnimationUpdate(float a, float b) {
+                if (b == 0f) {
+                    return;
+                }
+                invalidate();
+                for (int i = 0; i < count; i++) {
+                    final View child = getChildAt(i);
+                    if (child instanceof PagedViewIcon
+                            && child.getVisibility() != GONE
+                            && child.getTag() instanceof ApplicationInfo) {
+                        ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
+                        child.fastInvalidate();
+                        int left = (int) (a * appInfo.mOldLeft + b * mNewLefts[i]);
+                        int top = (int) (a * appInfo.mOldTop + b * mNewTops[i]);
+                        int right = (int) (a * appInfo.mOldRight + b * mNewRights[i]);
+                        int bottom = (int) (a * appInfo.mOldBottom + b * mNewBottoms[i]);
+
+                        child.layout(left, top, right, bottom);
+                    }
+                }
+            }
+        });
+        mLayoutAnimation.start();
+    }
+    // }added by zhong.chen 2012-7-25 for launcher apps sort end
 
     void destroyHardwareLayer() {
         setLayerType(LAYER_TYPE_NONE, null);

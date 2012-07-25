@@ -109,12 +109,12 @@ public class UserDefinedSettingsTabHost extends TabHost implements LauncherTrans
         final ViewGroup tabsContainer = (ViewGroup) findViewById(R.id.tabs_container);
         final TabWidget tabs = (TabWidget) findViewById(com.android.internal.R.id.tabs);
         final UserDefinedSettingsPagedView appsCustomizePane = (UserDefinedSettingsPagedView)
-                findViewById(R.id.apps_customize_pane_content);
+                findViewById(R.id.user_defined_pane_content);
         mTabs = tabs;
         mTabsContainer = tabsContainer;
         mUserDefinedSettingsPane = appsCustomizePane;
         mAnimationBuffer = (FrameLayout) findViewById(R.id.animation_buffer);
-        mContent = (LinearLayout) findViewById(R.id.apps_customize_content);
+        mContent = (LinearLayout) findViewById(R.id.user_defined_content);
         if (tabs == null || mUserDefinedSettingsPane == null)
             throw new Resources.NotFoundException();
 
@@ -177,17 +177,6 @@ public class UserDefinedSettingsTabHost extends TabHost implements LauncherTrans
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        // Intercept all touch events up to the bottom of the AppsCustomizePane
-        // so they do not fall
-        // through to the workspace and trigger showWorkspace()
-        if (event.getY() < mUserDefinedSettingsPane.getBottom()) {
-            return true;
-        }
-        return super.onTouchEvent(event);
-    }
-
     private void onTabChangedStart() {
         mUserDefinedSettingsPane.hideScrollingIndicator(false);
     }
@@ -243,12 +232,8 @@ public class UserDefinedSettingsTabHost extends TabHost implements LauncherTrans
                     View child = visiblePages.get(i);
                     if (child instanceof PagedViewCellLayout) {
                         ((PagedViewCellLayout) child).resetChildrenOnKeyListeners();
-                    } else if (child instanceof PagedViewGridLayout) {
-                        ((PagedViewGridLayout) child).resetChildrenOnKeyListeners();
-                    }
-                    PagedViewWidget.setDeletePreviewsWhenDetachedFromWindow(false);
+                    } 
                     mUserDefinedSettingsPane.removeView(child);
-                    PagedViewWidget.setDeletePreviewsWhenDetachedFromWindow(true);
                     mAnimationBuffer.setAlpha(1f);
                     mAnimationBuffer.setVisibility(View.VISIBLE);
                     LayoutParams p = new FrameLayout.LayoutParams(child.getWidth(),

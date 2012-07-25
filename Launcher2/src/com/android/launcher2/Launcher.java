@@ -80,7 +80,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -851,7 +850,7 @@ public final class Launcher extends Activity
         mUserDefinedTabHost = (UserDefinedSettingsTabHost)
                 findViewById(R.id.user_defined_settings);
         mUserDefinedContent = (UserDefinedSettingsPagedView)
-                mUserDefinedTabHost.findViewById(R.id.apps_customize_pane_content);
+                mUserDefinedTabHost.findViewById(R.id.user_defined_pane_content);
         mUserDefinedContent.setup(this);
         // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
@@ -1791,7 +1790,7 @@ public final class Launcher extends Activity
     	//}add by jingjiang.yu end
     	
     	// {added by zhong.chen 2012-6-28 for launcher user-defined
-    	if(mState != State.WORKSPACE) {
+    	if(mState == State.USER_DEFINED_SETTINGS) {
             hideUserDefinedSettings(true, false);
             return;
         }
@@ -2628,7 +2627,7 @@ public final class Launcher extends Activity
                 hideAppsCustomizeHelper(animated, false);
             }
             // }modified by zhong.chen 2012-6-28 for launcher user-defined end
-
+            
             // Show the search bar and hotseat
             mSearchDropTargetBar.showSearchBar(animated);
             // We only need to animate in the dock divider if we're going from spring loaded mode
@@ -3625,7 +3624,8 @@ public final class Launcher extends Activity
   //{add by jingjiang.yu at 2012.06.25 begin
     public void showWorkspacePreview(){
         if(mState == State.USER_DEFINED_SETTINGS) {
-            hideUserDefinedSettings(false, false);
+            //hideUserDefinedSettings(false, false);
+            return;
         }
     	mSearchDropTargetBar.hideSearchBar(false);
     	closeFolder();
@@ -3658,14 +3658,12 @@ public final class Launcher extends Activity
         final Launcher instance = this;
 
         final int duration = res.getInteger(R.integer.config_appsCustomizeZoomInTime);
-        final float scale = (float) res.getInteger(R.integer.config_appsCustomizeZoomScaleFactor);
         final View toView = mUserDefinedTabHost;
         Resources r = getResources();
         final int userDefinedSettingsHeight = r.getDimensionPixelSize(R.dimen.user_defined_settings_height);
         final int buttonBarHeight = r.getDimensionPixelSize(R.dimen.button_bar_height);
-        setPivotsForZoom(toView, scale);
 
-        // Shrink workspaces away if going to AppsCustomize from workspace
+        // Shrink workspaces away if going to user defined settings from workspace
         //mWorkspace.changeState(Workspace.State.NORMAL, animated);
         mWorkspace.changeState(Workspace.State.USER_DEFINED, animated);
         
@@ -3680,28 +3678,15 @@ public final class Launcher extends Activity
             boolean animationCancelled = false;
             @Override
             public void onAnimationStart(Animator animation) {
-                toView.setTranslationX(0.0f);
-                toView.setTranslationY(0.0f);
-                toView.setScaleX(1.0f);
-                toView.setScaleY(1.0f);
                 toView.setY(bottom);
                 toView.setVisibility(View.VISIBLE);
-                toView.bringToFront();
-                toView.requestFocus();
             }
             @Override
             public void onAnimationEnd(Animator animation) {
-                toView.setTranslationX(0.0f);
-                toView.setTranslationY(0.0f);
-                toView.setScaleX(1.0f);
-                toView.setScaleY(1.0f);
                 toView.setY(topY);
-                toView.setVisibility(View.VISIBLE);
                 toView.bringToFront();
                 toView.requestFocus();
 
-//                hideScrollIndicator();
-//                hideDockDivider();
                 if (animationCancelled) {
                     updateWallpaperVisibility(true);
                 }
@@ -3714,56 +3699,8 @@ public final class Launcher extends Activity
 
         });
         
-        final int size = mWorkspace.getChildCount();
         ArrayList<ObjectAnimator> anims = new ArrayList<ObjectAnimator>();
         anims.add(yAnim);
-        PropertyValuesHolder xScaleHolder, yScaleHolder, xHolder, yHolder;
-        float x, y;
-        if(!springLoaded && false) {
-            for (int i = 0; i < size; i++) {
-                final CellLayout cl = (CellLayout) mWorkspace.getChildAt(i);
-                
-                //cl = (CellLayout) mWorkspace.getChildAt(mWorkspace.mCurrentPage);
-                x = cl.getX();
-                y = cl.getY();
-                if(!mInitialized) {
-                    cl.setOriginalX(x);
-                    cl.setOriginalY(y);
-                }
-              
-                xScaleHolder = PropertyValuesHolder.ofFloat("scaleX", 1.00f, 0.85f);
-                yScaleHolder = PropertyValuesHolder.ofFloat("scaleY", 1.00f, 0.85f);
-                
-                final float toX = x + 12.0f;
-                final float toY = y - CELL_MARGIN_Y;
-                Log.e("zh.cn", ".......show................x: " + x + " ,toX: " + toX
-                        + "y: " + y + " ,toY: " + toY);
-                xHolder = PropertyValuesHolder.ofFloat("x", x, toX);
-                yHolder = PropertyValuesHolder.ofFloat("y", y, toY);
-                ObjectAnimator anim = ObjectAnimator.ofPropertyValuesHolder(cl, xScaleHolder, yScaleHolder, /*xHolder,*/ yHolder);
-                anim.setInterpolator(new Workspace.ZoomOutInterpolator());
-                
-                anim.setDuration(duration);
-                anim.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        cl.setBackgroundResource(R.drawable.homescreen_blue_normal_holo);
-                        cl.setOnClickListener(new OnClickListener(){
-                            @Override
-                            public void onClick(View v) {
-                                if(mState == State.USER_DEFINED_SETTINGS) {
-                                    hideUserDefinedSettings(true, true);
-                                }
-                            }
-                        });
-                    }
-                    
-                });
-                anims.add(anim);
-            }
-            mInitialized = true;
-        }
-        
         if(null == mDockDivider) {
             mDockDivider = (ImageView) findViewById(R.id.dock_divider);
         }
@@ -3844,8 +3781,6 @@ public final class Launcher extends Activity
         }
     }
     
-    private final static float CELL_MARGIN_Y = 42.0f;
-    private boolean mInitialized = false;
     void showUserDefinedSettings(boolean animated, boolean fromResume) {
         if (mState != State.WORKSPACE) return;
         
@@ -3905,7 +3840,6 @@ public final class Launcher extends Activity
             @Override
             public void onAnimationEnd(Animator animation) {
                 mHotseat.setAlpha(1.0f);
-                mHotseat.setVisibility(View.VISIBLE);
             }
             
         });
@@ -3999,8 +3933,7 @@ public final class Launcher extends Activity
             public void onAnimationEnd(Animator animation) {
 //                mUserDefinedSettingsTabHost.reset();
                 mUserDefinedTabHost.setVisibility(View.GONE);
-                //FIXME showWorkspace(true);
-                mHotseat.setVisibility(View.VISIBLE);
+                showWorkspace(true);
             }
             
             @Override
@@ -4011,7 +3944,6 @@ public final class Launcher extends Activity
                 showWorkspace(true);
                 //FIXME TODO showScrollIndicator(true);
                 showHotseat(true);
-                mHotseat.setVisibility(View.VISIBLE);
             }
         });
         if(immediately) {
@@ -4032,7 +3964,7 @@ public final class Launcher extends Activity
     
     //=========== {added by zhong.chen 2012-6-28 for launcher user-defined end ==============
     // {added by zhong.chen 2012-7-12 for launcher apps sort begin == begin ==
-    private View mSortAppBtn;
+    private TextView mSortAppBtn;
     private AlertDialog mSortAppsDialog;
     
     private IUsageStats mUsageStatsService;
@@ -4084,18 +4016,18 @@ public final class Launcher extends Activity
     
     void updateSortAppsIcon(boolean updateIcon, int visibility) {
         if(null == mSortAppBtn) {
-            mSortAppBtn = findViewById(R.id.sort_apps_button);
+            mSortAppBtn = (TextView) findViewById(R.id.sort_apps_button);
         }
         if(updateIcon) {
             Resources r = getResources();
             int w = r.getDimensionPixelSize(R.dimen.toolbar_external_icon_width);
             int h = r.getDimensionPixelSize(R.dimen.toolbar_external_icon_height);
 
-            TextView button = (TextView) findViewById(R.id.sort_apps_button);
+            //TextView mSortAppBtn = (TextView) findViewById(R.id.sort_apps_button);
             Drawable toolbarIcon = r.getDrawable(R.drawable.ic_sort_apps);
             toolbarIcon.setBounds(0, 0, w, h);
-            if (button != null) {
-                button.setCompoundDrawables(toolbarIcon, null, null, null);
+            if (mSortAppBtn != null) {
+                mSortAppBtn.setCompoundDrawables(toolbarIcon, null, null, null);
             }
         }
         if(visibility != mSortAppBtn.getVisibility()) {
@@ -4141,7 +4073,7 @@ public final class Launcher extends Activity
         mSortAppsDialog.setCanceledOnTouchOutside(true);
         mSortAppsDialog.show();
     }
-    void showLetterPopuWindow(int mSelectIndex, final int yoff/*, Bitmap bm*/) {
+    void showLetterPopupWindow(int mSelectIndex, final int yoff/*, Bitmap bm*/) {
         if(DEBUG_POP_WINDOW) {
             return;
         }

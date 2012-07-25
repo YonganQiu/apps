@@ -2008,14 +2008,6 @@ public class Workspace extends SmoothPagedView
             if(stateIsUserDefined) {
                 cl.setIsDragOverlapping(true);
                 //cl.setBackgroundResource(R.drawable.user_defined_tab_bg);
-                /*cl.setOnClickListener(new OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        if(mState == State.USER_DEFINED) {
-                            mLauncher.hideUserDefinedSettings(true, false);
-                        }
-                    }
-                });*/
             } 
             
             if(oldStateIsUserDefined) {

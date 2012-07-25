@@ -76,4 +76,8 @@
 <!-- Folders -->
     <!-- The size of the image which sits behind the preview of the folder contents -->
     <dimen name="folder_preview_size">58dp</dimen>
+    
+    <!-- user-defined settings -->
+    <integer name="user_defined_settings_cell_count_x">4</integer>
+    <integer name="user_defined_settings_cell_count_y">1</integer>
 </resources>

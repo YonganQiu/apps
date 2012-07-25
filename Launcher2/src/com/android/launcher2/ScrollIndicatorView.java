@@ -184,7 +184,7 @@ public class ScrollIndicatorView extends View {
 
         int y = mIconHeight / 2 + /*mLetterWindowHeight / 2 +*/ (mSelectIndex
                 * (mIconHeight + mSpaceHeight) + mPaddingTop);
-        mLauncher.showLetterPopuWindow(mSelectIndex, y);
+        mLauncher.showLetterPopupWindow(mSelectIndex, y);
         mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
     }
     

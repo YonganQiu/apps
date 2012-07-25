@@ -99,12 +99,10 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         mMaxAppCellCountY = a.getInt(R.styleable.AppsCustomizePagedView_maxAppCellCountY, -1);
         mMaxAppCellCountX = 4;
         mMaxAppCellCountY = 1;
-        // mWidgetCountX =
-        // a.getInt(R.styleable.AppsCustomizePagedView_widgetCountX, 2);
-        // mWidgetCountY =
-        // a.getInt(R.styleable.AppsCustomizePagedView_widgetCountY, 2);
-        mCellCountX = 4;
-        mCellCountY = 1;
+        mCellCountX =
+                a.getInt(R.styleable.AppsCustomizePagedView_widgetCountX, 2);
+        mCellCountY =
+                a.getInt(R.styleable.AppsCustomizePagedView_widgetCountY, 2);
         a.recycle();
         mWidgetSpacingLayout = new PagedViewCellLayout(getContext());
 
@@ -181,24 +179,23 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 
         Context context = getContext();
         PagedViewCellLayout layout;
-        for (int j = 0; j < mNumWallpaperPages; ++j) {
+        for (int i = 0; i < mNumEffectPages; ++i) {
             layout = new PagedViewCellLayout(context);
             setupPage(layout);
             addView(layout);
         }
-
+        
         for (int i = 0; i < mNumThemePages; ++i) {
             layout = new PagedViewCellLayout(context);
             setupPage(layout);
             addView(layout);
         }
 
-        for (int i = 0; i < mNumEffectPages; ++i) {
+        for (int j = 0; j < mNumWallpaperPages; ++j) {
             layout = new PagedViewCellLayout(context);
             setupPage(layout);
             addView(layout);
         }
-
     }
 
     @Override
@@ -210,7 +207,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         } else if (page >= mNumThemePages + mNumWallpaperPages) {
             syncEffectPageItems(page - mNumWallpaperPages - mNumThemePages, immediate);
         } else {
-            Log.e("zh.cn", "2.............................." + page);
+            //do nothing
         }
 
     }
@@ -223,8 +220,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page);
 
         layout.removeAllViewsOnPage();
-        ArrayList<Object> items = new ArrayList<Object>();
-        ArrayList<Bitmap> images = new ArrayList<Bitmap>();
         for (int i = startIndex; i < endIndex; ++i) {
             ApplicationInfo info = mWallpapers.get(i);
             PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
@@ -240,9 +235,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             int y = index / mCellCountX;
             layout.addViewToCellLayout(icon, -1, i,
                     new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
-
-            items.add(info);
-            images.add(info.iconBitmap);
         }
 
         layout.createHardwareLayers();
@@ -256,8 +248,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page + mNumWallpaperPages);
 
         layout.removeAllViewsOnPage();
-        ArrayList<Object> items = new ArrayList<Object>();
-        ArrayList<Bitmap> images = new ArrayList<Bitmap>();
         for (int i = startIndex; i < endIndex; ++i) {
             ApplicationInfo info = mThemes.get(i);
             PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
@@ -273,9 +263,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             int y = index / mCellCountX;
             layout.addViewToCellLayout(icon, -1, i,
                     new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
-
-            items.add(info);
-            images.add(info.iconBitmap);
         }
 
         layout.createHardwareLayers();
@@ -343,17 +330,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    public void onPackagesUpdated() {
-        postDelayed(new Runnable() {
-            public void run() {
-                updatePackages();
-            }
-        }, 500);
-    }
-
-    public void updatePackages() {
-    }
-
     protected void onDataReady(int width, int height) {
         // Note that we transpose the counts in portrait so that we get a
         // similar layout
@@ -399,20 +375,6 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         // Restore the page
         int page = getPageForComponent(mSaveInstanceStateItemIndex);
         invalidatePageData(Math.max(0, page), hostIsTransitioning);
-
-        // Show All Apps cling if we are finished transitioning, otherwise, we
-        // will try again when
-        // the transition completes in UserDefinedSettingsTabHost (otherwise the
-        // wrong offsets will be
-        // returned while animating)
-        if (!hostIsTransitioning) {
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    showAllAppsCling();
-                }
-            });
-        }
     }
 
     private void updatePageCounts() {
@@ -1027,16 +989,16 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         int count = 0;
 
         if (page < mNumWallpaperPages) {
-            stringId = R.string.apps_customize_apps_scroll_format;
+            //stringId = R.string.apps_customize_apps_scroll_format;
             count = mNumWallpaperPages;
         } else if (page >= mNumWallpaperPages && page < mNumThemePages + mNumWallpaperPages) {
             page -= mNumWallpaperPages;
-            stringId = R.string.apps_customize_widgets_scroll_format;
+            //stringId = R.string.apps_customize_widgets_scroll_format;
             count = mNumWallpaperPages + mNumThemePages;
         } else {
             page -= mNumWallpaperPages;
             page -= mNumThemePages;
-            stringId = R.string.apps_customize_widgets_scroll_format;
+            //stringId = R.string.apps_customize_widgets_scroll_format;
             count = mNumWallpaperPages + mNumThemePages + mNumEffectPages;
         }
 

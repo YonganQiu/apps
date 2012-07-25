@@ -124,7 +124,7 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
         label = mContext.getString(R.string.all_apps_button_label);
         View tabAppsView =  mLayoutInflater.inflate(R.layout.tab_apps_indicator, tabs, false);
         mLetterSwitcher = (TextSwitcher) tabAppsView.findViewById(R.id.app_label_switcher);
-        mLetterSwitcher.setFactory(factory);
+        mLetterSwitcher.setFactory(mFactory);
       
         Animation in = AnimationUtils.loadAnimation(mContext,
               android.R.anim.fade_in);
@@ -482,7 +482,7 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
         
     }
     
-    private ViewSwitcher.ViewFactory factory = new ViewSwitcher.ViewFactory() {
+    private ViewSwitcher.ViewFactory mFactory = new ViewSwitcher.ViewFactory() {
         @Override
         public View makeView() {
             TextView tv = new TextView(mContext);
