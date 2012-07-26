@@ -250,7 +250,7 @@ public class ScrollAnimStyleInfo {
 		}
 
 		SharedPreferences prefs = context.getSharedPreferences(
-				"com.android.launcher2.prefs", Context.MODE_PRIVATE);
+				Launcher.PREFS_KEY, Context.MODE_PRIVATE);
 		String selectedId = prefs.getString(WORKSPACE_SELECTED_SCROLL_ANIM_ID,
 				null);
 		if (selectedId == null) {
@@ -300,7 +300,7 @@ public class ScrollAnimStyleInfo {
 				protected Void doInBackground(Void... params) {
 					SharedPreferences prefs = context
 							.getSharedPreferences(
-									"com.android.launcher2.prefs",
+									Launcher.PREFS_KEY,
 									Context.MODE_PRIVATE);
 					Editor editor = prefs.edit();
 					editor.putString(WORKSPACE_SELECTED_SCROLL_ANIM_ID,

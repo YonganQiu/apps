@@ -623,11 +623,12 @@ public final class Launcher extends Activity
             });
         }
         clearTypedText();
-      //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
-        if(mWorkspace.isPreviewShow()){
-        	closeWorkspacePreview();
-        }
-      //}add by jingjiang.yu end
+		// {add by jingjiang.yu at 2012.06.25 begin for scale preview.
+		if (mWorkspace.isPreviewShow()) {
+			closeWorkspacePreview();
+		}
+		mWorkspace.dismissDelScreenAlertDialog();
+		// }add by jingjiang.yu end
     }
 
     @Override
@@ -1268,6 +1269,9 @@ public final class Launcher extends Activity
 
         // Whatever we were doing is hereby canceled.
         mWaitingForResult = false;
+		// {add by jingjiang.yu at 2012.07.09 begin for scale preview.
+		mWorkspace.dismissDelScreenAlertDialog();
+		// }add by jingjiang.yu end
     }
 
     @Override

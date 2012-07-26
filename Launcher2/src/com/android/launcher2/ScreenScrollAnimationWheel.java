@@ -19,10 +19,11 @@ public class ScreenScrollAnimationWheel implements ScreenScrollAnimation {
 		int pageWidth = childrenLayout.getMeasuredWidth();
 		int pageHeight = childrenLayout.getMeasuredHeight();
 		double radius = pageWidth * 0.4;
-		double radians = -(2 * Math.PI / (childrenLayout.getChildCount()));
-		double degree = 360 / (childrenLayout.getChildCount());
-		float circleCenterX = pageWidth / 2;
-		float circleCenterY = pageHeight / 2;
+		double radians = -(2 * Math.PI / ((double) childrenLayout
+				.getChildCount()));
+		double degree = 360 / ((double) childrenLayout.getChildCount());
+		float circleCenterX = pageWidth / (float) 2;
+		float circleCenterY = pageHeight / (float) 2;
 		float absScrollProgress = Math.abs(scrollProgress);
 
 		// sort child list.
@@ -41,16 +42,16 @@ public class ScreenScrollAnimationWheel implements ScreenScrollAnimation {
 			CellLayout.LayoutParams lp = (LayoutParams) child.getLayoutParams();
 
 			float toX = (float) (circleCenterX + radius * Math.cos(radians * i)
-					- child.getWidth() / 2 - child.getLeft());
+					- child.getWidth() / (float) 2 - child.getLeft());
 			float toY = (float) (circleCenterY + radius * Math.sin(radians * i)
-					- child.getHeight() / 2 - child.getTop());
+					- child.getHeight() / (float) 2 - child.getTop());
 			float toRotation = (float) -(90 + degree * i);
 
 			float toScaleX = 1;
 			float toScaleY = 1;
 			if (lp.cellHSpan > 1 || lp.cellVSpan > 1) {
-				toScaleX = (float) cell.getCellWidth() / child.getWidth();
-				toScaleY = (float) cell.getCellHeight() / child.getHeight();
+				toScaleX = cell.getCellWidth() / (float) child.getWidth();
+				toScaleY = cell.getCellHeight() / (float) child.getHeight();
 			}
 
 			if (absScrollProgress == 1.0f) {
@@ -123,9 +124,9 @@ public class ScreenScrollAnimationWheel implements ScreenScrollAnimation {
 		int pageHeight = childrenLayout.getMeasuredHeight();
 		double radius = pageWidth * 0.4;
 		double radians = -(2 * Math.PI / (childrenLayout.getChildCount()));
-		double degree = 360 / (childrenLayout.getChildCount());
-		float circleCenterX = pageWidth / 2;
-		float circleCenterY = pageHeight / 2;
+		double degree = 360 / ((double) childrenLayout.getChildCount());
+		float circleCenterX = pageWidth / (float) 2;
+		float circleCenterY = pageHeight / (float) 2;
 		float absScrollProgress = Math.abs(scrollProgress);
 
 		// sort child list.
@@ -144,16 +145,16 @@ public class ScreenScrollAnimationWheel implements ScreenScrollAnimation {
 			CellLayout.LayoutParams lp = (LayoutParams) child.getLayoutParams();
 
 			float toX = (float) (circleCenterX + radius * Math.cos(radians * i)
-					- child.getWidth() / 2 - child.getLeft());
+					- child.getWidth() / (float) 2 - child.getLeft());
 			float toY = (float) (circleCenterY + radius * Math.sin(radians * i)
-					- child.getHeight() / 2 - child.getTop());
+					- child.getHeight() / (float) 2 - child.getTop());
 			float toRotation = (float) -(90 + degree * i);
 
 			float toScaleX = 1;
 			float toScaleY = 1;
 			if (lp.cellHSpan > 1 || lp.cellVSpan > 1) {
-				toScaleX = (float) cell.getCellWidth() / child.getWidth();
-				toScaleY = (float) cell.getCellHeight() / child.getHeight();
+				toScaleX = cell.getCellWidth() / (float) child.getWidth();
+				toScaleY = cell.getCellHeight() / (float) child.getHeight();
 			}
 
 			if (absScrollProgress <= 0.5f) {
@@ -196,7 +197,7 @@ public class ScreenScrollAnimationWheel implements ScreenScrollAnimation {
 		if (childrenLayout.getChildCount() <= 0) {
 			return;
 		}
-		
+
 		for (int i = 0; i < childrenLayout.getChildCount(); i++) {
 			View child = childrenLayout.getChildAt(i);
 			child.setPivotX(child.getWidth() / 2);

@@ -305,6 +305,10 @@ public abstract class PagedView extends ViewGroup {
     
      void snapToPageWithVelocityforDrag(int whichPage, int velocity) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
          //whichPage = Math.max(0, Math.min(whichPage, getChildCount() - 1));
      	  whichPage = Math.max(0, Math.min(whichPage, getPageCount() - 1));
        //}modify by jingjiang.yu end
@@ -392,6 +396,10 @@ public abstract class PagedView extends ViewGroup {
         // don't introduce any checks like mCurrentPage == currentPage here-- if we change the
         // the default
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // if (getChildCount() == 0) {
         if (getPageCount() == 0) {
       //}modify by jingjiang.yu end
@@ -636,6 +644,10 @@ public abstract class PagedView extends ViewGroup {
 
         // Now we need to do a re-layout, but preserving absolute X and Y coordinates
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // int childCount = getChildCount();
         int childCount = getPageCount();
       //}modify by jingjiang.yu end
@@ -707,6 +719,10 @@ public abstract class PagedView extends ViewGroup {
         }
 
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // if (mFirstLayout && mCurrentPage >= 0 && mCurrentPage < getChildCount()) {
         if (mFirstLayout && mCurrentPage >= 0 && mCurrentPage < getPageCount()) {
       //}modify by jingjiang.yu end
@@ -732,6 +748,10 @@ public abstract class PagedView extends ViewGroup {
         }
         if (mFadeInAdjacentScreens) {
         	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+			/**
+			 * The workspace's last child is addScreenButton, isn't cellLayout
+			 * page. so use getPageCount instead of getChildCount.
+			 */
            // for (int i = 0; i < getChildCount(); i++) {
         	for (int i = 0; i < getPageCount(); i++) {
           //}modify by jingjiang.yu end
@@ -760,6 +780,10 @@ public abstract class PagedView extends ViewGroup {
 
     protected void invalidateCachedOffsets() {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // int count = getChildCount();
     	int count = getPageCount();
       //}modify by jingjiang.yu end
@@ -788,6 +812,10 @@ public abstract class PagedView extends ViewGroup {
             return childOffsets[index];
         } else {
         	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+			/**
+			 * The workspace's last child is addScreenButton, isn't cellLayout
+			 * page. so use getPageCount instead of getChildCount.
+			 */
            // if (getChildCount() == 0)
         	   if (getPageCount() == 0)
           //}modify by jingjiang.yu end
@@ -836,6 +864,10 @@ public abstract class PagedView extends ViewGroup {
 
     protected void getVisiblePages(int[] range) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // final int pageCount = getChildCount();
     	final int pageCount = getPageCount();
       //}modify by jingjiang.yu end
@@ -877,6 +909,10 @@ public abstract class PagedView extends ViewGroup {
 
         // Find out which screens are visible; as an optimization we only call draw on them
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // final int pageCount = getChildCount();
         final int pageCount = getPageCount();
       //}modify by jingjiang.yu end
@@ -1023,6 +1059,10 @@ public abstract class PagedView extends ViewGroup {
 
         // Skip touch handling if there are no pages to swipe
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
       //  if (getChildCount() <= 0) return super.onInterceptTouchEvent(ev);
         if (getPageCount() <= 0) return super.onInterceptTouchEvent(ev);
       //}modify by jingjiang.yu end
@@ -1090,6 +1130,10 @@ public abstract class PagedView extends ViewGroup {
                 // to scroll the current page
                 if (mTouchState != TOUCH_STATE_PREV_PAGE && mTouchState != TOUCH_STATE_NEXT_PAGE) {
                 	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+            		/**
+            		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+            		 * so use getPageCount instead of getChildCount.
+            		 */
                    // if (getChildCount() > 0) {
                 	  if (getPageCount() > 0) {
                  //}modify by jingjiang.yu end
@@ -1140,10 +1184,13 @@ public abstract class PagedView extends ViewGroup {
         anim.start();
     }
 
+  //{add by jingjiang.yu at 2012.05.02 begin
+    private static final float TOUCH_SLOP_SCALE = 0.5f;
+  //}add by jingjiang.yu end
     protected void determineScrollingStart(MotionEvent ev) {
     	//{modify by jingjiang.yu at 2012.05.02 begin
         //determineScrollingStart(ev, 1.0f);
-        determineScrollingStart(ev, 0.5f);
+        determineScrollingStart(ev, TOUCH_SLOP_SCALE);
       //}modify by jingjiang.yu end
     }
 
@@ -1284,6 +1331,10 @@ public abstract class PagedView extends ViewGroup {
     public boolean onTouchEvent(MotionEvent ev) {
         // Skip touch handling if there are no pages to swipe
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // if (getChildCount() <= 0) return super.onTouchEvent(ev);
         if (getPageCount() <= 0) return super.onTouchEvent(ev);
       //}modify by jingjiang.yu end
@@ -1416,6 +1467,11 @@ public abstract class PagedView extends ViewGroup {
                 } else if (((isSignificantMove && deltaX < 0 && !isFling) ||
                         (isFling && velocityX < 0)) &&
                       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+						/**
+						 * The workspace's last child is addScreenButton, isn't
+						 * cellLayout page. so use getPageCount instead of
+						 * getChildCount.
+						 */
                         //mCurrentPage < getChildCount() - 1) {
                 	      mCurrentPage < getPageCount() - 1) {
                 	    //}modify by jingjiang.yu end
@@ -1439,6 +1495,10 @@ public abstract class PagedView extends ViewGroup {
                 // (otherwise mTouchState would be TOUCH_STATE_SCROLLING), so
                 // we can just page
             	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+        		/**
+        		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+        		 * so use getPageCount instead of getChildCount.
+        		 */
                // int nextPage = Math.min(getChildCount() - 1, mCurrentPage + 1);
             	  int nextPage = Math.min(getPageCount() - 1, mCurrentPage + 1);
               //}modify by jingjiang.yu end
@@ -1555,6 +1615,10 @@ public abstract class PagedView extends ViewGroup {
 
     protected int getChildIndexForRelativeOffset(int relativeOffset) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
        // final int childCount = getChildCount();
     	final int childCount = getPageCount();
       //}modify by jingjiang.yu end
@@ -1583,6 +1647,10 @@ public abstract class PagedView extends ViewGroup {
         int minDistanceFromScreenCenterIndex = -1;
         int screenCenter = mScrollX + (getMeasuredWidth() / 2);
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //final int childCount = getChildCount();
         final int childCount = getPageCount();
       //}modify by jingjiang.yu end
@@ -1626,6 +1694,10 @@ public abstract class PagedView extends ViewGroup {
 
     protected void snapToPageWithVelocity(int whichPage, int velocity) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //whichPage = Math.max(0, Math.min(whichPage, getChildCount() - 1));
     	  whichPage = Math.max(0, Math.min(whichPage, getPageCount() - 1));
       //}modify by jingjiang.yu end
@@ -1720,11 +1792,19 @@ public abstract class PagedView extends ViewGroup {
     public void scrollRight() {
         if (mScroller.isFinished()) {
         	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
            // if (mCurrentPage < getChildCount() -1) snapToPage(mCurrentPage + 1);
             if (mCurrentPage < getPageCount() -1) snapToPage(mCurrentPage + 1);
           //}modify by jingjiang.yu end
         } else {
         	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
             //if (mNextPage < getChildCount() -1) snapToPage(mNextPage + 1);
             if (mNextPage < getPageCount() -1) snapToPage(mNextPage + 1);
           //}modify by jingjiang.yu end
@@ -1736,6 +1816,10 @@ public abstract class PagedView extends ViewGroup {
         if (v != null) {
             ViewParent vp = v.getParent();
           //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
             //int count = getChildCount();
             int count = getPageCount();
           //}modify by jingjiang.yu end
@@ -1799,6 +1883,10 @@ public abstract class PagedView extends ViewGroup {
     protected void loadAssociatedPages(int page, boolean immediateAndOnly) {
         if (mContentIsRefreshable) {
         	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
            // final int count = getChildCount();
         	  final int count = getPageCount();
           //}modify by jingjiang.yu end
@@ -1834,6 +1922,10 @@ public abstract class PagedView extends ViewGroup {
     }
     protected int getAssociatedUpperPageBound(int page) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //final int count = getChildCount();
     	final int count = getPageCount();
       //}modify by jingjiang.yu end
@@ -1863,6 +1955,10 @@ public abstract class PagedView extends ViewGroup {
     protected ArrayList<Checkable> getCheckedGrandchildren() {
         ArrayList<Checkable> checked = new ArrayList<Checkable>();
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //final int childCount = getChildCount();
         final int childCount = getPageCount();
       //}modify by jingjiang.yu end
@@ -1886,6 +1982,10 @@ public abstract class PagedView extends ViewGroup {
     protected Checkable getSingleCheckedGrandchild() {
         if (mChoiceMode != CHOICE_MODE_MULTIPLE) {
         	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
             //final int childCount = getChildCount();
         	final int childCount = getPageCount();
           //}modify by jingjiang.yu end
@@ -1968,6 +2068,10 @@ public abstract class PagedView extends ViewGroup {
 
             // Mark each of the pages as dirty
           //{add by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
            // final int count = getChildCount();
             final int count = getPageCount();
           //}add by jingjiang.yu end
@@ -2014,6 +2118,10 @@ public abstract class PagedView extends ViewGroup {
 
     protected void showScrollingIndicator(boolean immediately) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //if (getChildCount() <= 1) return;
         if (getPageCount() <= 1) return;
       //}modify by jingjiang.yu end
@@ -2043,6 +2151,10 @@ public abstract class PagedView extends ViewGroup {
 
     protected void hideScrollingIndicator(boolean immediately) {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //if (getChildCount() <= 1) return;
     	if (getPageCount() <= 1) return;
       //}modify by jingjiang.yu end
@@ -2087,6 +2199,10 @@ public abstract class PagedView extends ViewGroup {
 
     private void updateScrollingIndicator() {
     	//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //if (getChildCount() <= 1) return;
         if (getPageCount() <= 1) return;
       //}modify by jingjiang.yu end
@@ -2102,11 +2218,19 @@ public abstract class PagedView extends ViewGroup {
         if (!isScrollingIndicatorEnabled()) return;
         if (mScrollIndicator == null) return;
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //int numPages = getChildCount();
         int numPages = getPageCount();
       //}modify by jingjiang.yu end
         int pageWidth = getMeasuredWidth();
       //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+		/**
+		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+		 * so use getPageCount instead of getChildCount.
+		 */
         //int lastChildIndex = Math.max(0, getChildCount() - 1);
         int lastChildIndex = Math.max(0, getPageCount() - 1);
       //}modify by jingjiang.yu end
@@ -2152,6 +2276,10 @@ public abstract class PagedView extends ViewGroup {
             event.setFromIndex(mCurrentPage);
             event.setToIndex(mCurrentPage);
           //{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+    		/**
+    		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+    		 * so use getPageCount instead of getChildCount.
+    		 */
             //event.setItemCount(getChildCount());
             event.setItemCount(getPageCount());
           //}modify by jingjiang.yu end
@@ -2162,6 +2290,10 @@ public abstract class PagedView extends ViewGroup {
         int page = (mNextPage != INVALID_PAGE) ? mNextPage : mCurrentPage;
         return String.format(mContext.getString(R.string.default_scroll_format),
         		//{modify by jingjiang.yu at 2012.06.25 begin for scale preview.
+        		/**
+        		 * The workspace's last child is addScreenButton, isn't cellLayout page.
+        		 * so use getPageCount instead of getChildCount.
+        		 */
                 //page + 1, getChildCount());
                 page + 1, getPageCount());
               //}modify by jingjiang.yu end

@@ -52,7 +52,11 @@
         launcher:pageSpacing="@dimen/workspace_page_spacing"
         launcher:scrollIndicatorPaddingLeft="@dimen/workspace_divider_padding_left"
         launcher:scrollIndicatorPaddingRight="@dimen/workspace_divider_padding_right"
-        launcher:screenCount="5">
+        launcher:screenCount="5"
+        launcher:previewXSpan="5dip"
+        launcher:previewYSpan="5dip"
+        launcher:previewMargin="5dip"
+        launcher:maxScreenCount="9">
     </com.android.launcher2.Workspace>
 
     <include layout="@layout/hotseat"
