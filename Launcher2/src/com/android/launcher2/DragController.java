@@ -639,50 +639,59 @@ public class DragController {
         	if(DEBUG){
         		Log.d(TAG, "onTouchEvent ACTION_MOVE");
         	}  	
-            if(pointCount == 1){
-            	handleMoveEvent(dragLayerX, dragLayerY);
-            }else if (pointCount > 1){
+			if (pointCount == 1 || mLauncher.getWorkspace().isPreviewShow()) {
+				handleMoveEvent(dragLayerX, dragLayerY);
+			} else if (pointCount > 1) {
 				final int pointerIndex1 = ev.findPointerIndex(mDragPointerId);
-				if(DEBUG){
-					Log.d(TAG, "onTouchEvent ACTION_MOVE mDragPointerId = " + mDragPointerId);
-					Log.d(TAG, "onTouchEvent ACTION_MOVE pointerIndex1 = " + pointerIndex1);
+				if (DEBUG) {
+					Log.d(TAG, "onTouchEvent ACTION_MOVE mDragPointerId = "
+							+ mDragPointerId);
+					Log.d(TAG, "onTouchEvent ACTION_MOVE pointerIndex1 = "
+							+ pointerIndex1);
 				}
-				if(pointerIndex1 != -1){
-					final int[] dragLayerPos1 = getClampedDragLayerPos(ev.getX(pointerIndex1), ev.getY(pointerIndex1));
+				if (pointerIndex1 != -1) {
+					final int[] dragLayerPos1 = getClampedDragLayerPos(
+							ev.getX(pointerIndex1), ev.getY(pointerIndex1));
 					final int dragLayerX1 = dragLayerPos1[0];
 					final int dragLayerY1 = dragLayerPos1[1];
 					handleMoveEvent(dragLayerX1, dragLayerY1);
 				}
-				if(pointCount == 2){
-					final int pointerIndex2 = ev.findPointerIndex(mScrollPointerId);
-					if(DEBUG){
-						Log.d(TAG, "onTouchEvent ACTION_MOVE mScrollPointerId = " + mScrollPointerId);
+				if (pointCount == 2) {
+					final int pointerIndex2 = ev
+							.findPointerIndex(mScrollPointerId);
+					if (DEBUG) {
+						Log.d(TAG,
+								"onTouchEvent ACTION_MOVE mScrollPointerId = "
+										+ mScrollPointerId);
 					}
-					if(pointerIndex2 == -1){
+					if (pointerIndex2 == -1) {
 						break;
 					}
 					final float x = ev.getX(pointerIndex2);
-	                final float deltaX = mLastMotionX + mLastMotionXRemainder - x;
-	                mTotalMotionX += Math.abs(deltaX);
+					final float deltaX = mLastMotionX + mLastMotionXRemainder
+							- x;
+					mTotalMotionX += Math.abs(deltaX);
 
-	                // Only scroll and update mLastMotionX if we have moved some discrete amount.  We
-	                // keep the remainder because we are actually testing if we've moved from the last
-	                // scrolled position (which is discrete).
-	                if (Math.abs(deltaX) >= 1.0f) {
-	                    mTouchX += deltaX;
-	                    mSmoothingTime = System.nanoTime() / NANOTIME_DIV;
-	                    if (!mDeferScrollUpdate) {
-	                    	mLauncher.getWorkspace().scrollBy((int) deltaX, 0);
-	                    } else {
-	                    	mLauncher.getWorkspace().invalidateForDrag();
-	                    }
-	                    mLastMotionX = x;
-	                    mLastMotionXRemainder = deltaX - (int) deltaX;
-	                } else {
-	                	mLauncher.getWorkspace().awakenScrollBarsForDrag();
-	                }
+					// Only scroll and update mLastMotionX if we have moved some
+					// discrete amount. We
+					// keep the remainder because we are actually testing if
+					// we've moved from the last
+					// scrolled position (which is discrete).
+					if (Math.abs(deltaX) >= 1.0f) {
+						mTouchX += deltaX;
+						mSmoothingTime = System.nanoTime() / NANOTIME_DIV;
+						if (!mDeferScrollUpdate) {
+							mLauncher.getWorkspace().scrollBy((int) deltaX, 0);
+						} else {
+							mLauncher.getWorkspace().invalidateForDrag();
+						}
+						mLastMotionX = x;
+						mLastMotionXRemainder = deltaX - (int) deltaX;
+					} else {
+						mLauncher.getWorkspace().awakenScrollBarsForDrag();
+					}
 				}
-            }
+			}
           //}modify by zhongheng.zheng end
             break;
         case MotionEvent.ACTION_UP:
@@ -716,6 +725,9 @@ public class DragController {
             break;
           //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
         case MotionEvent.ACTION_POINTER_DOWN:
+			if (mLauncher.getWorkspace().isPreviewShow()) {
+				break;
+			}
         	if(DEBUG){
         		Log.d("TAG", "onTouchEvent ACTION_POINTER_DOWN");
             	Log.d("TAG", "pointCount = " + pointCount);
@@ -741,6 +753,9 @@ public class DragController {
           	 }
         	 break;
         case MotionEvent.ACTION_POINTER_UP:
+			if (mLauncher.getWorkspace().isPreviewShow()) {
+				break;
+			}
         	if(DEBUG){
         		Log.d(TAG, "onTouchEvent ACTION_POINTER_UP");
             	Log.d("TAG", "pointCount = " + pointCount);

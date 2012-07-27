@@ -813,19 +813,21 @@ public class Workspace extends SmoothPagedView
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-    	//{add by jingjiang.yu at 2012.06.25 begin
-    	if(mPreviewStatus != PREVIEW_COLSED){
-    		return true;
-    	}
-    	// {added by zhong.chen 2012-6-28 for launcher user-defined
-    	mGestureDetector.onTouchEvent(ev);
-    	// }added by zhong.chen 2012-6-28 for launcher user-defined end
-
-    	if(ev.getPointerCount() >= 2){
-    		mMultiTouchState = true;
+		// {add by jingjiang.yu at 2012.06.25 begin
+		if (mPreviewStatus != PREVIEW_COLSED) {
 			return true;
-    	}
-    	//}add by jingjiang.yu end
+		}
+
+		if (ev.getPointerCount() >= 2 && mState == State.NORMAL) {
+			mMultiTouchState = true;
+			return true;
+		}
+
+		// {added by zhong.chen 2012-6-28 for launcher user-defined
+		mGestureDetector.onTouchEvent(ev);
+		// }added by zhong.chen 2012-6-28 for launcher user-defined end
+
+		// }add by jingjiang.yu end
         switch (ev.getAction() & MotionEvent.ACTION_MASK) {
         case MotionEvent.ACTION_DOWN:
             mXDown = ev.getX();
@@ -4259,11 +4261,6 @@ public class Workspace extends SmoothPagedView
 
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
-	    // {added by zhong.chen 2012-6-28 for launcher user-defined
-	    if(mState == State.USER_DEFINED) {
-	        mGestureDetector.onTouchEvent(ev);
-	    }
-	    // }added by zhong.chen 2012-6-28 for launcher user-defined end
 		int actionMasked = ev.getActionMasked();
 		if (mMultiTouchState) {
 			if (ev.getPointerCount() < 2) {
@@ -4282,7 +4279,7 @@ public class Workspace extends SmoothPagedView
 				mMultiTouchLastDistance = -1;
 				mLauncher.showWorkspacePreview();
 			}
-
+			
 			return true;
 		}
 
@@ -4320,7 +4317,7 @@ public class Workspace extends SmoothPagedView
 					clearPreviewTouchData();
 					return true;
 				}
-				
+
 				int clickedPreviewIndex = findClickedPreview(x, y);
 				if (clickedPreviewIndex == mLastClickedPreviewIndex) {
 					if (clickedPreviewIndex == getChildCount() - 1) {
@@ -4354,6 +4351,7 @@ public class Workspace extends SmoothPagedView
 		if (mPreviewStatus != PREVIEW_COLSED) {
 			return true;
 		}
+		
 		return super.onTouchEvent(ev);
 	}
 	
