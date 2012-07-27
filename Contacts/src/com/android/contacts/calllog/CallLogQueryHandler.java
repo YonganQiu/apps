@@ -195,7 +195,7 @@ import javax.annotation.concurrent.GuardedBy;
             selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
             selectionArgs.add(Integer.toString(Calls.VOICEMAIL_TYPE));
         }
-        //Added by gangzhou.qi at 2012-6-27 下午8:40:09
+        //Added by gangzhou.qi at 2012-6-27 
         switch(callType){
 	    case Constants.CALL_TYPE_IN:
 	    	typeToSort = Integer.toString(Calls.INCOMING_TYPE);
@@ -207,12 +207,12 @@ import javax.annotation.concurrent.GuardedBy;
 	    	typeToSort = Integer.toString(Calls.MISSED_TYPE);
 	    	break;
          }
-        if(typeToSort != Integer.toString(Constants.CALL_TYPE_ALL)){
+        if(Integer.toString(Constants.CALL_TYPE_ALL).equals(typeToSort)){
         	
         selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
         selectionArgs.add(typeToSort);
         }
-		//Ended by gangzhou.qi at 2012-6-27 下午8:40:09
+		//Ended by gangzhou.qi at 2012-6-27 
         startQuery(token, null, Calls.CONTENT_URI_WITH_VOICEMAIL,
                 CallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
                 Calls.DEFAULT_SORT_ORDER);

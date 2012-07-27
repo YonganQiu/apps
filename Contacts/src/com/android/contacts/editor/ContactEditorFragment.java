@@ -666,10 +666,8 @@ public class ContactEditorFragment extends Fragment implements
         EntityModifier.ensureKindExists(insert, newAccountType, Email.CONTENT_ITEM_TYPE);
         EntityModifier.ensureKindExists(insert, newAccountType, Organization.CONTENT_ITEM_TYPE);*/
         //new:
-        if (AccountTypeManager.ACCOUNT_TYPE_SIM.equals(newAccountType.accountType)) {
-            EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
-        } else {
-            EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
+        EntityModifier.ensureKindExists(insert, newAccountType, Phone.CONTENT_ITEM_TYPE);
+        if (!AccountTypeManager.ACCOUNT_TYPE_SIM.equals(newAccountType.accountType)) {
             EntityModifier.ensureKindExists(insert, newAccountType, Email.CONTENT_ITEM_TYPE);
             EntityModifier.ensureKindExists(insert, newAccountType, Organization.CONTENT_ITEM_TYPE);
         }

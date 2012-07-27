@@ -20,6 +20,7 @@ import com.android.contacts.R;
 import com.android.contacts.model.AccountType;
 import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
+import com.android.contacts.sim.SimContactsImport;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -171,7 +172,7 @@ public class AccountSelectionUtil {
             importIntent.putExtra("data_set", account.dataSet);
         }
 //        importIntent.setClassName("com.android.contacts.sim", "com.android.contacts.sim.SimContactsImport");
-        importIntent.setAction("android.intent.action.IMPORT_SIM_CONTACTS");
+        importIntent.setAction(SimContactsImport.ACTION_SIM_CONTACTS_IMPORT);
         context.startActivity(importIntent);
     }
 

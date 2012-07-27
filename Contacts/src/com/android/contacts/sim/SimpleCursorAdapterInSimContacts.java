@@ -2,6 +2,7 @@ package com.android.contacts.sim;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -22,10 +23,10 @@ public class SimpleCursorAdapterInSimContacts extends SimpleCursorAdapter{
 	public void bindView(View view, Context context, Cursor cursor) {
 		// TODO Auto-generated method stub
 		super.bindView(view, context, cursor);
-		String name = cursor.getString(cursor.getColumnIndex("display_name"));
+		String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 		if(name.isEmpty()){
 			TextView v = (TextView) view.findViewById(mTo[0]);
-			v.setText(cursor.getString(cursor.getColumnIndex("data1")));
+			v.setText(cursor.getString(cursor.getColumnIndex(ContactsContract.Data.DATA1)));
 		}
 		
 	}

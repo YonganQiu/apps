@@ -11,7 +11,7 @@ import android.view.View;
 public class QuickContactBadgeWithAccount extends QuickContactBadge{
 
 	private Drawable mAccountIcon;
-	
+	private static final int MARGIN = 36;
 	public QuickContactBadgeWithAccount(Context context, AttributeSet attrs,
 			int defStyle) {
 		super(context, attrs, defStyle);
@@ -28,7 +28,7 @@ public class QuickContactBadgeWithAccount extends QuickContactBadge{
 		if (mAccountIcon == null) {
 			return;
 		}
-		mAccountIcon.setBounds(0, getHeight() - 36, 36, getHeight());
+		mAccountIcon.setBounds(0, getHeight() - MARGIN, MARGIN, getHeight());
 		if (getPaddingTop() == 0 && getPaddingLeft() == 0) {
 			mAccountIcon.draw(canvas);
 		} else {

@@ -637,7 +637,7 @@ public abstract class ContactEntryListAdapter extends IndexerListAdapter {
        accountQuerySelectionArgs = new String[]{cursor.getString(0)};
 		Cursor accountCur = null;
     	accountCur = mContentResolver.query(ContactsContract.RawContacts.CONTENT_URI, null, accountQuerySelection, accountQuerySelectionArgs, null);
-    	if(accountCur.getCount() > 0){
+    	if(accountCur != null && accountCur.getCount() > 0){
     		try {
     	     	accountCur.moveToFirst();
 				accountType = accountCur.getString(accountCur.getColumnIndex(ContactsContract.RawContacts.ACCOUNT_TYPE));

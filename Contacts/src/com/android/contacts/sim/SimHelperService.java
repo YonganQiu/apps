@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.android.contacts.ContactsApplication;
+import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.util.Constants;
 
 import com.android.contacts.R;
@@ -46,9 +47,11 @@ public class SimHelperService extends IntentService{
 	public static final String EXTRA_ACCOUNT_NAME = "account_name";
 	public static final String EXTRA_ACCOUNT_TYPE = "account_type";
 	private boolean isShowNotification = true;
+	private Uri mAdnUri = Uri.parse("content://icc/adn");
+	private Account mSimAccount = new Account(AccountTypeManager.ACCOUNT_NAME_SIM_DEFAULT, AccountTypeManager.ACCOUNT_TYPE_SIM);
     private static final String[] COLUMN_NAMES = new String[] {
-        "display_name",
-        "data1"
+        ContactsContract.Contacts.DISPLAY_NAME,
+        ContactsContract.Data.DATA1
     };
     
     static final ContentValues sEmptyContentValues = new ContentValues();
@@ -102,24 +105,26 @@ public class SimHelperService extends IntentService{
 	private void prepareSimContacts() {
 		deleteAllSimContacts(getContentResolver());
 		Cursor cur = startQuery();
-		if (cur.getCount() <= 0) {
+		if (cur != null && cur.getCount() <= 0) {
 			return;
 		}
 		try {
 			cur.moveToPosition(-1);
 			ArrayList<OperationContact> operationContactFromSim = loadSimRecordsFromCursor(cur);
-			importBatch(operationContactFromSim, getContentResolver(),getSimAccount());
+			importBatch(operationContactFromSim, getContentResolver(),mSimAccount);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			cur.close();
 		}
 		((ContactsApplication) getApplication()).SIMPreparing = false;
 		sendBroadcast();
-		cur.close();
+		
 	}
 	
 	private void importAllContacts(Intent intent){
 		Cursor cur = startQuery();
-		if (cur.getCount() <= 0) {
+		if (cur != null && cur.getCount() <= 0) {
 			return;
 		}
 		mNotificationManager.notify(0, createPrepareNotification(0, cur.getCount()));
@@ -129,22 +134,15 @@ public class SimHelperService extends IntentService{
 			importBatch(operationContactFromSim, getContentResolver(),new Account(intent.getStringExtra(EXTRA_ACCOUNT_NAME), intent.getStringExtra(EXTRA_ACCOUNT_TYPE)));
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			cur.close();
 		}
 		mNotificationManager.notify(0, createFinishNotification(cur.getCount(), cur.getCount()));
 		((ContactsApplication) getApplication()).SIMPreparing = false;
 		sendBroadcast();
-		cur.close();
+		
 	}
 	
-    class SimRecord {
-        String name;
-        String number;
-        SimRecord(String name, String number) {
-            this.name = name;
-            this.number = number;
-            Log.i(TAG, "name = " + name + ", number = " + number);
-        }
-    }
 
     private ArrayList<OperationContact> loadSimRecordsFromCursor(Cursor cursor) {
         if (cursor == null) {
@@ -347,22 +345,16 @@ public class SimHelperService extends IntentService{
     }
     
     private Cursor startQuery() {
-        Uri uri = getUri();
-        Log.d(TAG, "start query:" + uri);
-        Cursor cur = getContentResolver().query( getUri(), COLUMN_NAMES, null, null, null);
+        Cursor cur = getContentResolver().query( mAdnUri, COLUMN_NAMES, null, null, null);
         ((ContactsApplication)getApplication()).SIMPreparing = true;
         sendBroadcast();
         return cur;
         
     }
     
-	private Uri getUri() {
-		return Uri.parse("content://icc/adn");
-	}
 	
-	private Account getSimAccount(){
-		return new Account("sim1", "sim");
-	}
+	
+
 	
     private void deleteAllSimContacts (final ContentResolver resolver){
     	final ArrayList<ContentProviderOperation> operationList =

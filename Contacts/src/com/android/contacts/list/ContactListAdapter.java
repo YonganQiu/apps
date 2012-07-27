@@ -31,6 +31,7 @@ import android.provider.ContactsContract.Directory;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.SearchSnippetColumns;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
@@ -106,10 +107,6 @@ public abstract class ContactListAdapter extends ContactEntryListAdapter {
     private String mSelectedContactLookupKey;
     private long mSelectedContactId;
 
-    //Begin by gangzhou.qi at 2012-7-10 下午4:42:15
-    private String accountType = null;
-	private String accountSet = null;
-	//Ended by gangzhou.qi at 2012-7-10 下午4:42:15
     public ContactListAdapter(Context context) {
         super(context);
 

@@ -81,6 +81,8 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 	private NotificationManager mNotificationManager;
 	private ContentResolver mContentResolver = null;
 	private Uri adnUri = Uri.parse("content://icc/adn");
+	private int mNotifyCycleCount = 5;
+	
 	ContentValues values = new ContentValues();
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -205,7 +207,7 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 					return null;
 				}
 				mCount ++;
-				if((mCount % 5) == 0){
+				if((mCount % mNotifyCycleCount) == 0){
 					mNotificationManager.notify(0, createProgressNotification());
 				}
 			}

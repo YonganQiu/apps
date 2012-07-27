@@ -74,9 +74,10 @@ public class SimContactsImport extends ADNList {
     private static final String UP_ACTIVITY_CLASS =
             "com.android.contacts.activities.PeopleActivity";
 
+    public static final String ACTION_SIM_CONTACTS_IMPORT = "android.intent.action.IMPORT_SIM_CONTACTS";
+    
     static final ContentValues sEmptyContentValues = new ContentValues();
-
-    private ImportAllSimContactsThread thread = null;
+//    private ImportAllSimContactsThread thread = null;
     private static final int MENU_IMPORT_ONE = 1;
     private static final int MENU_IMPORT_ALL = 2;
 //    private ProgressDialog mProgressDialog;
@@ -152,51 +153,51 @@ public class SimContactsImport extends ADNList {
     	return builder.getNotification();
     }
     
-    private class ImportAllSimContactsThread extends Thread
-            implements OnCancelListener {
-
-       
-
-        public ImportAllSimContactsThread() {
-            super("ImportAllSimContactsThread");
-            mCanceled = false;
-        }
-
-        @Override
-        public void run() {
-            final ContentValues emptyContentValues = new ContentValues();
-            final ContentResolver resolver = getContentResolver();
-            nCursor.moveToPosition(-1);
-            mNotificationManager.notify(0,  createPrepareNotification());
-            while (!mCanceled && nCursor.moveToNext()) {
-                actuallyImportOneSimContact(nCursor, resolver, mAccount);
-                mCount ++;
-                if((mCount % 5) == 0){
-                	mNotificationManager.notify(0, createProgressNotification());
-                }
-            }
-            if(!mCanceled){
-            Message msg = new Message();
-            msg.what = DISMISS_PROGRESSDIALOG;
-            nHandler.sendMessage(msg);
-            }
-        }
-
-        
-        
-        public void onCancel(DialogInterface dialog) {
-            mCanceled = true;
-        }
-
-//        public void onClick(DialogInterface dialog, int which) {
-//            if (which == DialogInterface.BUTTON_NEGATIVE) {
-//                mCanceled = true;
-////                mProgressDialog.dismiss();
-//            } else {
-//                Log.e(LOG_TAG, "Unknown button event has come: " + dialog.toString());
+//    private class ImportAllSimContactsThread extends Thread
+//            implements OnCancelListener {
+//
+//       
+//
+//        public ImportAllSimContactsThread() {
+//            super("ImportAllSimContactsThread");
+//            mCanceled = false;
+//        }
+//
+//        @Override
+//        public void run() {
+//            final ContentValues emptyContentValues = new ContentValues();
+//            final ContentResolver resolver = getContentResolver();
+//            nCursor.moveToPosition(-1);
+//            mNotificationManager.notify(0,  createPrepareNotification());
+//            while (!mCanceled && nCursor.moveToNext()) {
+//                actuallyImportOneSimContact(nCursor, resolver, mAccount);
+//                mCount ++;
+//                if((mCount % 5) == 0){
+//                	mNotificationManager.notify(0, createProgressNotification());
+//                }
+//            }
+//            if(!mCanceled){
+//            Message msg = new Message();
+//            msg.what = DISMISS_PROGRESSDIALOG;
+//            nHandler.sendMessage(msg);
 //            }
 //        }
-    }
+//
+//        
+//        
+//        public void onCancel(DialogInterface dialog) {
+//            mCanceled = true;
+//        }
+//
+////        public void onClick(DialogInterface dialog, int which) {
+////            if (which == DialogInterface.BUTTON_NEGATIVE) {
+////                mCanceled = true;
+//////                mProgressDialog.dismiss();
+////            } else {
+////                Log.e(LOG_TAG, "Unknown button event has come: " + dialog.toString());
+////            }
+////        }
+//    }
 
     private static void actuallyImportOneSimContact(
             final Cursor cursor, final ContentResolver resolver, Account account) {
@@ -272,7 +273,6 @@ public class SimContactsImport extends ADNList {
     private void importOneSimContact(int position) {
         final ContentResolver resolver = getContentResolver();
         if (mCursor.moveToPosition(position)) {
-        	String name = mCursor.getString(NAME_COLUMN);
             actuallyImportOneSimContact(mCursor, resolver, mAccount);
             Toast.makeText(getApplication(), "1" + getString(R.string.import_success_total) + "0" + getString(R.string.import_failed), Toast.LENGTH_SHORT).show();
         } else {
@@ -312,14 +312,14 @@ public class SimContactsImport extends ADNList {
                 new String[] { "display_name" }, new int[] { android.R.id.text1 });
     }
 
-	private String getSortOrder(String[] projectionType) {
-		return Contacts.SORT_KEY_PRIMARY;
-	}
-	
-    private Cursor changeCursor(Cursor c){
-    	SimContacts provider = new SimContacts(c , null);
-    	return provider.getSimContacts();
-    }
+//	private String getSortOrder(String[] projectionType) {
+//		return Contacts.SORT_KEY_PRIMARY;
+//	}
+//	
+//    private Cursor changeCursor(Cursor c){
+//    	SimContacts provider = new SimContacts(c , null);
+//    	return provider.getSimContacts();
+//    }
     @Override
     protected Uri resolveIntent() {
         Intent intent = getIntent();
