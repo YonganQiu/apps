@@ -13,6 +13,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.AsyncQueryHandler;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.database.Cursor;
@@ -55,6 +57,7 @@ import com.android.internal.telephony.gsm.UsimPhoneBookManager;
 
 public class ExportSIMContacts extends Activity implements OnItemClickListener {
     /** Called when the activity is first created. */
+	private static final String TAG = "ExportSIMContacts";
 	ListView listview ;
 	ActionBar actionBar;
 	Cursor mCursor ;
@@ -76,6 +79,9 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 	Uri uri = Phone.CONTENT_URI.buildUpon().appendQueryParameter(ContactsContract.DIRECTORY_PARAM_KEY, String.valueOf(Directory.DEFAULT)).build();
 	private int mCount = 0;
 	private NotificationManager mNotificationManager;
+	private ContentResolver mContentResolver = null;
+	private Uri adnUri = Uri.parse("content://icc/adn");
+	ContentValues values = new ContentValues();
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +103,7 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
         listview.setOnItemClickListener(this);
 		 checkSIMState();
 		 mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		 mContentResolver = getContentResolver();
     }
     
     private class CreateIndexAsyncTask extends AsyncTask<Integer, Integer, Integer>{
@@ -189,6 +196,8 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 				if (ResumeExport) {
 					try {
 						exportOneContact(name, number);
+						
+						
 					} catch (Exception e) {
 					}
 				publishProgress(i+1);
@@ -341,60 +350,74 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 		return super.onCreateOptionsMenu(menu);
 	}
 	
-	private boolean exportOneContact(String str1, String str2)
-			throws RemoteException {
-		String pin2 = null;
-		int currentIndex = 0;
-		if(simPhoneBook == null ||  index == null || indexLimited == 0){
-		   simPhoneBook = IIccPhoneBook.Stub.asInterface(ServiceManager.getService("simphonebook"));
-		   index = simPhoneBook.getAdnRecordsSize(IccConstants.EF_ADN);
-		   indexLimited = index[2];
-		}
-		
-		for (int i = 1; i <= indexLimited; i++) {
-			if (!mIndexSet.contains(i + "")) {
-				currentIndex = i;
-				mIndexSet.add(currentIndex + "");
-				break;
-			}
-		}
-		if (currentIndex == 0 || currentIndex > indexLimited) {
-			Runnable exportRunnable = new Runnable() {
-				@Override
-				public void run() {
-					showDialog();
-					
-				}
-			};
-			nHandler.post(exportRunnable);
-			ResumeExport = false;
+	private boolean exportOneContact(String str1, String str2){
+		values.put("tag", str1);
+		values.put("number", str2);
+		Uri newSimContactUri = mContentResolver.insert(adnUri, values);
+		Log.d(TAG, "exportOneContact" + " tag:" + str1 + " number:" + str2 + " success uri:" + newSimContactUri);
+		if(newSimContactUri != null){
+			successCount ++;
+			return true;
 		}else{
-			AdnRecord firstAdn = new AdnRecord(str1, str2);
-			boolean success = false;
-			try {
-				success = simPhoneBook.updateAdnRecordsInEfByIndex(
-						IccConstants.EF_ADN, firstAdn.getAlphaTag(),
-						firstAdn.getNumber(), currentIndex, pin2);
-				
-			} catch (RemoteException e) {
-				Log.e("^^", e.toString(), e);
-			}
-			if(success){
-				successCount ++;
-			}else{
-				failedCount ++;
-			}
-			if(!ResumeExport){
-				Message msg = new Message();
-				msg.what = TOAST_EXPORT;
-				nHandler.sendMessage(msg);
-			}
-			
-			return success;
+			failedCount ++;
+			return false;
 		}
-		  
-		return false;
 	}
+	
+//	private boolean exportOneContact(String str1, String str2)
+//			throws RemoteException {
+//		String pin2 = null;
+//		int currentIndex = 0;
+//		if(simPhoneBook == null ||  index == null || indexLimited == 0){
+//		   simPhoneBook = IIccPhoneBook.Stub.asInterface(ServiceManager.getService("simphonebook"));
+//		   index = simPhoneBook.getAdnRecordsSize(IccConstants.EF_ADN);
+//		   indexLimited = index[2];
+//		}
+//		
+//		for (int i = 1; i <= indexLimited; i++) {
+//			if (!mIndexSet.contains(i + "")) {
+//				currentIndex = i;
+//				mIndexSet.add(currentIndex + "");
+//				break;
+//			}
+//		}
+//		if (currentIndex == 0 || currentIndex > indexLimited) {
+//			Runnable exportRunnable = new Runnable() {
+//				@Override
+//				public void run() {
+//					showDialog();
+//					
+//				}
+//			};
+//			nHandler.post(exportRunnable);
+//			ResumeExport = false;
+//		}else{
+//			AdnRecord firstAdn = new AdnRecord(str1, str2);
+//			boolean success = false;
+//			try {
+//				success = simPhoneBook.updateAdnRecordsInEfByIndex(
+//						IccConstants.EF_ADN, firstAdn.getAlphaTag(),
+//						firstAdn.getNumber(), currentIndex, pin2);
+//				
+//			} catch (RemoteException e) {
+//				Log.e("^^", e.toString(), e);
+//			}
+//			if(success){
+//				successCount ++;
+//			}else{
+//				failedCount ++;
+//			}
+//			if(!ResumeExport){
+//				Message msg = new Message();
+//				msg.what = TOAST_EXPORT;
+//				nHandler.sendMessage(msg);
+//			}
+//			
+//			return success;
+//		}
+//		  
+//		return false;
+//	}
 	
 	
 	public void showDialog() {

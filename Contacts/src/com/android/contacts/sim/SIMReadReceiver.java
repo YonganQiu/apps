@@ -1,18 +1,19 @@
 package com.android.contacts.sim;
 
 import com.android.contacts.util.Constants;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.sax.StartElementListener;
 import android.util.Log;
-
+/**
+ * @author gangzhou.qi
+ *
+ */
 public class SIMReadReceiver extends BroadcastReceiver{
 
 	private static final boolean DEBUG = true;
 	private static final String TAG = "SIMReadReceiver";
+	private static String PHONEBOOK_READY = "android.intent.sim.phonebook.ready";
 	private SIMCursorLoader mSIMCursorLoader;
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -25,6 +26,8 @@ public class SIMReadReceiver extends BroadcastReceiver{
 				Log.d(TAG, "jiangzhou Receive the boot completed action!");
 			}
 			//Ended by gangzhou.qi at 2012-7-6 下午5:23:08
+		}else if(action == PHONEBOOK_READY ){
+			Log.d(TAG, "jiangzhou Receive hexiaobo's action!");
 		}
 	}
 

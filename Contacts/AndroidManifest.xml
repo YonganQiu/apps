@@ -628,6 +628,7 @@
             android:label="@string/social_widget_label" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.sim.phonebook.ready" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                     android:resource="@xml/social_widget_info" />
