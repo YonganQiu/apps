@@ -205,7 +205,6 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
 
     protected void bindSectionHeaderAndDivider(final ContactListItemView view, int position) {
         final int section = getSectionForPosition(position);
-        int pos = getPositionForSection(section);
         if (getPositionForSection(section) == position) {
             String title = (String)getSections()[section];
             view.setSectionHeader(title);

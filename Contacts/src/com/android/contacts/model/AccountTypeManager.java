@@ -200,6 +200,10 @@ class AccountTypeManagerImpl extends AccountTypeManager
     private Context mContext;
     private AccountManager mAccountManager;
 
+    //{Added by yongan.qiu on 2012-7-27 begin.
+    private AccountType mLocalAccountType;
+    private AccountType mSimAccountType;
+    //}Added by yongan.qiu end.
     private AccountType mFallbackAccountType;
 
     //{Added by yongan.qiu on 2012-7-5 begin.
@@ -298,6 +302,10 @@ class AccountTypeManagerImpl extends AccountTypeManager
      */
     public AccountTypeManagerImpl(Context context) {
         mContext = context;
+        //{Added by yongan.qiu on 2012-7-27 begin.
+        mLocalAccountType = new LocalAccountType(context);
+        mSimAccountType = new SimAccountType(context);
+        //}Added by yongan.qiu end.
         mFallbackAccountType = new FallbackAccountType(context);
 
         mAccountManager = AccountManager.get(mContext);
@@ -679,9 +687,9 @@ class AccountTypeManagerImpl extends AccountTypeManager
                 return type;
             }
             if (ACCOUNT_TYPE_LOCAL.equals(accountTypeWithDataSet.accountType)) {
-                return new LocalAccountType(mContext);
+                return mLocalAccountType;
             } else if (ACCOUNT_TYPE_SIM.equals(accountTypeWithDataSet.accountType)) {
-                return new SimAccountType(mContext);
+                return mSimAccountType;
             } else {
                 //can not go to here
                 return mFallbackAccountType;

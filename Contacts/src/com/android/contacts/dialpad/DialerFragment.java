@@ -42,7 +42,7 @@ public class DialerFragment extends Fragment {
 	OnFragmentReadyListener mOnFragmentReadyListener;
 	
 	private CallLogFragment mCallLogFragment;
-	private FilteredResultsFragment mCallLogPhoneNumberFragment;
+	private FilteredResultsFragment mFilteredResultsFragment;
 	private DialpadFragment mDialpadFragment;
 	//}Added by yongan.qiu end.
 
@@ -134,7 +134,7 @@ public class DialerFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mCallLogFragment = (CallLogFragment) getFragmentManager().findFragmentById(R.id.call_log_fragment);
-		mCallLogPhoneNumberFragment = (FilteredResultsFragment) getFragmentManager().findFragmentById(R.id.filtered_results_fragment);
+		mFilteredResultsFragment = (FilteredResultsFragment) getFragmentManager().findFragmentById(R.id.filtered_results_fragment);
 		mDialpadFragment = (DialpadFragment) getFragmentManager().findFragmentById(R.id.dialpad_fragment);
 		if (mOnFragmentReadyListener != null) {
 			mOnFragmentReadyListener.onFragmentReady();
@@ -202,25 +202,19 @@ public class DialerFragment extends Fragment {
 	
 	//{Added by yongan.qiu on 2012.6.21 begin.
 	private static final String TAG = "DialerFragment";
-	public void showCallLogPhoneNumberFragment(FragmentTransaction transaction) {
-		Log.i(TAG, "showCallLogPhoneNumberFragment().");
-		swapFragment(transaction, mCallLogFragment, mCallLogPhoneNumberFragment);
+	public void showFilteredResultsFragment(FragmentTransaction transaction) {
+		swapFragment(transaction, mCallLogFragment, mFilteredResultsFragment);
 	}
 	
 	public void showCallLogFragment(FragmentTransaction transaction) {
-		Log.i(TAG, "showCallLogFragment().");
-		swapFragment(transaction, mCallLogPhoneNumberFragment, mCallLogFragment);
+		swapFragment(transaction, mFilteredResultsFragment, mCallLogFragment);
 	}
 	
 	public void swapFragment(FragmentTransaction transaction, Fragment hide, Fragment show) {
-		Log.i(TAG, "hide != null && !hide.isHidden() " + (hide != null && !hide.isHidden()));
 		if (hide != null && !hide.isHidden()) {
-			Log.i(TAG, "hide " + hide);
 			transaction.hide(hide);
 		}
-		Log.i(TAG, "hide != null && !hide.isHidden() " + (hide != null && !hide.isHidden()));
-		if (hide != null && !hide.isHidden()) {
-			Log.i(TAG, "show " + show);
+		if (show != null && show.isHidden()) {
 			transaction.show(show);
 		}
 		transaction.commit();

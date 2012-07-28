@@ -2262,7 +2262,7 @@ public class PeopleActivity extends ContactsActivity
 		if (TextUtils.isEmpty(input)) {
 			mDialerFragment.showCallLogFragment(transaction);
 		} else {
-			mDialerFragment.showCallLogPhoneNumberFragment(transaction);
+			mDialerFragment.showFilteredResultsFragment(transaction);
 		}
 		fragmentManager.executePendingTransactions();
 

@@ -53,6 +53,7 @@ import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.editor.AggregationSuggestionEngine.RawContact;
 import com.android.contacts.format.PrefixHighlighter;
 import com.android.contacts.list.FilteredPhoneNumberAdapter.OnItemActionListener;
+import com.android.contacts.util.Constants;
 import com.android.contacts.util.SimpleHanziToPinyin;
 import com.android.contacts.util.SimpleHanziToPinyin.Token;
 
@@ -65,6 +66,8 @@ import com.android.contacts.R;
  */
 public class FilteredPhoneNumberAdapter extends CursorAdapter{
     private static final String TAG = FilteredPhoneNumberAdapter.class.getSimpleName();
+    private static final boolean DEBUG = Constants.TOTAL_DEBUG;
+    private static final boolean DEBUG_BIND_VIEW = DEBUG && false;
 
     protected static class PhoneQuery {
         private static final String[] PROJECTION_PRIMARY = new String[] {
@@ -176,7 +179,9 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
 
     public void setId2Match(HashMap<Long, String> map) {
         mId2Match = map;
-        Log.i(TAG, "mId2Match " + mId2Match);
+        if (DEBUG) {
+            Log.i(TAG, "mId2Match " + mId2Match);
+        }
     }
 
     public void configureLoader(CursorLoader loader, long directoryId) {
@@ -280,7 +285,9 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
         }
         selection.append(")");
 
-        Log.i(TAG, "selection is : " + selection);
+        if (DEBUG) {
+            Log.i(TAG, "selection is : " + selection);
+        }
         loader.setSelection(selection.toString());
         loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
     }
@@ -369,7 +376,9 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
                 match.toLowerCase();
             }
         }
-        Log.i(TAG, "match " + match);
+        if (DEBUG_BIND_VIEW) {
+            Log.i(TAG, "match " + match);
+        }
         itemView.findViewById(R.id.phone_number_item).setTag(new Integer(cursor.getPosition()));
         boolean nameMatched = bindName(itemView, cursor, match);
         bindQuickContact(itemView, cursor, PhoneQuery.PHONE_PHOTO_ID,
@@ -419,7 +428,9 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
     protected boolean bindName(final View view, Cursor cursor, String match) {
         TextView nameField = (TextView) view.findViewById(R.id.name);
         String name = cursor.getString(PhoneQuery.PHONE_DISPLAY_NAME);
-        Log.i(TAG, "bindName(). name = " + name + " ,match = " + match);
+        if (DEBUG_BIND_VIEW) {
+            Log.i(TAG, "bindName(). name = " + name + " ,match = " + match);
+        }
         if (TextUtils.isEmpty(name)) {
             name = mUnknownNameText.toString();
         } else if (!TextUtils.isEmpty(match)) {
@@ -436,17 +447,23 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
                     token = tokens.get(i);
                     output.append(token.target.toLowerCase()).append(' ');
                     indexes[i] = output.length() - 1;
-                    Log.i(TAG, "bindName(). indexes " + i + " " + indexes[i] + ", first index "
-                            + token.firstIndexOfSourceInOriInput + ", last index " + token.lastIndexOfSourceInOriInput);
+                    if (DEBUG_BIND_VIEW) {
+                        Log.i(TAG, "bindName(). indexes " + i + " " + indexes[i] + ", first index "
+                                + token.firstIndexOfSourceInOriInput + ", last index " + token.lastIndexOfSourceInOriInput);
+                    }
                 }
                 String newName = output.toString();
-                Log.i(TAG, "bindName(). newName = " + newName);
+                if (DEBUG_BIND_VIEW) {
+                    Log.i(TAG, "bindName(). newName = " + newName);
+                }
                 int first = newName.indexOf(match);
                 int last = -1;
                 if (first >= 0) {
                     last = first + match.length() - 1;
                 }
-                Log.i(TAG, "bindName()1. first " + first + ", last " + last);
+                if (DEBUG_BIND_VIEW) {
+                    Log.i(TAG, "bindName()1. first " + first + ", last " + last);
+                }
                 if (first >= 0 && last >= 0) {
                     boolean firstFound = false;
                     boolean lastFound = false;
@@ -475,7 +492,9 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
                         if (mPrefixHighligher == null) {
                             mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
                         }
-                        Log.i(TAG, "bindName()2. first " + first + ", last " + last);
+                        if (DEBUG_BIND_VIEW) {
+                            Log.i(TAG, "bindName()2. first " + first + ", last " + last);
+                        }
                         nameField.setText(mPrefixHighligher.apply(name, first, last + 1));
                         return true;
                     }
@@ -491,7 +510,9 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
     protected boolean bindNumber(final View view, Cursor cursor, String match) {
         TextView numberField = (TextView) view.findViewById(R.id.number);
         String number = cursor.getString(PhoneQuery.PHONE_NUMBER);
-        Log.i(TAG, "number = " + number + " ,match = " + match);
+        if (DEBUG_BIND_VIEW) {
+            Log.i(TAG, "number = " + number + " ,match = " + match);
+        }
         if (TextUtils.isEmpty(number)) {
             number = mUnknownNameText.toString();
         } else if (!TextUtils.isEmpty(match)) {
@@ -510,24 +531,32 @@ public class FilteredPhoneNumberAdapter extends CursorAdapter{
                 }
             }
             String shortNumberString = new String(shortNumber, 0, j);
-            Log.i(TAG, "bindNumber: shortNumber = " + shortNumberString);
+            if (DEBUG_BIND_VIEW) {
+                Log.i(TAG, "bindNumber: shortNumber = " + shortNumberString);
+            }
             first = shortNumberString.indexOf(match);
             if (first >= 0) {
                 last = first + match.length() - 1;
             }
             if (first >= 0 && last >= 0) {
-                Log.i(TAG, "bindNumber 1: first " + first + ", last " + last);
+                if (DEBUG_BIND_VIEW) {
+                    Log.i(TAG, "bindNumber 1: first " + first + ", last " + last);
+                }
                 first = indexes[first];
                 last = indexes[last];
                 //match success
                 if (mPrefixHighligher == null) {
                     mPrefixHighligher = new PrefixHighlighter(Color.BLUE);
                 }
-                Log.i(TAG, "bindNumber 2: first " + first + ", last " + last);
+                if (DEBUG_BIND_VIEW) {
+                    Log.i(TAG, "bindNumber 2: first " + first + ", last " + last);
+                }
                 numberField.setText(mPrefixHighligher.apply(number, first, last + 1));
                 return true;
             }
-            Log.i(TAG, "bindNumber: first " + first + ", last " + last);
+            if (DEBUG_BIND_VIEW) {
+                Log.i(TAG, "bindNumber: first " + first + ", last " + last);
+            }
         }
         numberField.setText(number);
         return false;

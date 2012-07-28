@@ -345,8 +345,7 @@ public class RawContactEditorView extends BaseRawContactEditorView {
 
         //{Added by yongan.qiu on 2012-7-5 begin.
         //update structured name editor visibility.
-        boolean hasStructuredNameEditor = type.getKindForMimetype(StructuredName.CONTENT_ITEM_TYPE) != null;
-        if (!hasStructuredNameEditor) {
+        if (type.getKindForMimetype(StructuredName.CONTENT_ITEM_TYPE) == null) {
             mName.setVisibility(View.GONE);
         }
         updatePhotoStubVisibility();

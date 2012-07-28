@@ -35,6 +35,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.android.contacts.list.FilteredPhoneNumberAdapter.OnItemActionListener;
 import com.android.contacts.preference.ContactsPreferences;
 import com.android.contacts.util.AccountFilterUtil;
+import com.android.contacts.util.Constants;
 import com.android.contacts.util.EmptyLoader;
 import com.android.contacts.voicemail.VoicemailStatusHelper;
 import com.android.contacts.voicemail.VoicemailStatusHelperImpl;
@@ -88,7 +89,8 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
         FilteredPhoneNumberAdapter.OnItemActionListener, 
         UnknownNumberCallLogQueryHandler.Listener, FilteredCallLogAdapter.CallFetcher {
     private static final String TAG = FilteredResultsFragment.class.getSimpleName();
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = Constants.TOTAL_DEBUG;
+    private static final boolean DEBUG_LOAD = DEBUG && true;
 
     /**
      * Used with LoaderManager.
@@ -110,7 +112,9 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
     private class ResultContactsLoaderListener implements LoaderManager.LoaderCallbacks<Cursor> {
         @Override
         public CursorLoader onCreateLoader(int id, Bundle args) {
-            if (DEBUG) Log.d(TAG, "ResultContactsLoaderListener#onCreateLoader");
+            if (DEBUG_LOAD) {
+                Log.d(TAG, "ResultContactsLoaderListener#onCreateLoader");
+            }
             CursorLoader loader = new CursorLoader(getActivity(), null, null, null, null, null);
             mPhoneNumberAdapter.configureLoader(loader, Directory.DEFAULT, (mResult == null) ? null : mResult.keySet());
             mPhoneNumberAdapter.setId2Match(mResult);
@@ -120,7 +124,9 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            if (DEBUG) Log.d(TAG, "ResultContactsLoaderListener#onLoadFinished");
+            if (DEBUG_LOAD) {
+                Log.d(TAG, "ResultContactsLoaderListener#onLoadFinished");
+            }
             if (data != null) {
             	Log.i(TAG, "cursor.count = " + data.getCount() + data);
             } else {
@@ -133,14 +139,18 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
-            if (DEBUG) Log.d(TAG, "ResultContactsLoaderListener#onLoaderReset. ");
+            if (DEBUG_LOAD) {
+                Log.d(TAG, "ResultContactsLoaderListener#onLoaderReset. ");
+            }
         }
     }
 
     private class PhoneNumberLoaderListener implements LoaderManager.LoaderCallbacks<Cursor> {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            if (DEBUG) Log.d(TAG, "PhoneNumberLoaderListener#onCreateLoader");
+            if (DEBUG_LOAD) {
+                Log.d(TAG, "PhoneNumberLoaderListener#onCreateLoader");
+            }
             CursorLoader loader = new CursorLoader(getActivity(), null, null, null, null, null);
             mPhoneNumberAdapter.configureLoader(loader, Directory.DEFAULT);
             return loader;
@@ -148,11 +158,8 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            if (DEBUG) Log.d(TAG, "PhoneNumberLoaderListener#onLoadFinished");
-            if (data != null) {
-            	Log.i(TAG, "cursor.count = " + data.getCount() + data);
-            } else {
-            	Log.i(TAG, "cursor is null!!!");
+            if (DEBUG_LOAD) {
+                Log.d(TAG, "PhoneNumberLoaderListener#onLoadFinished");
             }
 
             mPatternAndResultHelper.loadPhoneNumberRefInfos(data, false);
@@ -162,13 +169,17 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
 
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
-            if (DEBUG) Log.d(TAG, "PhoneNumberLoaderListener#onLoaderReset. ");
+            if (DEBUG_LOAD) {
+                Log.d(TAG, "PhoneNumberLoaderListener#onLoaderReset. ");
+            }
         }
     }
     
     SearchTask mSearchTask;
     private void startSearchTask(String query, boolean mayInterruptIfRunning) {
-        Log.i(TAG, "startSearchTask(). query = " + query);
+        if (DEBUG_LOAD) {
+            Log.i(TAG, "startSearchTask(). query = " + query);
+        }
         if (mSearchTask != null) {
             mSearchTask.cancel(mayInterruptIfRunning);
         }
@@ -183,7 +194,9 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
 
         @Override
         protected void onPostExecute(HashMap<Long, String> result) {
-            Log.i(TAG, "onPostExecute().");
+            if (DEBUG_LOAD) {
+                Log.i(TAG, "onPostExecute().");
+            }
             mResult = result;
             //start result query.
             if (mResultContactsLoaderStarted) {
@@ -194,26 +207,31 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
                         LOADER_ID_RESULT_CONTACTS, null, mResultContactsLoaderListener);
             }
             mResultContactsLoaderStarted = true;
-		}
+        }
 
-		@Override
-		protected void onCancelled() {
-			super.onCancelled();
-		}
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+        }
 
-		@Override
-		protected HashMap<Long, String> doInBackground(String... params) {
-			Log.i(TAG, "doInBackground().");
-			String query = params[0];
-			Log.i(TAG, "query is " + query);
-			if (mPatternAndResultHelper == null || TextUtils.isEmpty(query)) {
-				Log.i(TAG, "Cache is null or query key is null.");
-				return null;
-			}
-			return mPatternAndResultHelper.search(mPatternAndResultHelper.getCachedInfos(), query);
-		}
+        @Override
+        protected HashMap<Long, String> doInBackground(String... params) {
+            if (DEBUG_LOAD) {
+                Log.i(TAG, "doInBackground().");
+            }
+            String query = params[0];
+            if (DEBUG_LOAD) {
+                Log.i(TAG, "query is " + query);
+            }
+            if (mPatternAndResultHelper == null || TextUtils.isEmpty(query)) {
+                Log.e(TAG, "Cache is null or query key is null.");
+                return null;
+            }
+            return mPatternAndResultHelper.search(
+                    mPatternAndResultHelper.getCachedInfos(), query);
+        }
     };
-    
+
     private class FilterHeaderClickListener implements OnClickListener {
         @Override
         public void onClick(View view) {
@@ -436,7 +454,7 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
      * (on {@link #onStart()}.
      */
     private void requestReloadPhoneNumber() {
-        if (DEBUG) {
+        if (DEBUG_LOAD) {
             Log.d(TAG, "requestReloadPhoneNumber()"
                     + " mPhoneNumberAdapter: " + mPhoneNumberAdapter
                     + ", mPhoneNumberLoaderStarted: " + mPhoneNumberLoaderStarted);
@@ -448,7 +466,9 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
             return;
         }
 
-        if (DEBUG) Log.d(TAG, "Reload \"all\" contacts now.");
+        if (DEBUG_LOAD) {
+            Log.d(TAG, "Reload \"all\" contacts now.");
+        }
 
         mPhoneNumberAdapter.onDataReload();
         // Use restartLoader() to make LoaderManager to load the section again.
@@ -508,7 +528,9 @@ public class FilteredResultsFragment extends Fragment implements ViewPagerVisibi
         mCallLogFetched = true;
         destroyEmptyLoaderIfAllDataFetched();
 
-        if (DEBUG) Log.d(TAG, "UnknownNumberCallLogQueryHandler#onCallsFetched");
+        if (DEBUG_LOAD) {
+            Log.d(TAG, "UnknownNumberCallLogQueryHandler#onCallsFetched");
+        }
 
         if (!mPhoneNumberLoaderStarted) {
             // Load "all" contacts if not loaded yet.

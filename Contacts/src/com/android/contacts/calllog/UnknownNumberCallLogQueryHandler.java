@@ -115,7 +115,6 @@ import javax.annotation.concurrent.GuardedBy;
         if (!TextUtils.isEmpty(mQueryString)) {
             selection = String.format("%s AND %s LIKE '%%%s%%'", selection, Calls.NUMBER, mQueryString);
         }
-        Log.i(TAG, selection);
         startQuery(QUERY_ALL_UNKNOWN_CALLS_TOKEN, null,
                 /*Calls.CONTENT_URI_WITH_VOICEMAIL*/Constants.CALL_LOG_GROUP_BY_NUMBER,
                 UnknownNumberCallLogQuery._PROJECTION, selection, selectionArgs.toArray(EMPTY_STRING_ARRAY),
