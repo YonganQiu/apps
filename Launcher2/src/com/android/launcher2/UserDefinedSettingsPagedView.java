@@ -6,21 +6,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -32,7 +28,6 @@ import com.android.launcher.R;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * added by zhong.chen 2012-6-28 for launcher user-defined
@@ -118,13 +113,13 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         mCenterPagesVertically = false;
     }
 
-    @Override
+    /*@Override
     protected void onUnhandledTap(MotionEvent ev) {
         if (LauncherApplication.isScreenLarge()) {
             // Dismiss AppsCustomize if we tap
             mLauncher.showWorkspace(true);
         }
-    }
+    }*/
 
     int getSaveInstanceStateIndex() {
         if (mSaveInstanceStateItemIndex == -1) {
@@ -426,6 +421,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
     }
 
     public void setWallpapers() {
+        //TODO FIXME {
         loadWallpapersFromApps();
         int ids[] = new int[] {
                 R.drawable.wallpaper_1, R.drawable.wallpaper_2,
@@ -452,7 +448,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         ApplicationInfo appInfo;
         int i = 0;
         SharedPreferences prefs =
-                mLauncher.getSharedPreferences("com.android.launcher2.prefs", Context.MODE_PRIVATE);
+                mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
         int selectedWallpaper = prefs.getInt("selected_wallpaper", -1);
         for (int wallpaperId : ids)
         {
@@ -466,6 +462,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             wallpapers.add(appInfo);
         }
 
+        //} TODO FIXME
         Collections.sort(wallpapers, LauncherModel.APP_NAME_COMPARATOR);
 
         mWallpapers.addAll(wallpapers);
@@ -522,6 +519,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
     }
 
     public void setThemes() {
+        //TODO FIXME {
         int ids[] = new int[] {
                 R.drawable.theme_1, R.drawable.theme_2, R.drawable.theme_3
         };
@@ -531,7 +529,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         ApplicationInfo appInfo;
         int i = 0;
         SharedPreferences prefs =
-                mLauncher.getSharedPreferences("com.android.launcher2.prefs", Context.MODE_PRIVATE);
+                mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
         int selectedTheme = prefs.getInt("selected_theme", -1);
         for (int id : ids)
         {
@@ -544,6 +542,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             mThemes.add(appInfo);
         }
 
+        //} TODO FIXME
         //Collections.sort(mThemes, LauncherModel.APP_NAME_COMPARATOR);
 
         updatePageCounts();
@@ -665,10 +664,11 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 						mLauncher.startActivitySafely(appInfo.intent, appInfo);
 					} else {
 						try {
+						    //TODO FIXME {
 							ComponentName cn = appInfo.componentName;
 							SharedPreferences prefs = mLauncher
 									.getSharedPreferences(
-											"com.android.launcher2.prefs",
+									        Launcher.PREFS_KEY,
 											Context.MODE_PRIVATE);
 							SharedPreferences.Editor editor = prefs.edit();
 							if (null != cn
@@ -713,6 +713,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 
 								w.snapToPage(cPage);
 							}
+							//} TODO FIXME
 						} catch (IOException e) {
 						}
 					}

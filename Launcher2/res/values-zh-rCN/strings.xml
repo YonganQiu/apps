@@ -119,5 +119,19 @@
     <string name="workspace_windmill_scroll_anim_title">风车</string>
     <string name="workspace_push_scroll_anim_title">推压</string>
     <!--add by jingjiang.yu end -->
+    
+    <!-- all applications sorting < -->
+    <string name="user_defined_wallpaper">\u0020\u0020\u0020\u0020\u0020壁纸\u0020\u0020\u0020\u0020\u0020</string>
+    <string name="user_defined_theme">\u0020\u0020\u0020\u0020\u0020主题\u0020\u0020\u0020\u0020\u0020</string>
+    <string name="user_defined_effect">\u0020\u0020\u0020\u0020切换特效\u0020\u0020\u0020\u0020</string>
+    <string name="sort_apps_label">排序</string>
+    
+    <string-array name="sorting_orders_labels">
+        <item>按名称</item>
+        <item>按字母</item>
+        <item>按安装时间</item>
+        <item>按使用频率</item>
+    </string-array>
+    <!-- all applications sorting > -->
 
 </resources>

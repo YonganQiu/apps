@@ -3801,7 +3801,7 @@ public final class Launcher extends Activity
         //mState = State.APPS_CUSTOMIZE_SPRING_LOADED;
         
         // Send an accessibility event to announce the context change
-        getWindow().getDecorView().sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
+        //getWindow().getDecorView().sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
         
     }
     

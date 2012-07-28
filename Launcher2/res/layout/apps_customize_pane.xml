@@ -84,7 +84,13 @@
                 android:layout_height="match_parent"
                 android:background="#FF000000"
                 android:visibility="gone" />
-
+        
+            <TextSwitcher android:id="@+id/bg_letter_switcher"
+               android:gravity="center"
+		        android:layout_gravity="center" 
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content" 
+		        android:visibility="invisible" />
             <include
                 android:id="@+id/paged_view_indicator"
                 layout="@layout/scroll_indicator"

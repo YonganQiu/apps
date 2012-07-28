@@ -2040,15 +2040,31 @@ public class LauncherModel extends BroadcastReceiver {
     public static final Comparator<ApplicationInfo> APP_INSTALL_TIME_COMPARATOR
             = new Comparator<ApplicationInfo>() {
         public final int compare(ApplicationInfo a, ApplicationInfo b) {
-            if (a.firstInstallTime < b.firstInstallTime) return 1;
-            if (a.firstInstallTime > b.firstInstallTime) return -1;
-            return 0;
+            // {modified by zhong.chen 2012-7-28 for launcher apps sort begin
+            //if (a.firstInstallTime < b.firstInstallTime) return 1;
+            //if (a.firstInstallTime > b.firstInstallTime) return -1;
+            //return 0;
+            if (a.firstInstallTime < b.firstInstallTime) {
+                return 1;
+            } else if (a.firstInstallTime > b.firstInstallTime) {
+                return -1;
+            } else {
+                return sCollator.compare(a.title.toString(), b.title.toString());
+            }
+            // }modified by zhong.chen 2012-7-28 for launcher apps sort end
         }
     };
     public static final Comparator<AppWidgetProviderInfo> WIDGET_NAME_COMPARATOR
             = new Comparator<AppWidgetProviderInfo>() {
         public final int compare(AppWidgetProviderInfo a, AppWidgetProviderInfo b) {
-            return sCollator.compare(a.label.toString(), b.label.toString());
+            // {modified by zhong.chen 2012-7-28 for launcher apps sort begin
+            //return sCollator.compare(a.label.toString(), b.label.toString());
+            int result = sCollator.compare(a.label.toString(), b.label.toString());
+            if (result == 0) {
+                result = a.configure.compareTo(b.configure);
+            }
+            return result;
+            // }modified by zhong.chen 2012-7-28 for launcher apps sort end
         }
     };
     
@@ -2056,30 +2072,47 @@ public class LauncherModel extends BroadcastReceiver {
     public static final Comparator<ApplicationInfo> APP_LAST_UPDATE_TIME_COMPARATOR 
             = new Comparator<ApplicationInfo>() {
         public final int compare(ApplicationInfo a, ApplicationInfo b) {
-            if (a.lastUpdateTime < b.lastUpdateTime) return 1;
-            if (a.lastUpdateTime > b.lastUpdateTime) return -1;
-            return 0;
+            // {modified by zhong.chen 2012-7-28 for launcher apps sort begin
+            //if (a.lastUpdateTime < b.lastUpdateTime) return 1;
+            //if (a.lastUpdateTime > b.lastUpdateTime) return -1;
+            //return 0;
+            if (a.lastUpdateTime < b.lastUpdateTime) {
+                return 1;
+            } else if (a.lastUpdateTime > b.lastUpdateTime) {
+                return -1;
+            } else {
+                return sCollator.compare(a.title.toString(), b.title.toString());
+            }
+            // }modified by zhong.chen 2012-7-28 for launcher apps sort end
         }
     };
     
     public static final Comparator<ApplicationInfo> APP_LAUNCH_COUNT_COMPARATOR 
             = new Comparator<ApplicationInfo>() {
         public final int compare(ApplicationInfo a, ApplicationInfo b) {
-            if (a.launchCount < b.launchCount)
-                return 1;
-            if (a.launchCount > b.launchCount)
-                return -1;
-            return 0;
+            // {modified by zhong.chen 2012-7-28 for launcher apps sort begin
+            //if (a.launchCount < b.launchCount)
+            //    return 1;
+            //if (a.launchCount > b.launchCount)
+            //    return -1;
+            //return 0;
+            int result = b.launchCount - a.launchCount;
+            if(result == 0) {
+                return sCollator.compare(a.title.toString(), b.title.toString());
+            } else {
+                return result;
+            }
+            // }modified by zhong.chen 2012-7-28 for launcher apps sort end
         }
     };
     public static final Comparator<ApplicationInfo> APP_LETTER_COMPARATOR 
             = new Comparator<ApplicationInfo>() {
         public final int compare(ApplicationInfo a, ApplicationInfo b) {
-            final int cmp = a.letterIndex - b.letterIndex;
-            if (cmp == 0) {
+            final int result = b.letterIndex - a.letterIndex;
+            if (result == 0) {
                 return sCollator.compare(a.title.toString(), b.title.toString());
             } else {
-                return cmp;
+                return result;
             }
         }
     };

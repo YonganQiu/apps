@@ -75,10 +75,10 @@ class ApplicationInfo extends ItemInfo {
      * Save last position of current application icon.
      * Just for animation. {@link PagedViewCellLayoutChildren}
      */
-    int mOldLeft;
-    int mOldRight;
-    int mOldTop;
-    int mOldBottom;
+    int mIconLeft;
+    int mIconRight;
+    int mIconTop;
+    int mIconBottom;
     // }added by zhong.chen 2012-7-12 for launcher apps sort end
 
     ApplicationInfo() {

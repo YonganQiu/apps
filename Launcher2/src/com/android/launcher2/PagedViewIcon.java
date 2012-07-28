@@ -20,13 +20,11 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.widget.Checkable;
 import android.widget.TextView;
 
@@ -56,10 +54,10 @@ public class PagedViewIcon extends TextView implements Checkable {
     private int mCheckedFadeOutDuration;
 
     HolographicPagedViewIcon mHolographicOutlineView;
-    private HolographicOutlineHelper mHolographicOutlineHelper;
+    //private HolographicOutlineHelper mHolographicOutlineHelper;
     
   //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private Bitmap mNewIcon;
     private boolean mIsNew = false;
   //}add by zhongheng.zheng end
@@ -67,14 +65,14 @@ public class PagedViewIcon extends TextView implements Checkable {
     public PagedViewIcon(Context context) {
         this(context, null);
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        initBgBitmap(context);
+        //initBgBitmap(context);
       //}add by zhongheng.zheng end
     }
 
     public PagedViewIcon(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        initBgBitmap(context);
+        //initBgBitmap(context);
       //}add by zhongheng.zheng end
     }
 
@@ -95,7 +93,7 @@ public class PagedViewIcon extends TextView implements Checkable {
         mHolographicOutlineView = new HolographicPagedViewIcon(context, this);
         
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        initBgBitmap(context);
+        //initBgBitmap(context);
       //}add by zhongheng.zheng end
     }
 
@@ -109,7 +107,13 @@ public class PagedViewIcon extends TextView implements Checkable {
 
     public void applyFromApplicationInfo(ApplicationInfo info, boolean scaleUp,
             HolographicOutlineHelper holoOutlineHelper) {
-        mHolographicOutlineHelper = holoOutlineHelper;
+        // {modified by zhong.chen 2012-7-28 for launcher apps sort
+        //mHolographicOutlineHelper = holoOutlineHelper;
+        if(null == info) {
+            setVisibility(View.INVISIBLE);
+            return;
+        }
+        // }modified by zhong.chen 2012-7-28 for launcher apps sort end
         mIcon = info.iconBitmap;
         setCompoundDrawablesWithIntrinsicBounds(null, new FastBitmapDrawable(mIcon), null, null);
         setText(info.title);
@@ -125,6 +129,11 @@ public class PagedViewIcon extends TextView implements Checkable {
 		} else {
 			mIsNew = false;
 		}
+		// {added by zhong.chen 2012-7-28 for launcher apps sort begin
+		if(getVisibility() != View.VISIBLE) {
+            setVisibility(View.VISIBLE);
+        }
+		// }added by zhong.chen 2012-7-28 for launcher apps sort end
       //}add by zhongheng.zheng end
     }
     
@@ -194,10 +203,11 @@ public class PagedViewIcon extends TextView implements Checkable {
         
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
         if(mIsNew){
-        	int hspace = (getWidth() - mIcon.getWidth()) / 2;
-        	int vspace = (getHeight() - mIcon.getHeight()) / 2;
-        	Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
-        	canvas.drawBitmap(mNewIcon, mIcon.getWidth() + hspace - mNewIcon.getWidth(), 0, null);
+            initBgBitmap(this.getContext());
+            int hspace = (getWidth() - mIcon.getWidth()) / 2;
+            //int vspace = (getHeight() - mIcon.getHeight()) / 2;
+            //Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
+            canvas.drawBitmap(mNewIcon, mIcon.getWidth() + hspace - mNewIcon.getWidth(), 0, null);
         }
       //}add by zhongheng.zheng end
     }

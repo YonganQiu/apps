@@ -174,18 +174,21 @@ public class ScrollIndicatorView extends View {
             return;
         }
         if (mSelectIndex == focusIndex) {
-//            int y = mIconHeight / 2 + (mSelectIndex * (mIconHeight + mSpaceHeight) + mPaddingTop);
-//            mLauncher.showLetterPopuWindow(mSelectIndex, y);
-//            mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
             return;
         }
         mSelectIndex = focusIndex;
         invalidate();
 
-        int y = mIconHeight / 2 + /*mLetterWindowHeight / 2 +*/ (mSelectIndex
+        final int y = mIconHeight / 2 + /*mLetterWindowHeight / 2 +*/ (mSelectIndex
                 * (mIconHeight + mSpaceHeight) + mPaddingTop);
-        mLauncher.showLetterPopupWindow(mSelectIndex, y);
-        mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                mAppsCustomizeTabHost.updateLetterIndex(mSelectIndex, -y);
+                mLauncher.showLetterPopupWindow(mSelectIndex, y);
+            }
+        });
+        
     }
     
     public int setSelectIndex(int selectIndex, boolean zOrder){
@@ -224,6 +227,6 @@ public class ScrollIndicatorView extends View {
     }
     
     public void setEnables(boolean[] enables) {
-        System.arraycopy(enables, 0, mEnables, 1, enables.length);
+        System.arraycopy(enables, 0, mEnables, 0, enables.length);
     }
 }

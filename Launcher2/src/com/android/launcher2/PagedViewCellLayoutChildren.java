@@ -39,9 +39,13 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
     private int mCellHeight;
     private int mWidthGap;
     private int mHeightGap;
+    
+    private int mDuration = 350;
 
     public PagedViewCellLayoutChildren(Context context) {
         super(context);
+        mDuration = getResources()
+                .getInteger(R.integer.config_appsCustomizeZoomOutTime);
     }
 
     @Override
@@ -112,10 +116,10 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
 
     // {added by zhong.chen 2012-7-12 for launcher apps sort begin
     private ValueAnimator mLayoutAnimation;
-    private int[] mNewLefts;
-    private int[] mNewRights;
-    private int[] mNewTops;
-    private int[] mNewBottoms;
+    private int[] mChildLefts;
+    private int[] mChildRights;
+    private int[] mChildTops;
+    private int[] mChildBottoms;
     //private float[] mRotations;
     //private final float START_ROTATION = .9999f;
     //private final float FINAL_ROTATION = 360f;
@@ -149,10 +153,10 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
         
         // {modified by zhong.chen 2012-7-12 for launcher apps sort begin animtion
         boolean animEnable = false;
-        mNewLefts = new int[count];
-        mNewRights = new int[count];
-        mNewTops = new int[count];
-        mNewBottoms = new int[count];
+        mChildLefts = new int[count];
+        mChildRights = new int[count];
+        mChildTops = new int[count];
+        mChildBottoms = new int[count];
         //mRotations = new float[count];
         
         int width = getWidth();
@@ -167,9 +171,10 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
                 int childTop = lp.y;
                 
                 // {modified by zhong.chen 2012-7-25 for launcher apps sort
-                if(mChildrenDoAnim && child instanceof PagedViewIcon) {
-                    ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
-                    prepareAnimData(i, offsetX, child, width, height, appInfo, lp);
+                final Object appInfo = child.getTag();
+                if(mChildrenDoAnim && child instanceof PagedViewIcon
+                        && null != appInfo) {
+                    prepareAnimData(i, offsetX, child, width, height, (ApplicationInfo) appInfo, lp);
                     animEnable = true;
                 } else {
                     child.layout(childLeft, childTop, childLeft + lp.width, childTop + lp.height);
@@ -192,26 +197,26 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
         int childLeft = offsetX + lp.x;
         int childTop = lp.y;
 
-        mNewLefts[index] = childLeft;
-        mNewTops[index] = childTop;
-        mNewRights[index] = childLeft + lp.width;
-        mNewBottoms[index] = childTop + lp.height;
-        if (appInfo.mOldLeft == 0 && appInfo.mOldTop == 0
-                && appInfo.mOldRight == 0
-                && appInfo.mOldBottom == 0) {
-            if (mNewLefts[index] > width / 2) {
-                appInfo.mOldLeft = width + mCellWidth;
-                appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
+        mChildLefts[index] = childLeft;
+        mChildTops[index] = childTop;
+        mChildRights[index] = childLeft + lp.width;
+        mChildBottoms[index] = childTop + lp.height;
+        if (appInfo.mIconLeft == 0 && appInfo.mIconTop == 0
+                && appInfo.mIconRight == 0
+                && appInfo.mIconBottom == 0) {
+            if (mChildLefts[index] > width / 2) {
+                appInfo.mIconLeft = width + mCellWidth;
+                appInfo.mIconRight = appInfo.mIconLeft + mCellWidth;
             } else {
-                appInfo.mOldLeft = -mCellWidth;
-                appInfo.mOldRight = appInfo.mOldLeft + mCellWidth;
+                appInfo.mIconLeft = -mCellWidth;
+                appInfo.mIconRight = appInfo.mIconLeft + mCellWidth;
             }
-            if (mNewTops[index] > height / 2) {
-                appInfo.mOldTop = height + mCellHeight;
-                appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
+            if (mChildTops[index] > height / 2) {
+                appInfo.mIconTop = height + mCellHeight;
+                appInfo.mIconBottom = appInfo.mIconTop + mCellHeight;
             } else {
-                appInfo.mOldTop = -mCellHeight;
-                appInfo.mOldBottom = appInfo.mOldTop + mCellHeight;
+                appInfo.mIconTop = -mCellHeight;
+                appInfo.mIconBottom = appInfo.mIconTop + mCellHeight;
             }
         }
     }
@@ -223,25 +228,24 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
             mLayoutAnimation = null;
         }
 
-        final int outDuration = getResources()
-                .getInteger(R.integer.config_appsCustomizeZoomOutTime);
-
-        mLayoutAnimation = ValueAnimator.ofFloat(0f, 1f).setDuration(outDuration);
+        mLayoutAnimation = ValueAnimator.ofFloat(0f, 1f).setDuration(mDuration);
         mLayoutAnimation.setInterpolator(new Workspace.ZoomOutInterpolator());
         mLayoutAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(android.animation.Animator animation) {
+                ApplicationInfo appInfo;
+                View child;
                 for (int i = 0; i < count; i++) {
-                    final View child = getChildAt(i);
+                    child = getChildAt(i);
                     if (child instanceof PagedViewIcon
                             && child.getVisibility() != GONE
                             && child.getTag() instanceof ApplicationInfo) {
-                        ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
-                        appInfo.mOldLeft = mNewLefts[i];
-                        appInfo.mOldTop = mNewTops[i];
-                        appInfo.mOldRight = mNewRights[i];
-                        appInfo.mOldBottom = mNewBottoms[i];
-                        child.layout(mNewLefts[i], mNewTops[i], mNewRights[i], mNewBottoms[i]);
+                        appInfo = (ApplicationInfo) child.getTag();
+                        appInfo.mIconLeft = mChildLefts[i];
+                        appInfo.mIconTop = mChildTops[i];
+                        appInfo.mIconRight = mChildRights[i];
+                        appInfo.mIconBottom = mChildBottoms[i];
+                        child.layout(mChildLefts[i], mChildTops[i], mChildRights[i], mChildBottoms[i]);
                     }
                 }
             }
@@ -252,17 +256,19 @@ public class PagedViewCellLayoutChildren extends ViewGroup {
                     return;
                 }
                 invalidate();
+                ApplicationInfo appInfo;
+                View child;
                 for (int i = 0; i < count; i++) {
-                    final View child = getChildAt(i);
+                    child = getChildAt(i);
                     if (child instanceof PagedViewIcon
                             && child.getVisibility() != GONE
                             && child.getTag() instanceof ApplicationInfo) {
-                        ApplicationInfo appInfo = (ApplicationInfo) child.getTag();
+                        appInfo = (ApplicationInfo) child.getTag();
                         child.fastInvalidate();
-                        int left = (int) (a * appInfo.mOldLeft + b * mNewLefts[i]);
-                        int top = (int) (a * appInfo.mOldTop + b * mNewTops[i]);
-                        int right = (int) (a * appInfo.mOldRight + b * mNewRights[i]);
-                        int bottom = (int) (a * appInfo.mOldBottom + b * mNewBottoms[i]);
+                        int left = (int) (a * appInfo.mIconLeft + b * mChildLefts[i]);
+                        int top = (int) (a * appInfo.mIconTop + b * mChildTops[i]);
+                        int right = (int) (a * appInfo.mIconRight + b * mChildRights[i]);
+                        int bottom = (int) (a * appInfo.mIconBottom + b * mChildBottoms[i]);
 
                         child.layout(left, top, right, bottom);
                     }

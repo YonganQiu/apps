@@ -378,11 +378,15 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         int perPage = (mCellCountX * mCellCountY);
         int pageSize = mApps.size();
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR 
-                && mSelectIndex >= 0
-                && null != mPagesAppsList 
-                && mPagesAppsList.size() > 0) {
-            ArrayList<ApplicationInfo> list = mPagesAppsList.get(mSelectIndex);
-            pageSize = list.size();
+                && mSelectIndex > 0
+                && null != mSortedAppsIndexs 
+                && mSortedAppsIndexs.length > 0) {
+            SortedAppsIndexs sortedIndexs = mSortedAppsIndexs[mSelectIndex];
+            if(null != sortedIndexs) {
+                pageSize = sortedIndexs.mCount;
+            } else {
+                pageSize = 0;
+            }
         }
         mNumAppsPages = (int) Math.ceil((float) pageSize / perPage);
         // }modified by zhong.chen 2012-7-12 for launcher apps sort end
@@ -435,7 +439,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         // Restore the page
         int page = getPageForComponent(mSaveInstanceStateItemIndex);
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
-            invalidatePageData(0);
+            invalidatePageData();
         } else {
             invalidatePageData(Math.max(0, page), hostIsTransitioning);
         }
@@ -720,12 +724,14 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     }
 
     public void setContentType(ContentType type) {
-        // {modified by zhong.chen 2012-7-17 for launcher apps sort
         if (type == ContentType.Widgets) {
             invalidatePageData(mNumAppsPages, true);
+            // {added by zhong.chen 2012-7-27 for launcher apps sort begin
             updateSortAppsIcon(View.INVISIBLE);
             setLetterOrderViewVisibility(View.INVISIBLE);
+            // }added by zhong.chen 2012-7-27 for launcher apps sort end
         } else if (type == ContentType.Applications) {
+            // {added by zhong.chen 2012-7-27 for launcher apps sort begin
             updateSortAppsIcon(View.VISIBLE);
             if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
                 setLetterOrderViewVisibility(View.VISIBLE);
@@ -734,6 +740,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
             } else {
                 setLetterOrderViewVisibility(View.INVISIBLE);
             }
+            // }added by zhong.chen 2012-7-27 for launcher apps sort end
             invalidatePageData(0, true);
         }
         // }modified by zhong.chen 2012-7-17 for launcher apps sort end
@@ -825,42 +832,63 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         // ensure that we have the right number of items on the pages
         int numCells = mCellCountX * mCellCountY;
         int startIndex = page * numCells;
-        // {modified by zhong.chen 2012-7-12 for launcher apps sort
-        ArrayList<ApplicationInfo> apps = mApps;
-        int appSize = apps.size();
-        int endIndex = Math.min(startIndex + numCells, appSize);
+        // {modified by zhong.chen 2012-7-27 for launcher apps sort
+        int appSize = mApps.size();
         PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page);
         layout.mChildren.mChildrenDoAnim = mChildrenDoAnim;
-        layout.removeAllViewsOnPage();
-        if(mComparator == LauncherModel.APP_LETTER_COMPARATOR && mSelectIndex >= 0) {
-            apps = mPagesAppsList.get(mSelectIndex);
-            appSize = apps.size();
-            endIndex = Math.min(startIndex + numCells, appSize);
+        //layout.removeAllViewsOnPage();
+        ApplicationInfo info;
+        PagedViewIcon icon;
+        boolean letterSorting = mComparator == LauncherModel.APP_LETTER_COMPARATOR 
+                && mSelectIndex > 0;
+        SortedAppsIndexs sortedIndexs = null;
+        if(letterSorting) {
+            sortedIndexs = mSortedAppsIndexs[mSelectIndex];
+            if(null != sortedIndexs) {
+                appSize = sortedIndexs.mCount;
+            } else {
+                appSize = 0;
+            }
         }
+        int endIndex = startIndex + numCells;
         for (int i = startIndex; i < endIndex; i++) {
-            ApplicationInfo info = apps.get(i);
-            PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
-                    R.layout.apps_customize_application, layout, false);
-            icon.applyFromApplicationInfo(info, true, mHolographicOutlineHelper);
-            icon.setOnClickListener(this);
-            icon.setOnLongClickListener(this);
-            icon.setOnTouchListener(this);
-            icon.setOnKeyListener(this);
+            int pos = i;
+            if (i > appSize - 1) {
+                info = null;
+            } else {
+                if (letterSorting) {
+                    pos = sortedIndexs.mIndexsAtAllAppsList.get(i);
+                }
+                info = mApps.get(pos);
+            }
+            icon = (PagedViewIcon) layout.getChildOnPageAt(i);
+            if(null == icon) {
+                icon = (PagedViewIcon) mLayoutInflater.inflate(
+                        R.layout.apps_customize_application, layout, false);
+                icon.applyFromApplicationInfo(info, true, mHolographicOutlineHelper);
+                icon.setOnClickListener(this);
+                icon.setOnLongClickListener(this);
+                icon.setOnTouchListener(this);
+                icon.setOnKeyListener(this);
 
-            int index = i - startIndex;
-            int x = index % mCellCountX;
-            int y = index / mCellCountX;
-            layout.addViewToCellLayout(icon, -1, i, new PagedViewCellLayout.LayoutParams(x,y, 1,1));
+                int index = i - startIndex;
+                int x = index % mCellCountX;
+                int y = index / mCellCountX;
+                layout.addViewToCellLayout(icon, -1, i, new PagedViewCellLayout.LayoutParams(x,y, 1,1));
+            } else {
+                icon.applyFromApplicationInfo(info, true, mHolographicOutlineHelper);
+            }
         }
+        
         layout.createHardwareLayers();
-        // }modified by zhong.chen 2012-7-12 for launcher apps sort end
+        // }modified by zhong.chen 2012-7-27 for launcher apps sort end
         /* TEMPORARILY DISABLE HOLOGRAPHIC ICONS
         if (mFadeInAdjacentScreens) {
             prepareGenerateHoloOutlinesTask(page, items, images);
         }
         */
     }
-
+    
     /**
      * A helper to return the priority for loading of the specified widget page.
      */
@@ -1542,7 +1570,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
             sortApps(mApps);
             updatePageCounts();
-            invalidatePageData(0);
+            invalidatePageData();
         } else {
             updatePageCounts();
             invalidatePageData();
@@ -1578,7 +1606,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
             sortApps(mApps);
             updatePageCounts();
-            invalidatePageData(0);
+            invalidatePageData();
         } else {
             updatePageCounts();
             invalidatePageData();
@@ -1596,7 +1624,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if(mComparator == LauncherModel.APP_LETTER_COMPARATOR) {
             sortApps(mApps);
             updatePageCounts();
-            invalidatePageData(0);
+            invalidatePageData();
         } else {
             updatePageCounts();
             invalidatePageData();
@@ -1759,7 +1787,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
             Collections.sort(mApps, comparator);
             sortApps(mApps);
             updatePageCounts();
-            invalidatePageData(0);
+            invalidatePageData();
             if (null != tabHost) {
                 tabHost.showLetterView(mSelectIndex);
             }
@@ -1910,19 +1938,19 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         }
     }
 
-    private void prepareSort() {
-        updateAppsLaunchCount(mApps);
-        updateAppsLastUpdate(mApps);
+    void prepareSort() {
+        if(null != mApps && mApps.size() > 0) {
+            updateAppsLaunchCount(mApps);
+            updateAppsLastUpdate(mApps);
+        }
     }
     
     private int mSelectIndex = -1;
     private boolean mChildrenDoAnim = false;
     private Comparator<ApplicationInfo> mComparator;
     private static final String COMPARATOR_KEY = "comparator_key";
-    private ArrayList<ArrayList<ApplicationInfo>> mPagesAppsList;
-    private ArrayList<PagedViewCellLayout> mPagesLayoutsList;
-    private ArrayList<ArrayList<PagedViewIcon>> mPagedViewIconList;
     private int mSortAppsBarWidth;
+    private SortedAppsIndexs[] mSortedAppsIndexs;
     
     int getLetterSelectIndexIndex() {
         return mSelectIndex;
@@ -1931,213 +1959,66 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         if(mSelectIndex == selectIndex) {
             return;
         }
-        
-        int perPage = (mCellCountX * mCellCountY);
-        ArrayList<ApplicationInfo> list = mPagesAppsList.get(selectIndex);
-        int numAppsPages = (int) Math.ceil((float) list.size() / perPage);
         mSelectIndex = selectIndex;
+        int perPage = (mCellCountX * mCellCountY);
+        SortedAppsIndexs sortedIndexs = mSortedAppsIndexs[selectIndex];
+        int pageSize = 0;
+        if(null != sortedIndexs) {
+            pageSize = sortedIndexs.mCount;
+        }
+        int numAppsPages = (int) Math.ceil((float) pageSize / perPage);
         if(numAppsPages != mNumAppsPages) {
             updatePageCounts();
-            invalidatePageData(0, true);
+            if(numAppsPages > 1) {
+                invalidatePageData();
+            } else {
+                invalidatePageData(0, true);
+            }
         } else {
             syncAppsPageItems(0, true);
         }
-        /*if(mSelectIndex == 0 || selectIndex == 0) {
-            mSelectIndex = selectIndex;
-            updatePageCounts();
-            invalidatePageData(0);
-        } else {
-            mSelectIndex = selectIndex;
-            syncAppsPageItems(0, true);
-        }*/
-        
+    }
+    
+    class SortedAppsIndexs {
+        int mLetterIndex;
+        ArrayList<Integer> mIndexsAtAllAppsList;
+        int mCount;
+        public SortedAppsIndexs(int index, ArrayList<Integer> indexsAtApps) {
+            mLetterIndex = index;
+            mIndexsAtAllAppsList = indexsAtApps;
+        }
     }
     
     public void sortApps(ArrayList<ApplicationInfo> apps) {
-        //Collections.sort(apps, LauncherModel.APP_LETTER_COMPARATOR);
-        ArrayList<ApplicationInfo> pageList = null;
         int size = apps.size();
-        
-        mPagesAppsList = new ArrayList<ArrayList<ApplicationInfo>>();
         //# or any other character except a-z
         int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
         int zIndex = Utilities.getSearchLetterIndexByTitle("z");
-        boolean[] enables = new boolean[zIndex - othersIndex + 1];
-        int pos = 0;
-        mPagesAppsList.add(apps);
-        for(int i = othersIndex; i <= zIndex; i++) {
-            pageList = new ArrayList<ApplicationInfo>();
-            mPagesAppsList.add(pageList);
-            for (int j = 0; j < size; j++) {
-                ApplicationInfo appInfo = apps.get(j);
-                int letterIndex = appInfo.letterIndex;
-                if(letterIndex < i) {
-                    continue;
-                }
-                if(letterIndex == i) {
-                    pageList.add(appInfo);
-                } else {
-                    break;
-                }
-            }
-            if(pageList.size() > 0) {
-                enables[pos++] = ScrollIndicatorView.ENABLE;
+        int len = zIndex - othersIndex + 1;
+        boolean[] enables = new boolean[len];
+        //All applications selected
+        enables[0] = true;
+        mSortedAppsIndexs = new SortedAppsIndexs[len];
+        ArrayList<Integer> appsIndexList = null;
+        SortedAppsIndexs aToZ;
+        for (int i = 0; i < size; i++) {
+            ApplicationInfo appInfo = apps.get(i);
+            int letterIndex = appInfo.letterIndex;
+            enables[letterIndex] = true;
+            if(null == mSortedAppsIndexs[letterIndex]) {
+                appsIndexList = new ArrayList<Integer>();
+                aToZ = new SortedAppsIndexs(letterIndex, appsIndexList);
+                mSortedAppsIndexs[letterIndex] = aToZ;
             } else {
-                enables[pos++] = ScrollIndicatorView.DISABLE;
+                aToZ = mSortedAppsIndexs[letterIndex];
+                appsIndexList = aToZ.mIndexsAtAllAppsList;
             }
+            appsIndexList.add(i);
+            aToZ.mCount++;
         }
         mLauncher.setLetterOrderEnable(enables);
     }
     
-    public void inflateAppsIcons(ArrayList<ApplicationInfo> apps) {
-        //Collections.sort(apps, LauncherModel.APP_LETTER_COMPARATOR);
-        ArrayList<PagedViewIcon> pageList = null;
-        int size = apps.size();
-        
-        mPagedViewIconList = new ArrayList<ArrayList<PagedViewIcon>>();
-        int perPageCount = (mCellCountX * mCellCountY);
-        //# or any other character except a-z
-        int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
-        int zIndex = Utilities.getSearchLetterIndexByTitle("z");
-        boolean[] enables = new boolean[zIndex - othersIndex + 1];
-        int pos = 0;
-        for(int i = othersIndex; i <= zIndex; i++) {
-            pageList = new ArrayList<PagedViewIcon>();
-            mPagedViewIconList.add(pageList);
-            for (int j = 0; j < size; j++) {
-                ApplicationInfo appInfo = apps.get(j);
-                int letterIndex = appInfo.letterIndex;
-                if(letterIndex < i) {
-                    continue;
-                }
-                if(letterIndex == i) {
-                    if(pageList.size() < perPageCount) {
-                        pageList.add(getPagedViewIcon(appInfo));
-                    } else {
-                        pageList = new ArrayList<PagedViewIcon>();
-                        pageList.add(getPagedViewIcon(appInfo));
-                        mPagedViewIconList.add(pageList);                    
-                    }
-                    
-                } else {
-                    break;
-                }
-            }
-            if(pageList.size() > 0) {
-                enables[pos++] = ScrollIndicatorView.ENABLE;
-            } else {
-                enables[pos++] = ScrollIndicatorView.DISABLE;
-            }
-        }
-        mLauncher.setLetterOrderEnable(enables);
-    }
-    
-    PagedViewIcon getPagedViewIcon(ApplicationInfo info) {
-        PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
-                R.layout.apps_customize_application, null, false);
-        icon.applyFromApplicationInfo(info, true, mHolographicOutlineHelper);
-        icon.setOnClickListener(this);
-        icon.setOnLongClickListener(this);
-        icon.setOnTouchListener(this);
-        icon.setOnKeyListener(this);
-        return icon;
-    }
-    
-    public void setApps2Layout(ArrayList<ApplicationInfo> apps) {
-        Collections.sort(apps, LauncherModel.APP_LETTER_COMPARATOR);
-        ArrayList<ApplicationInfo> pageList = null;
-        int size = apps.size();
-        
-        mPagesAppsList = new ArrayList<ArrayList<ApplicationInfo>>();
-        mPagesLayoutsList = new ArrayList<PagedViewCellLayout>();
-        int perPageCount = (mCellCountX * mCellCountY);
-        //# or any other character except a-z
-        int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
-        int zIndex = Utilities.getSearchLetterIndexByTitle("z");
-        boolean[] enables = new boolean[zIndex - othersIndex + 1];
-        int pos = 0;
-        int perPageappCount = 0;
-        PagedViewCellLayout layout = null;
-        for(int i = othersIndex; i <= zIndex; i++) {
-            pageList = new ArrayList<ApplicationInfo>();
-            mPagesAppsList.add(pageList);
-            layout = null;
-            perPageappCount = 0;
-            for (int j = 0; j < size; j++) {
-                ApplicationInfo appInfo = apps.get(j);
-                int letterIndex = appInfo.letterIndex;
-                if(letterIndex < i) {
-                    continue;
-                }
-                if(letterIndex == i) {
-                    if(layout == null) {
-                        layout = new PagedViewCellLayout(mContext);
-                        setupLayout(layout);
-                        layout.setVisibility(View.GONE);
-                        mPagesLayoutsList.add(layout);
-                    }
-                    if(pageList.size() < perPageCount) {
-                        pageList.add(appInfo);
-                        setLayoutChildren(pageList.size() - 1, layout, appInfo);
-                        
-                    } else if(perPageappCount >= perPageCount){
-                        pageList = new ArrayList<ApplicationInfo>();
-                        pageList.add(appInfo);
-                        mPagesAppsList.add(pageList);
-                        
-                        layout = new PagedViewCellLayout(mContext);
-                        setupLayout(layout);
-                        layout.setVisibility(View.GONE);
-                        setLayoutChildren(0, layout, appInfo);
-                        mPagesLayoutsList.add(layout);
-                    }
-                    
-                } else {
-                    break;
-                }
-            }
-            if(pageList.size() > 0) {
-                enables[pos++] = ScrollIndicatorView.ENABLE;
-            } else {
-                mPagesLayoutsList.add(mPagesLayoutsList.size() - 1, null);
-                enables[pos++] = ScrollIndicatorView.DISABLE;
-            }
-        }
-        mLauncher.setLetterOrderEnable(enables);
-    }
-    
-    private void setupLayout(PagedViewCellLayout layout) {
-        layout.setCellCount(mCellCountX, mCellCountY);
-        layout.setGap(mPageLayoutWidthGap, mPageLayoutHeightGap);
-        layout.setPadding(mPageLayoutPaddingLeft, mPageLayoutPaddingTop,
-                mPageLayoutPaddingRight, mPageLayoutPaddingBottom);
-
-        // Note: We force a measure here to get around the fact that when we do layout calculations
-        // immediately after syncing, we don't have a proper width.  That said, we already know the
-        // expected page width, so we can actually optimize by hiding all the TextView-based
-        // children that are expensive to measure, and let that happen naturally later.
-        setVisibilityOnChildren(layout, View.GONE);
-        int widthSpec = MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.AT_MOST);
-        int heightSpec = MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.AT_MOST);
-        layout.setMinimumWidth(getPageContentWidth());
-        layout.measure(widthSpec, heightSpec);
-    }
-    
-    private void setLayoutChildren(int position, PagedViewCellLayout layout, ApplicationInfo info) {
-        PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
-                R.layout.apps_customize_application, layout, false);
-        icon.applyFromApplicationInfo(info, true, mHolographicOutlineHelper);
-        icon.setOnClickListener(this);
-        icon.setOnLongClickListener(this);
-        icon.setOnTouchListener(this);
-        icon.setOnKeyListener(this);
-
-        int index = position /*- startIndex*/;
-        int x = index % mCellCountX;
-        int y = index / mCellCountX;
-        layout.addViewToCellLayout(icon, -1, position, new PagedViewCellLayout.LayoutParams(x,y, 1,1));
-        layout.createHardwareLayers();
-    }
    // }added by zhong.chen 2012-7-12 for launcher apps sort end ======== end ========
 
 }

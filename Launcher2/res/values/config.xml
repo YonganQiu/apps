@@ -90,4 +90,6 @@
     <integer name="folder_max_count_x">4</integer>
     <integer name="folder_max_count_y">4</integer>
     <integer name="folder_max_num_items">16</integer>
+    
+    <bool name="config_show_sorting_index_in_bg">true</bool>
 </resources>

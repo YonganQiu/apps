@@ -22,14 +22,16 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
@@ -69,6 +71,12 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
     public AppsCustomizeTabHost(Context context, AttributeSet attrs) {
         super(context, attrs);
         mLayoutInflater = LayoutInflater.from(context);
+        
+        // {added by zhong.chen 2012-7-28 for launcher apps sorting begin
+        mColor = getResources().getColor(R.color.drag_view_multiply_color);
+        mShowSortingIndexInBg =
+                getResources().getBoolean(R.bool.config_show_sorting_index_in_bg);
+        // }added by zhong.chen 2012-7-28 for launcher apps sorting end
     }
 
     /**
@@ -125,13 +133,25 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
         View tabAppsView =  mLayoutInflater.inflate(R.layout.tab_apps_indicator, tabs, false);
         mLetterSwitcher = (TextSwitcher) tabAppsView.findViewById(R.id.app_label_switcher);
         mLetterSwitcher.setFactory(mFactory);
-      
+        
         Animation in = AnimationUtils.loadAnimation(mContext,
-              android.R.anim.fade_in);
+                android.R.anim.fade_in);
         Animation out = AnimationUtils.loadAnimation(mContext,
-              android.R.anim.fade_out);
+                android.R.anim.fade_out);
+
         mLetterSwitcher.setInAnimation(in);
         mLetterSwitcher.setOutAnimation(out);
+
+        // {added by zhong.chen 2012-7-28 for launcher apps sort begin
+        if (mShowSortingIndexInBg) {
+            mPopuLetterSwitcher = (TextSwitcher) findViewById(R.id.bg_letter_switcher);
+            mPopuLetterSwitcher.setAlpha(0.3f);
+            mPopuLetterSwitcher.setFocusable(false);
+            mPopuLetterSwitcher.setFactory(mPopuFactory);
+            mPopuLetterSwitcher.setInAnimation(in);
+            mPopuLetterSwitcher.setOutAnimation(out);
+        }
+        // }added by zhong.chen 2012-7-28 for launcher apps sort end
       
         tabView = (TextView) tabAppsView.findViewById(R.id.apps_label);
         tabView.setText(label);
@@ -439,6 +459,7 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
             mContent.setVisibility(VISIBLE);
             // We unload the widget previews when the UI is hidden, so need to reload pages
             // Load the current page synchronously, and the neighboring pages asynchronously
+            mAppsCustomizePane.prepareSort();
             mAppsCustomizePane.loadAssociatedPages(mAppsCustomizePane.getCurrentPage(), true);
             mAppsCustomizePane.loadAssociatedPages(mAppsCustomizePane.getCurrentPage());
             
@@ -458,13 +479,21 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
     
     // {added by zhong.chen 2012-7-12 for launcher apps sort begin
     
-    void updateLetterIndex(int mSelectIndex, final int y) {
+    void updateLetterIndex(final int mSelectIndex, final int y) {
         showLetterView(mSelectIndex);
         //mAppTab.setText(mAppTabLabel + mLetterIndexCharacter);
-        mAppsCustomizePane.highlightCurrentLetterIndex(mSelectIndex);
+        post(new Runnable() {
+            
+            @Override
+            public void run() {
+                mAppsCustomizePane.highlightCurrentLetterIndex(mSelectIndex);
+            }
+        });
     }
     
     private TextSwitcher mLetterSwitcher;
+    private TextSwitcher mPopuLetterSwitcher;
+    private boolean mShowSortingIndexInBg;
     void showLetterView(int mSelectIndex) {
         if(mSelectIndex > 0) {
             int charIndex = 63 + mSelectIndex;
@@ -475,51 +504,51 @@ public class AppsCustomizeTabHost extends TabHost implements LauncherTransitiona
             }
             mLetterSwitcher.setVisibility(View.VISIBLE);
             mLetterSwitcher.setText(letterIndexCharacter);
+            if(mShowSortingIndexInBg && mAppsCustomizePane.isAllAppPage()) {
+                mPopuLetterSwitcher.setVisibility(View.VISIBLE);
+                mPopuLetterSwitcher.setText(letterIndexCharacter);
+            }
         } else {
             mLetterSwitcher.setVisibility(View.INVISIBLE);
             mLetterSwitcher.setText(" ");
+            
+            if(mShowSortingIndexInBg && mAppsCustomizePane.isAllAppPage()) {
+                mPopuLetterSwitcher.setVisibility(View.INVISIBLE);
+                mPopuLetterSwitcher.setText(null);
+            }
+            
         }
         
     }
-    
+    private int mColor;
     private ViewSwitcher.ViewFactory mFactory = new ViewSwitcher.ViewFactory() {
+        TextView mTextView;
         @Override
         public View makeView() {
-            TextView tv = new TextView(mContext);
+            mTextView = new TextView(mContext);
             //tv.setGravity(Gravity.BOTTOM);
             //tv.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-            tv.setTextSize(24);
-            tv.setTypeface(Typeface.DEFAULT_BOLD);
-            return tv;
+            mTextView.setTextColor(mColor);
+            mTextView.setTextSize(24);
+            mTextView.setTypeface(Typeface.DEFAULT_BOLD);
+            return mTextView;
         }
         
     };
     
-    /*
-    private Paint mEventTextPaint = new Paint();
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        
-        if(mAppsCustomizePane.getComparatorOrder() == ComparatorIndex.LETTER_INDEX
-                && mAppsCustomizePane.getLetterSelectIndexIndex() > 0
-                && mAppsCustomizePane.isAllAppPage()) {
-            canvas.save();
-            int color = getResources().getColor(R.color.drag_view_multiply_color);
-            int width = canvas.getWidth();
-            int height = canvas.getHeight();
-            int textSize = Math.min(width, height);
-            mEventTextPaint.setColor(color);
-            mEventTextPaint.setTextSize(textSize);
-            mEventTextPaint.setAlpha(32);
-            mEventTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-            mEventTextPaint.setAntiAlias(true);
-            mEventTextPaint.setTextAlign(Paint.Align.CENTER);
-            
-            canvas.drawText(mLetterIndexCharacter, width / 2, height / 2 + textSize / 3, mEventTextPaint);
-            canvas.restore();
+    private ViewSwitcher.ViewFactory mPopuFactory = new ViewSwitcher.ViewFactory() {
+        TextView mPopuTextView;
+        @Override
+        public View makeView() {
+            mPopuTextView = new TextView(mContext);
+            mPopuTextView.setGravity(Gravity.CENTER);
+            mPopuTextView.setTextColor(mColor);
+            mPopuTextView.setTextSize(320);
+            mPopuTextView.setAlpha(0.3f);
+            mPopuTextView.setTypeface(Typeface.DEFAULT_BOLD);
+            return mPopuTextView;
         }
         
-    }*/
+    };
     // }added by zhong.chen 2012-7-12 for launcher apps sort end
 }
