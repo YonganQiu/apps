@@ -61,7 +61,7 @@ class ApplicationInfo extends ItemInfo {
     int flags = 0;
     
     //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
-    boolean isEnabledNew;
+    boolean isSystemApp;
     //}add by zhongheng.zheng end
     
     // {added by zhong.chen 2012-7-12 for launcher apps sort begin
@@ -107,26 +107,21 @@ class ApplicationInfo extends ItemInfo {
                 }
             }
             firstInstallTime = pm.getPackageInfo(packageName, 0).firstInstallTime;
+          //{add by zhongheng.zheng at 2012.7.10 begin for new install sign
+            if ((appFlags & android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
+            	isSystemApp = true;
+            } else {
+            	isSystemApp = false;
+            }
+          //}add by zhongheng.zheng end
         } catch (NameNotFoundException e) {
             Log.d(TAG, "PackageManager.getApplicationInfo failed for " + packageName);
+          //{add by zhongheng.zheng at 2012.7.10 begin for new install sign
+            isSystemApp = true;
+          //}add by zhongheng.zheng end
         }
 
         iconCache.getTitleAndIcon(this, info, labelCache);
-        
-      //{add by zhongheng.zheng at 2012.7.10 begin for new install sign
-        try {
-            android.content.pm.ApplicationInfo appinfo = pm.getApplicationInfo(
-                    info.activityInfo.applicationInfo.packageName, 0);
-            if ((appinfo.flags & android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
-            	isEnabledNew = false;
-            } else {
-            	isEnabledNew = true;
-            }
-        } catch (NameNotFoundException e) {
-        	isEnabledNew = false;
-            Log.e("Launcher_ApplicationInfo", e.getMessage(), e);
-        }
-      //}add by zhongheng.zheng end
     }
 
     public ApplicationInfo(ApplicationInfo info) {

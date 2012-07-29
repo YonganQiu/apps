@@ -277,16 +277,16 @@ final class Utilities {
     
     
   //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-    static Bitmap mNewIcon;
+    static Bitmap mIconNew;
 
     static Bitmap getAppIconNewBitmap(Context context) {
         synchronized (sCanvas) {
-            if (mNewIcon == null) {
-            	mNewIcon = BitmapFactory.decodeResource(context.getResources(),
+            if (mIconNew == null) {
+            	mIconNew = BitmapFactory.decodeResource(context.getResources(),
                         R.drawable.gardening_crosshairs);
             }
         }
-        return mNewIcon;
+        return mIconNew;
     }
   //}add by zhongheng.zheng end
     

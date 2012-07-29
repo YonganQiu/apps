@@ -833,12 +833,7 @@ public class Workspace extends SmoothPagedView
             mXDown = ev.getX();
             mYDown = ev.getY();
             //{add by zhongheng.zheng at 2012.6.18 begin for judge whether is not quick sliding mode
-            View indicatorView = getScrollingIndicator();
-            if (DEBUG) Log.w(TAG, "indicatorView.top = " + indicatorView.getTop() + "; indicatorView.bottom = " + indicatorView.getBottom());
-            if(mYDown <= indicatorView.getBottom() + QUICK_SLIDE_AREA_EXPAND_Y && mYDown >= indicatorView.getTop() - QUICK_SLIDE_AREA_EXPAND_Y){
-            	mTouchState = TOUCH_STATE_QUICK_SLIDE;
-            	if (DEBUG) Log.w(TAG, "mTouchState = " + mTouchState);
-            }
+            checkIsQuickSilding();
             //}add by zhongheng.zheng end
             
             break;
@@ -5088,4 +5083,24 @@ public class Workspace extends SmoothPagedView
 		public void resetAnimationData(View v);
 	}
   //}add by jingjiang.yu end
+	
+	
+	// {add by zhongheng.zheng at 2012.7.28 begin for judge whether is
+				// not quick sliding mode
+	private void checkIsQuickSilding(){
+		View indicatorView = getScrollingIndicator();
+		if (DEBUG)
+			Log.w(TAG,
+					"indicatorView.top = " + indicatorView.getTop()
+							+ "; indicatorView.bottom = "
+							+ indicatorView.getBottom());
+		if (mYDown <= indicatorView.getBottom() + QUICK_SLIDE_AREA_EXPAND_Y
+				&& mYDown >= indicatorView.getTop() - QUICK_SLIDE_AREA_EXPAND_Y) {
+			mTouchState = TOUCH_STATE_QUICK_SLIDE;
+			if (DEBUG)
+				Log.w(TAG, "mTouchState = " + mTouchState);
+		}
+	}
+	// }add by zhongheng.zheng end
+	
 }

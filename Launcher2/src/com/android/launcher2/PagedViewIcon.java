@@ -37,6 +37,9 @@ import com.android.launcher.R;
  */
 public class PagedViewIcon extends TextView implements Checkable {
     private static final String TAG = "PagedViewIcon";
+  //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
+    private static final boolean DEBUG = true;
+  //}add by zhongheng.zheng end
 
     // holographic outline
     private final Paint mPaint = new Paint();
@@ -57,23 +60,16 @@ public class PagedViewIcon extends TextView implements Checkable {
     //private HolographicOutlineHelper mHolographicOutlineHelper;
     
   //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
-    private static final boolean DEBUG = false;
     private Bitmap mNewIcon;
-    private boolean mIsNew = false;
+    private boolean mIsNewIcon = false;
   //}add by zhongheng.zheng end
 
     public PagedViewIcon(Context context) {
         this(context, null);
-      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        //initBgBitmap(context);
-      //}add by zhongheng.zheng end
     }
 
     public PagedViewIcon(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        //initBgBitmap(context);
-      //}add by zhongheng.zheng end
     }
 
     public PagedViewIcon(Context context, AttributeSet attrs, int defStyle) {
@@ -91,10 +87,6 @@ public class PagedViewIcon extends TextView implements Checkable {
         }
 
         mHolographicOutlineView = new HolographicPagedViewIcon(context, this);
-        
-      //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        //initBgBitmap(context);
-      //}add by zhongheng.zheng end
     }
 
     protected HolographicPagedViewIcon getHolographicOutlineView() {
@@ -121,13 +113,13 @@ public class PagedViewIcon extends TextView implements Checkable {
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
 		if (DEBUG) {
 			Log.d(TAG, "info.title" + info.title);
-			Log.d(TAG, "info.isEnabledNew" + info.isEnabledNew);
+			Log.d(TAG, "info.isSystemApp" + info.isSystemApp);
 			Log.d(TAG, "info.launchCount" + info.launchCount);
 		}
-		if (info.isEnabledNew && info.launchCount <= 0) {
-			mIsNew = true;
+		if (!info.isSystemApp && info.launchCount <= 0) {
+			mIsNewIcon = true;
 		} else {
-			mIsNew = false;
+			mIsNewIcon = false;
 		}
 		// {added by zhong.chen 2012-7-28 for launcher apps sort begin
 		if(getVisibility() != View.VISIBLE) {
@@ -202,12 +194,12 @@ public class PagedViewIcon extends TextView implements Checkable {
         }
         
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        if(mIsNew){
-            initBgBitmap(this.getContext());
-            int hspace = (getWidth() - mIcon.getWidth()) / 2;
-            //int vspace = (getHeight() - mIcon.getHeight()) / 2;
-            //Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
-            canvas.drawBitmap(mNewIcon, mIcon.getWidth() + hspace - mNewIcon.getWidth(), 0, null);
+        if(mIsNewIcon){
+        	initBgBitmap(this.getContext());
+        	int hspace = (getWidth() - mIcon.getWidth()) / 2;
+        	int vspace = (getHeight() - mIcon.getHeight()) / 2;
+        	Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
+        	canvas.drawBitmap(mNewIcon, mIcon.getWidth() + hspace - mNewIcon.getWidth(), 0, null);
         }
       //}add by zhongheng.zheng end
     }

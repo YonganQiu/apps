@@ -72,13 +72,7 @@ public class DragLayer extends FrameLayout {
     private Rect mHitRect = new Rect();
     private int mWorkspaceIndex = -1;
     private int mQsbIndex = -1;
-    
-  //{add by zhongheng.zheng at 2012.7.10 begin for variable of drag and sliding
-    long lastTime = -1;
-    private static final String TAG = "Launcher.DragLayer";
-    private static final boolean DEBUG = true;
-  //}add by zhongheng.zheng end
-
+ 
     /**
      * Used to create a new DragLayer from XML.
      *
@@ -226,16 +220,6 @@ public class DragLayer extends FrameLayout {
     public boolean onTouchEvent(MotionEvent ev) {
         boolean handled = false;
         int action = ev.getAction();
-        //{add by zhongheng.zheng at 2012.7.10 begin for drag and sliding
-        long currTime= System.currentTimeMillis();
-        if(lastTime ==-1){
-        	lastTime= currTime;
-        }
-        if (DEBUG){
-        	Log.d(TAG, "onTouchEvent action = " + action + "----------------------------intervalTime:" + (lastTime-currTime));
-        }        
-        lastTime= currTime;
-        //}add by zhongheng.zheng end
 
         int x = (int) ev.getX();
         int y = (int) ev.getY();
