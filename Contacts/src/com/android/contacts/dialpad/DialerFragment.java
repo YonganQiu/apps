@@ -121,6 +121,8 @@ public class DialerFragment extends Fragment {
         
         setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
                 R.animator.fragment_slide_down_exit, true);
+        
+        slipMenuRelativeLayout.isDialerPadShow = mDialpadFragment.isVisible();
     }
 	
 	@Override
@@ -166,6 +168,7 @@ public class DialerFragment extends Fragment {
 		}
 		return 0;
 	}
+	
 	public boolean isFragmentShow(int id) {
 		Fragment fragment = getFragmentManager().findFragmentById(id);
 		if(fragment != null) {
@@ -186,8 +189,10 @@ public class DialerFragment extends Fragment {
 			transaction.setCustomAnimations(animEnter, animExit);
 			if(isShow) {
 				transaction.show(fragment);
+				slipMenuRelativeLayout.isDialerPadShow = true;
 			} else {
 				transaction.hide(fragment);
+				slipMenuRelativeLayout.isDialerPadShow = false;
 			}
 			transaction.commitAllowingStateLoss();
 			fragmentManager.executePendingTransactions();

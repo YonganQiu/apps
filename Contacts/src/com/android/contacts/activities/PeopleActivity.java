@@ -1621,6 +1621,10 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_accounts, false);
                     makeMenuItemVisible(menu, R.id.menu_display_settings, false);
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
+                  //<!-Added by gangzhou.qi at 2012-7-27
+                    mTabPager.mSlipMenuRelativeLayoutTurnOn = true;
+                    Log.d(TAG, "mTabPager.mSlipMenuRelativeLayoutTurnOn = true;");
+                    //Added by gangzhou.qi at 2012-7-27 -!>
                     break;
                 case ALL:
                     addContactMenu.setVisible(true);
@@ -1638,6 +1642,10 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_accounts, true);
                     makeMenuItemVisible(menu, R.id.menu_display_settings, !ContactsPreferenceActivity.isEmpty(this));
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, true);
+                  //<!-Added by gangzhou.qi at 2012-7-27
+                    mTabPager.mSlipMenuRelativeLayoutTurnOn = true;
+                    Log.d(TAG, "mTabPager.mSlipMenuRelativeLayoutTurnOn = true;");
+                    //Added by gangzhou.qi at 2012-7-27 -!>
                     break;
                 case GROUPS:
                     // Do not display the "new group" button if no accounts are available
@@ -1660,6 +1668,10 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_accounts, true);
                     makeMenuItemVisible(menu, R.id.menu_display_settings, false);
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
+                  //<!-Added by gangzhou.qi at 2012-7-27
+                    mTabPager.mSlipMenuRelativeLayoutTurnOn = true;
+                    Log.d(TAG, "mTabPager.mSlipMenuRelativeLayoutTurnOn = true;");
+                    //Added by gangzhou.qi at 2012-7-27 -!>
                     break;
                 case DIALER:
                     addContactMenu.setVisible(false);
@@ -1678,6 +1690,10 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_accounts, false);
                     makeMenuItemVisible(menu, R.id.menu_display_settings, false);
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
+                  //<!-Added by gangzhou.qi at 2012-7-27
+                    mTabPager.mSlipMenuRelativeLayoutTurnOn = false;
+                    Log.d(TAG, "mTabPager.mSlipMenuRelativeLayoutTurnOn = false;");
+                    //Added by gangzhou.qi at 2012-7-27 -!>
                     break;
             }
         }

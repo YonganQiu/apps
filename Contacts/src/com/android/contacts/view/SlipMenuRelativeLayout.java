@@ -41,8 +41,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
     ValueAnimator anim;
     private int mLeftTrigger = 0;
     private List<ParamsPosition> mParamsList = new LinkedList<ParamsPosition>();
-    View mStarView;
-    
+    public boolean isDialerPadShow = true;
 	public SlipMenuRelativeLayout(Context context) {
 		super(context);
 		init();
@@ -61,12 +60,9 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 		TOUCH_SLOP = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 		setLimitedDIstance(300, 0);
 		setLeftTriggerDistance(200);
-		setStarViewIndex(1);
+        
 	}
 	
-	public void setStarViewIndex(int index){
-		mStarView = getChildAt(index);
-	}
 	public void setLimitedDIstance(float x , float y){
 		mLimitedDistance[0] = x;
 		mLimitedDistance[1] = y;
@@ -103,7 +99,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
             case MotionEvent.ACTION_MOVE:
             	if (mTouchState != TOUCH_STATE_SCROLLING) {
 					float moveDistanceX = x - mDownX;
-					if (mTouchState == TOUCH_STATE_REST ) {
+					if (mTouchState == TOUCH_STATE_REST && !isDialerPadShow ) {
 						if ((Math.abs(moveDistanceX) > TOUCH_SLOP && mDownX < mLeftTrigger && !mIsPullOut) ||
 								(Math.abs(moveDistanceX) > TOUCH_SLOP && mIsPullOut && mDownX > mLimitedDistance[0])) {
 							mTouchState = TOUCH_STATE_SCROLLING;
@@ -200,7 +196,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 				mParamsList.get(1).mRight = (int)mLimitedDistance[0] + getChildAt(1).getWidth();
 			}
 		});
-		anim.setDuration((long) mLimitedDistance[0]);
+		anim.setDuration(300);
 		anim.start();
 		mIsPullOut = true;
 	}
@@ -218,7 +214,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 				mParamsList.get(1).mRight = getChildAt(1).getWidth();
 			}
 		});
-		anim.setDuration((long) mLimitedDistance[0]);
+		anim.setDuration(300);
 		anim.start();
 		mIsPullOut = false;
 	}
