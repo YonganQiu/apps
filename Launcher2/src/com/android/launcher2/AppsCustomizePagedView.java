@@ -1898,8 +1898,9 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         ComponentName componentName = null;
         String pkgName = null;
         PkgUsageStats[] stats = mLauncher.getPkgUsageStats();
-        int pkgStatsLen = stats.length;
-        if(null != stats && pkgStatsLen > 0)
+        if(null == stats || stats.length == 0) {
+            return;
+        }
         for (int i = 0; i < size; i++) {
             appInfo = mApps.get(i);
             if (null != appInfo && null != (componentName = appInfo.componentName)
@@ -1907,6 +1908,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 for (PkgUsageStats stat : stats) {
                     if(stat.packageName.equals(pkgName)) {
                         appInfo.launchCount = stat.launchCount;
+                        break;
                     }
                 }
                 
@@ -1931,6 +1933,7 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
                 for (PkgUsageStats stat : stats) {
                     if(stat.packageName.equals(pkgName)) {
                         appInfo.launchCount = stat.launchCount;
+                        break;
                     }
                 }
                 
@@ -1939,9 +1942,29 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
     }
 
     void prepareSort() {
-        if(null != mApps && mApps.size() > 0) {
-            updateAppsLaunchCount(mApps);
-            updateAppsLastUpdate(mApps);
+        int size = 0;
+        if(null != mApps && (size = mApps.size()) > 0) {
+            ApplicationInfo appInfo = null;
+            ComponentName componentName;
+            String pkgName;
+            PkgUsageStats[] stats = mLauncher.getPkgUsageStats();
+            for (int i = 0; i < size; i++) {
+                appInfo = mApps.get(i);
+                if (null != appInfo && null != (componentName = appInfo.componentName)
+                        && (null != (pkgName = componentName.getPackageName()))) {
+                    long lastUpdateTime = getLastUpdateTime(pkgName);
+                    appInfo.lastUpdateTime = lastUpdateTime == -1 ? appInfo.firstInstallTime : lastUpdateTime;
+                    if(null == stats || stats.length == 0) {
+                        continue;
+                    }
+                    for (PkgUsageStats stat : stats) {
+                        if(stat.packageName.equals(pkgName)) {
+                            appInfo.launchCount = stat.launchCount;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     

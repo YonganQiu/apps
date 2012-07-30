@@ -1514,8 +1514,8 @@ public final class Launcher extends Activity
         switch (item.getItemId()) {
         case MENU_WALLPAPER_SETTINGS:
             // {added by zhong.chen 2012-6-28 for launcher user-defined
-            //startWallpaper();
-            showUserDefinedSettings(true, false);
+            startWallpaper();
+            //showUserDefinedSettings(true, false);
             // }added by zhong.chen 2012-6-28 for launcher user-defined end
             return true;
         }
@@ -3126,8 +3126,8 @@ public final class Launcher extends Activity
                 case AddAdapter.ITEM_WALLPAPER: {
                     // {modified by zhong.chen 2012-6-28 for launcher
                     // user-defined
-                    //startWallpaper();
-                    showUserDefinedSettings(true, false);
+                    startWallpaper();
+                    //showUserDefinedSettings(true, false);
                     // }modified by zhong.chen 2012-6-28 for launcher user-defined end 
                     break;
                 }

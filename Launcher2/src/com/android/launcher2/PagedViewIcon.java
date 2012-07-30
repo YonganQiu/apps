@@ -37,9 +37,6 @@ import com.android.launcher.R;
  */
 public class PagedViewIcon extends TextView implements Checkable {
     private static final String TAG = "PagedViewIcon";
-  //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
-    private static final boolean DEBUG = true;
-  //}add by zhongheng.zheng end
 
     // holographic outline
     private final Paint mPaint = new Paint();
@@ -60,6 +57,7 @@ public class PagedViewIcon extends TextView implements Checkable {
     //private HolographicOutlineHelper mHolographicOutlineHelper;
     
   //{add by zhongheng.zheng at 2012.7.10 begin for variable of new install sign
+    private static final boolean DEBUG = false;
     private Bitmap mNewIcon;
     private boolean mIsNewIcon = false;
   //}add by zhongheng.zheng end
@@ -197,8 +195,8 @@ public class PagedViewIcon extends TextView implements Checkable {
         if(mIsNewIcon){
         	initBgBitmap(this.getContext());
         	int hspace = (getWidth() - mIcon.getWidth()) / 2;
-        	int vspace = (getHeight() - mIcon.getHeight()) / 2;
-        	Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
+            //int vspace = (getHeight() - mIcon.getHeight()) / 2;
+            //Log.d(TAG,"hspace:" + hspace + " ; vspace:" + vspace);
         	canvas.drawBitmap(mNewIcon, mIcon.getWidth() + hspace - mNewIcon.getWidth(), 0, null);
         }
       //}add by zhongheng.zheng end

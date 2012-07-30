@@ -90,14 +90,14 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         // Save the default widget preview background
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AppsCustomizePagedView, 0,
                 0);
-        mMaxAppCellCountX = a.getInt(R.styleable.AppsCustomizePagedView_maxAppCellCountX, -1);
-        mMaxAppCellCountY = a.getInt(R.styleable.AppsCustomizePagedView_maxAppCellCountY, -1);
-        mMaxAppCellCountX = 4;
-        mMaxAppCellCountY = 1;
+        //mMaxAppCellCountX = a.getInt(R.styleable.AppsCustomizePagedView_maxAppCellCountX, -1);
+        //mMaxAppCellCountY = a.getInt(R.styleable.AppsCustomizePagedView_maxAppCellCountY, -1);
+        mMaxAppCellCountX = a.getInt(R.styleable.AppsCustomizePagedView_widgetCountX, 4);
+        mMaxAppCellCountY = a.getInt(R.styleable.AppsCustomizePagedView_widgetCountY, 1);
         mCellCountX =
-                a.getInt(R.styleable.AppsCustomizePagedView_widgetCountX, 2);
+                a.getInt(R.styleable.AppsCustomizePagedView_widgetCountX, 4);
         mCellCountY =
-                a.getInt(R.styleable.AppsCustomizePagedView_widgetCountY, 2);
+                a.getInt(R.styleable.AppsCustomizePagedView_widgetCountY, 1);
         a.recycle();
         mWidgetSpacingLayout = new PagedViewCellLayout(getContext());
 
