@@ -42,7 +42,7 @@ public class ScreenScrollAnimationWave implements ScreenScrollAnimation {
 		// TODO Auto-generated method stub
 		int pageWidth = v.getMeasuredWidth();
 		int pageHeight = v.getMeasuredHeight();
-		v.setPivotX(pageWidth + pageWidth / 3);
+		v.setPivotX(pageWidth + pageWidth / 3.0f);
 		v.setPivotY(pageHeight / 2.0f);
 		if (scrollProgress < -0.4) {
 			v.setFastScaleX(0.6f);
@@ -59,7 +59,7 @@ public class ScreenScrollAnimationWave implements ScreenScrollAnimation {
 		// TODO Auto-generated method stub
 		int pageWidth = v.getMeasuredWidth();
 		int pageHeight = v.getMeasuredHeight();
-		v.setPivotX(0 - pageWidth / 3);
+		v.setPivotX(0 - pageWidth / 3.0f);
 		v.setPivotY(pageHeight / 2.0f);
 
 		if (scrollProgress > 0.4) {

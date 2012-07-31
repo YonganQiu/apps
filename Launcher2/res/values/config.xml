@@ -87,9 +87,20 @@
 
     <!-- Folder max bounds and max number of items. Note: folder_max_count_x * folder_max_count_y
          >= folder_max_num_items. When these are set to -1, they are automatically determined. -->
-    <integer name="folder_max_count_x">4</integer>
-    <integer name="folder_max_count_y">4</integer>
-    <integer name="folder_max_num_items">16</integer>
+	<!--Modified by lijuan.li at 2012.07.25 begin to change folder xy count -->
+	<!-- <integer name="folder_max_count_x">4</integer> -->
+	<!-- <integer name="folder_max_count_y">4</integer> -->
+	<!-- <integer name="folder_max_num_items">16</integer> -->
+	<integer name="folder_max_count_x">3</integer>
+	<integer name="folder_max_count_y">3</integer>
+	<integer name="folder_max_num_items">9</integer>
+    <!--Modified by lijuan.li end -->
+    
+    <!--Added by lijuan.li at 2012.07.25 begin to change folder xy count -->
+	<integer name="foldericon_max_count_x">3</integer>
+	<integer name="foldericon_max_count_y">3</integer>
+	<integer name="foldericon_max_num_items">9</integer>
+    <!--Added by lijuan.li end -->
     
     <bool name="config_show_sorting_index_in_bg">true</bool>
 </resources>

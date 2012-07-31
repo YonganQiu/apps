@@ -54,11 +54,11 @@ public class FolderIcon extends LinearLayout implements FolderListener {
     private static boolean sStaticValuesDirty = true;
 
     // The number of icons to display in the
-    //Modified by lijuan.li at 2012.06.21 begin
-    //Original code
-    //private static final int NUM_ITEMS_IN_PREVIEW = 3;
-    private static final int NUM_ITEMS_IN_PREVIEW = 9;
-    //Modified by lijuan.li at 2012.06.21 end
+	// }Modified by lijuan.li at 2012.06.21 begin for folderIcon preview
+	// Original code
+	// private static final int NUM_ITEMS_IN_PREVIEW = 3;
+	private static final int NUM_ITEMS_IN_PREVIEW = 9;
+	// {Modified by lijuan.li at 2012.06.21 end
     private static final int CONSUMPTION_ANIMATION_DURATION = 100;
     private static final int DROP_IN_ANIMATION_DURATION = 400;
     private static final int INITIAL_ITEM_ANIMATION_DURATION = 350;
@@ -71,11 +71,16 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
     // The amount of vertical spread between items in the stack [0...1]
     private static final float PERSPECTIVE_SHIFT_FACTOR = 0.24f;
+    
+    //{Added by lijuan.li 2012.7.30 begin for folderIcon preview
+    private static final float FOLDERICON_ITEM_GAP = 6.0f;
+    //}Added by lijuan.li end
 
     // The degree to which the item in the back of the stack is scaled [0...1]
     // (0 means it's not scaled at all, 1 means it's scaled to nothing)
-    private static final float PERSPECTIVE_SCALE_FACTOR = 0.35f;
-
+    // {Deleted by lijuan.li 2012.7.30 begin for folderIcon preview
+//    private static final float PERSPECTIVE_SCALE_FACTOR = 0.35f;
+    // }Deleted by lijuan.li end
     public static Drawable sSharedFolderLeaveBehind = null;
 
     private ImageView mPreviewBackground;
@@ -92,10 +97,16 @@ public class FolderIcon extends LinearLayout implements FolderListener {
     private int mTotalWidth = -1;
     private int mPreviewOffsetX;
     private int mPreviewOffsetY;
-    private float mMaxPerspectiveShift;
+	 private float mMaxPerspectiveShift;
     boolean mAnimating = false;
     private PreviewItemDrawingParams mParams = new PreviewItemDrawingParams(0, 0, 0, 0);
     private PreviewItemDrawingParams mAnimParams = new PreviewItemDrawingParams(0, 0, 0, 0);
+    
+	// {Added by lijuan.li 2012.7.30 begin for folderIcon preview
+	private int mMaxCountX;
+	private int mMaxCountY;
+	private int mMaxNumItems;
+	// }Added by lijuan.li end
 
     public FolderIcon(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -268,15 +279,15 @@ public class FolderIcon extends LinearLayout implements FolderListener {
         }
     }
 
-    private boolean willAcceptItem(ItemInfo item) {
-        final int itemType = item.itemType;
-        return ((itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION ||
-                itemType == LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT) &&
-				//Modefied by lijuan.li 2012.07.11 begin
-                //!mFolder.isFull() && item != mInfo && !mInfo.opened);
+	private boolean willAcceptItem(ItemInfo item) {
+		final int itemType = item.itemType;
+		return ((itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION || itemType == LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT)
+				&&
+				// {Modified by lijuan.li 2012.07.11 begin for folderIcon preview
+				// !mFolder.isFull() && item != mInfo && !mInfo.opened);
 				item != mInfo && !mInfo.opened);
-				//ended by lijuan.li
-    }
+		// }Modified by lijuan.li end
+	}
 
     public boolean acceptDrop(Object dragInfo) {
         final ItemInfo item = (ItemInfo) dragInfo;
@@ -331,6 +342,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             float scaleRelativeToDragLayer, int index, Runnable postAnimationRunnable) {
         item.cellX = -1;
         item.cellY = -1;
+        item.screen = -1;
 
         // Typically, the animateView corresponds to the DragView; however, if this is being done
         // after a configuration activity (ie. for a Shortcut being dragged from AllApps) we
@@ -452,64 +464,55 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
     private PreviewItemDrawingParams computePreviewItemDrawingParams(int index,
             PreviewItemDrawingParams params) {
-    	//added by lijuan.li at 2012.6.21 begin
-    	/*Original code
-        index = NUM_ITEMS_IN_PREVIEW - index - 1;
-        float r = (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1);
-        float scale = (1 - PERSPECTIVE_SCALE_FACTOR * (1 - r));
-
-        float offset = (1 - r) * mMaxPerspectiveShift;
-        float scaledSize = scale * mBaselineIconSize;
-        float scaleOffsetCorrection = (1 - scale) * mBaselineIconSize;
-
-        // We want to imagine our coordinates from the bottom left, growing up and to the
-        // right. This is natural for the x-axis, but for the y-axis, we have to invert things.
-        float transY = mAvailableSpaceInPreview - (offset + scaledSize + scaleOffsetCorrection);
-        float transX = offset + scaleOffsetCorrection;
-        float totalScale = mBaselineIconScale * scale;
-        final int overlayAlpha = (int) (80 * (1 - r));
-
-        if (params == null) {
-            params = new PreviewItemDrawingParams(transX, transY, totalScale, overlayAlpha);
-        } else {
-            params.transX = transX;
-            params.transY = transY;
-            params.scale = totalScale;
-            params.overlayAlpha = overlayAlpha;
-        }*/
-    	
-		float r = (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1);
+		// }added by lijuan.li at 2012.6.21 begin for folderIcon preview
+		/*
+		 * Original code index = NUM_ITEMS_IN_PREVIEW - index - 1; float r =
+		 * (index * 1.0f) / (NUM_ITEMS_IN_PREVIEW - 1); float scale = (1 -
+		 * PERSPECTIVE_SCALE_FACTOR * (1 - r));
+		 * 
+		 * float offset = (1 - r) * mMaxPerspectiveShift; float scaledSize =
+		 * scale * mBaselineIconSize; float scaleOffsetCorrection = (1 - scale)
+		 * * mBaselineIconSize;
+		 * 
+		 * // We want to imagine our coordinates from the bottom left, growing
+		 * up and to the // right. This is natural for the x-axis, but for the
+		 * y-axis, we have to invert things. float transY =
+		 * mAvailableSpaceInPreview - (offset + scaledSize +
+		 * scaleOffsetCorrection); float transX = offset +
+		 * scaleOffsetCorrection; float totalScale = mBaselineIconScale * scale;
+		 * final int overlayAlpha = (int) (80 * (1 - r));
+		 * 
+		 * if (params == null) { params = new PreviewItemDrawingParams(transX,
+		 * transY, totalScale, overlayAlpha); } else { params.transX = transX;
+		 * params.transY = transY; params.scale = totalScale;
+		 * params.overlayAlpha = overlayAlpha; }
+		 */
+   
+		Resources res = getResources();
+		mMaxCountX = res.getInteger(R.integer.foldericon_max_count_x);
+		mMaxCountY = res.getInteger(R.integer.foldericon_max_count_y);
 		float scale = 0.3f;
 
 		float offset = FolderRingAnimator.sPreviewPadding;
 		float scaledSize = scale * mBaselineIconSize;
-		float scaleOffsetCorrection = (1 - scale) * mBaselineIconSize;
-
 		// We want to imagine our coordinates from the bottom left, growing up
 		// and to the
 		// right. This is natural for the x-axis, but for the y-axis, we have to
 		// invert things.
-		float transY = 0;
-		int d = (index + 1) / 3;
-		if ((index + 1) % 3 == 0) {
-			transY = (d - 1) * 6 + scaledSize * (d - 1) + offset;
-		} else {
-			transY = d * 6 + scaledSize * d + offset;
-		}
-		float transX = offset + (index % 3) * 6f + scaledSize * (index % 3);
+		float transY = 0;	
+		transY = (index / mMaxCountY) * FOLDERICON_ITEM_GAP + scaledSize * (index / mMaxCountY) + offset;		
+		float transX = offset + (index % mMaxCountX) * FOLDERICON_ITEM_GAP + scaledSize * (index % mMaxCountX);
 		float totalScale = mBaselineIconScale * scale;
-		final int overlayAlpha = 0;
 
 		if (params == null) {
 			params = new PreviewItemDrawingParams(transX, transY, totalScale,
-					overlayAlpha);
+					0);
 		} else {
 			params.transX = transX;
 			params.transY = transY;
 			params.scale = totalScale;
-			params.overlayAlpha = overlayAlpha;
 		}
-		//added by lijuan.li at 2012.6.21 end
+		// }added by lijuan.li at 2012.6.21 end
 		return params;
     }
 
@@ -522,7 +525,10 @@ public class FolderIcon extends LinearLayout implements FolderListener {
         if (d != null) {
             d.setBounds(0, 0, mIntrinsicIconSize, mIntrinsicIconSize);
             d.setFilterBitmap(true);
-            d.setColorFilter(Color.argb(params.overlayAlpha, 0, 0, 0), PorterDuff.Mode.SRC_ATOP);
+			// {Deleted by lijuan.li for folderIcon preview
+			// d.setColorFilter(Color.argb(params.overlayAlpha, 0, 0, 0),
+			// PorterDuff.Mode.SRC_ATOP);
+			// }Deleted by lijuan.li end
             d.draw(canvas);
             d.clearColorFilter();
             d.setFilterBitmap(false);
@@ -535,13 +541,14 @@ public class FolderIcon extends LinearLayout implements FolderListener {
         super.dispatchDraw(canvas);
 
         if (mFolder == null) return;
-		//Modefied by lijuan.li at 2012.07.11 begin
-        //if (mFolder.getItemCount() == 0 && !mAnimating) return;
+		// {Modefied by lijuan.li at 2012.07.11 begin for folderIcon preview
+		// if (mFolder.getItemCount() == 0 && !mAnimating) return;
 
-        //ArrayList<View> items = mFolder.getItemsInReadingOrder(false);
-        if (mFolder.getItemCount(0) == 0 && !mAnimating) return;
+		// ArrayList<View> items = mFolder.getItemsInReadingOrder(false);
+		if (mFolder.getItemCount(0) == 0 && !mAnimating)
+			return;
 		ArrayList<View> items = mFolder.getItemsInReadingOrderWithInvalidate(false);
-		// ended by lijuan.li
+		// }Modified by lijuan.li
         Drawable d;
         TextView v;
 
@@ -553,35 +560,31 @@ public class FolderIcon extends LinearLayout implements FolderListener {
             d = v.getCompoundDrawables()[1];
             computePreviewDrawingParams(d);
         }
-      //Modified by lijuan.li at 2012.06.21 begin
-        /* Original code
-        int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
-        if (!mAnimating) {
-            for (int i = nItemsInPreview - 1; i >= 0; i--) {
-                v = (TextView) items.get(i);
-                d = v.getCompoundDrawables()[1];
+		// }Modified by lijuan.li at 2012.06.21 begin for folderIcon preview
+		/*
+		 * Original code int nItemsInPreview = Math.min(items.size(),
+		 * NUM_ITEMS_IN_PREVIEW); if (!mAnimating) { for (int i =
+		 * nItemsInPreview - 1; i >= 0; i--) { v = (TextView) items.get(i); d =
+		 * v.getCompoundDrawables()[1];
+		 * 
+		 * mParams = computePreviewItemDrawingParams(i, mParams);
+		 * mParams.drawable = d; drawPreviewItem(canvas, mParams); } } else {
+		 * drawPreviewItem(canvas, mAnimParams); }
+		 */      
+		int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
+		if (!mAnimating) {
+			for (int iconIndex = 0; iconIndex < nItemsInPreview; iconIndex++) {
+				v = (TextView) items.get(iconIndex);
+				d = v.getCompoundDrawables()[1];
 
-                mParams = computePreviewItemDrawingParams(i, mParams);
-                mParams.drawable = d;
-                drawPreviewItem(canvas, mParams);
-            }
-        } else {
-            drawPreviewItem(canvas, mAnimParams);
-        }*/        
-        int nItemsInPreview = Math.min(items.size(), NUM_ITEMS_IN_PREVIEW);
-        if (!mAnimating) {
-            for (int i = 0; i < nItemsInPreview; i++) {
-                v = (TextView) items.get(i);
-                d = v.getCompoundDrawables()[1];
-
-                mParams = computePreviewItemDrawingParams(i, mParams);
-                mParams.drawable = d;
-                drawPreviewItem(canvas, mParams);
-            }
-        } else {
-            drawPreviewItem(canvas, mAnimParams);
-        }
-      //added by lijuan.li at 2012.06.21 end
+				mParams = computePreviewItemDrawingParams(iconIndex, mParams);
+				mParams.drawable = d;
+				drawPreviewItem(canvas, mParams);
+			}
+		} else {
+			drawPreviewItem(canvas, mAnimParams);
+		}
+		// }Modified by lijuan.li at 2012.06.21 end
         
     }
 
