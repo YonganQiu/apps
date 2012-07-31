@@ -358,15 +358,15 @@ public class Folder extends LinearLayout implements DragSource,
 		 * setupContentForNumItems(count);
 		 */
 
-		mPageCount = (children.size() - 1) / 9 + 1;
+		mPageCount = (children.size() - 1) / mMaxNumItems + 1;
 
 		if (mPageCount > 1) {
 			for (int pagecount = 0; pagecount < mPageCount; pagecount++) {
 				CellLayout cl = (CellLayout) LayoutInflater.from(getContext())
 						.inflate(R.layout.folder_layout, this, false);
-				cl.setGridSize(3, 3);
+				cl.setGridSize(mMaxCountX, mMaxCountY);
 				mContent.addView(cl);
-				setupContentForNumItems(9, pagecount);
+				setupContentForNumItems(mMaxNumItems, pagecount);
 			}
 		} else {
 			CellLayout cl = (CellLayout) LayoutInflater.from(getContext())
@@ -379,7 +379,7 @@ public class Folder extends LinearLayout implements DragSource,
 		int childindex = 0;
 		int mincount = 0;
 		for (int pagecount = 0; pagecount < mPageCount; pagecount++) {
-			mincount = Math.min(children.size(), 9 * (pagecount + 1));
+			mincount = Math.min(children.size(), mMaxNumItems * (pagecount + 1));
 			for (; childindex < mincount; childindex++) {
 				ShortcutInfo child = (ShortcutInfo) children.get(childindex);
 				findAndSetEmptyCells(child, pagecount);
@@ -1191,7 +1191,7 @@ public class Folder extends LinearLayout implements DragSource,
 
 		cl.removeAllViews();
 
-		for (int i = 0; i < 9 && i < list.size(); i++) {
+		for (int i = 0; i < mMaxNumItems && i < list.size(); i++) {
 			View v = list.get(i);
 			cl.getVacantCell(vacant, 1, 1);
 			CellLayout.LayoutParams lp = (CellLayout.LayoutParams) v
@@ -1249,7 +1249,7 @@ public class Folder extends LinearLayout implements DragSource,
 		 * if (mRearrangeOnClose) { setupContentForNumItems(getItemCount());
 		 * mRearrangeOnClose = false; } if (getItemCount() <= 1) {
 		 */
-		mPageCount = (mInfo.contents.size() - 1) / 9 + 1;
+		mPageCount = (mInfo.contents.size() - 1) / mMaxNumItems + 1;
 
 		if (mContent.getCurrentScreen() + 1 > mPageCount) {
 			mContent.setCurrentScreen(0);
@@ -1265,7 +1265,7 @@ public class Folder extends LinearLayout implements DragSource,
 					CellLayout cl = (CellLayout) LayoutInflater.from(
 							getContext()).inflate(R.layout.folder_layout, this,
 							false);
-					cl.setGridSize(3, 3);
+					cl.setGridSize(mMaxCountX, mMaxCountY);
 					mContent.addView(cl);
 				}
 			} else {
@@ -1277,7 +1277,7 @@ public class Folder extends LinearLayout implements DragSource,
 
 			int i = 0;
 			for (int j = 0; j < mPageCount; j++) {
-				for (; i < Math.min(children.size(), (j + 1) * 9); i++) {
+				for (; i < Math.min(children.size(), (j + 1) * mMaxNumItems); i++) {
 					ShortcutInfo child = (ShortcutInfo) children.get(i);
 					child.screen = j;
 					if (!findAndSetEmptyCells(child, j)) {
@@ -1425,7 +1425,7 @@ public class Folder extends LinearLayout implements DragSource,
 		if (mContent.getChildCount() < mPageCount) {
 			CellLayout cl = (CellLayout) LayoutInflater.from(getContext())
 					.inflate(R.layout.folder_layout, this, false);
-			cl.setGridSize(3, 3);
+			cl.setGridSize(mMaxCountX, mMaxCountY);
 			mContent.addView(cl);
 		}
 
@@ -1471,14 +1471,14 @@ public class Folder extends LinearLayout implements DragSource,
 		mContent.removeAllViews();
 		ArrayList<ShortcutInfo> children = mInfo.contents;
 		children.remove(item);
-		mPageCount = children.size() / 9 + 1;
+		mPageCount = children.size() / mMaxNumItems + 1;
 
 		if (mState == STATE_ANIMATING) {
 			mRearrangeOnClose = true;
 		} else if (children.size() <= 1 && mPageCount == 1) {
 			replaceFolderWithFinalItem();
 		} else {
-			mPageCount = (mInfo.contents.size() - 1) / 9 + 1;
+			mPageCount = (mInfo.contents.size() - 1) / mMaxNumItems + 1;
 
 			if (mContent.getCurrentScreen() + 1 > mPageCount) {
 				mContent.setCurrentScreen(0);
@@ -1491,7 +1491,7 @@ public class Folder extends LinearLayout implements DragSource,
 					CellLayout cl = (CellLayout) LayoutInflater.from(
 							getContext()).inflate(R.layout.folder_layout, this,
 							false);
-					cl.setGridSize(3, 3);
+					cl.setGridSize(mMaxCountX, mMaxCountY);
 					mContent.addView(cl);
 				}
 			} else {
@@ -1504,7 +1504,7 @@ public class Folder extends LinearLayout implements DragSource,
 			int childCount = 0;
 			int minCount = 0;
 			for (int pageIndex = 0; pageIndex < mPageCount; pageIndex++) {
-				minCount = Math.min(children.size(), (pageIndex + 1) * 9);
+				minCount = Math.min(children.size(), (pageIndex + 1) * mMaxNumItems);
 				for (; childCount < minCount; childCount++) {
 					ShortcutInfo child = (ShortcutInfo) children.get(childCount);
 					if (!findAndSetEmptyCells(child, pageIndex)) {
@@ -1622,7 +1622,7 @@ public class Folder extends LinearLayout implements DragSource,
 			mItemsInvalidated = false;
 		}
 
-		if (mInfo.contents.size() >= 9 && mItemsInReadingOrder.size() == 8) {
+		if (mInfo.contents.size() >= mMaxNumItems && mItemsInReadingOrder.size() == 8) {
 			CellLayout cl = (CellLayout) (mContent.getChildAt(1));
 			View v = cl.getChildAt(0, 0);
 			ShortcutInfo info = (ShortcutInfo) v.getTag();
