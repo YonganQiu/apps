@@ -1,21 +1,15 @@
 package com.android.launcher2;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Scroller;
-
-import com.android.launcher.R;
 
 public class FolderPagedView extends ViewGroup {
 
@@ -33,8 +27,6 @@ public class FolderPagedView extends ViewGroup {
 	private VelocityTracker mVelocityTracker;
 
 	private float mLastMotionX;
-	private float mLastMotionY;
-
 	private final static int TOUCH_STATE_REST = 0;
 	private final static int TOUCH_STATE_SCROLLING = 1;
 
@@ -252,10 +244,8 @@ public class FolderPagedView extends ViewGroup {
 		switch (action & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN: {
 			final float x = ev.getX();
-			final float y = ev.getY();
 			// Remember location of down touch
 			mLastMotionX = x;
-			mLastMotionY = y;
 			mLastTouch = mScrollX;
 
 			/*
@@ -319,7 +309,7 @@ public class FolderPagedView extends ViewGroup {
 
 			// Remember where the motion event started
 			mLastMotionX = ev.getX();
-			mLastMotionY = ev.getY();
+			ev.getY();
 			mLastTouch = mScrollX;
 			break;
 		case MotionEvent.ACTION_MOVE:

@@ -16,6 +16,8 @@
 
 package com.android.launcher2;
 
+import java.util.ArrayList;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -23,8 +25,6 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
@@ -41,8 +41,6 @@ import android.widget.TextView;
 import com.android.launcher.R;
 import com.android.launcher2.DropTarget.DragObject;
 import com.android.launcher2.FolderInfo.FolderListener;
-
-import java.util.ArrayList;
 
 /**
  * An icon that can appear on in the workspace representing an {@link UserFolder}.
@@ -105,7 +103,6 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 	// {Added by lijuan.li 2012.7.30 begin for folderIcon preview
 	private int mMaxCountX;
 	private int mMaxCountY;
-	private int mMaxNumItems;
 	// }Added by lijuan.li end
 
     public FolderIcon(Context context, AttributeSet attrs) {
