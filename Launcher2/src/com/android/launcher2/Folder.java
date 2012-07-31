@@ -1622,7 +1622,7 @@ public class Folder extends LinearLayout implements DragSource,
 			mItemsInvalidated = false;
 		}
 
-		if (mInfo.contents.size() >= mMaxNumItems && mItemsInReadingOrder.size() == 8) {
+		if (mInfo.contents.size() >= mMaxNumItems && mItemsInReadingOrder.size() == mMaxNumItems - 1) {
 			CellLayout cl = (CellLayout) (mContent.getChildAt(1));
 			View v = cl.getChildAt(0, 0);
 			ShortcutInfo info = (ShortcutInfo) v.getTag();
