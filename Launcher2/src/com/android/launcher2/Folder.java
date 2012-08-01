@@ -91,6 +91,7 @@ public class Folder extends LinearLayout implements DragSource,
 	private Rect mNewSize = new Rect();
 	private Rect mIconRect = new Rect();
 	private ArrayList<View> mItemsInReadingOrder = new ArrayList<View>();
+	private ArrayList<ShortcutInfo> mItemsAllPageInReadingOrder = new ArrayList<ShortcutInfo>();
 	private Drawable mIconDrawable;
 	boolean mItemsInvalidated = false;
 	private ShortcutInfo mCurrentDragInfo;
@@ -377,16 +378,10 @@ public class Folder extends LinearLayout implements DragSource,
 		}
 		
 		int childindex = 0;
-		int mincount = 0;
-		for (int pagecount = 0; pagecount < mPageCount; pagecount++) {
-			mincount = Math.min(children.size(), mMaxNumItems * (pagecount + 1));
-			for (; childindex < mincount; childindex++) {
-				ShortcutInfo child = (ShortcutInfo) children.get(childindex);
-				findAndSetEmptyCells(child, pagecount);
-				if (!createAndAddShortcut(child, pagecount)) {
-					overflow.add(child);
-				} else {
-				}
+		for (; childindex < children.size(); childindex++) {
+			ShortcutInfo child = (ShortcutInfo) children.get(childindex);
+			if (!createAndAddShortcut(child, child.screen)) {
+				overflow.add(child);
 			}
 		}
 		// }Modified by lijuan.li end
@@ -1020,7 +1015,7 @@ public class Folder extends LinearLayout implements DragSource,
 				int oldCountY = countY;
 				if (countX * countY < count) {
 					// Current grid is too small, expand it
-					if ((countX <= countY || countY == 3) && countX < 3) {
+					if ((countX <= countY || countY == mMaxCountY) && countX < mMaxCountX) {
 						countX++;
 					} else if (countY < mMaxCountY) {
 						countY++;
@@ -1199,12 +1194,11 @@ public class Folder extends LinearLayout implements DragSource,
 			lp.cellX = vacant[0];
 			lp.cellY = vacant[1];
 			ItemInfo info = (ItemInfo) v.getTag();
-			if (info.cellX != vacant[0] || info.cellY != vacant[1]) {
-				info.cellX = vacant[0];
-				info.cellY = vacant[1];
-				LauncherModel.addOrMoveItemInDatabase(mLauncher, info,
-						mInfo.id, info.screen, info.cellX, info.cellY);
-			}
+
+			info.cellX = vacant[0];
+			info.cellY = vacant[1];
+			LauncherModel.addOrMoveItemInDatabase(mLauncher, info, mInfo.id,
+					info.screen, info.cellX, info.cellY);
 			boolean insert = false;
 			cl.addViewToCellLayout(v, insert ? 0 : -1, (int) info.id, lp, true);
 		}
@@ -1249,6 +1243,7 @@ public class Folder extends LinearLayout implements DragSource,
 		 * if (mRearrangeOnClose) { setupContentForNumItems(getItemCount());
 		 * mRearrangeOnClose = false; } if (getItemCount() <= 1) {
 		 */
+		int oldPageCount = mPageCount;
 		mPageCount = (mInfo.contents.size() - 1) / mMaxNumItems + 1;
 
 		if (mContent.getCurrentScreen() + 1 > mPageCount) {
@@ -1256,9 +1251,8 @@ public class Folder extends LinearLayout implements DragSource,
 		}
 
 		if (mRearrangeOnClose) {
+			ArrayList<ShortcutInfo> children = getAllPageItemsInReadingOrder(oldPageCount);
 			mContent.removeAllViewsInLayout();
-
-			ArrayList<ShortcutInfo> children = mInfo.contents;
 
 			if (mPageCount > 1) {
 				for (int j = 0; j < mPageCount; j++) {
@@ -1275,22 +1269,28 @@ public class Folder extends LinearLayout implements DragSource,
 				mContent.addView(cl);
 			}
 
-			int i = 0;
-			for (int j = 0; j < mPageCount; j++) {
-				for (; i < Math.min(children.size(), (j + 1) * mMaxNumItems); i++) {
-					ShortcutInfo child = (ShortcutInfo) children.get(i);
-					child.screen = j;
-					if (!findAndSetEmptyCells(child, j)) {
-						// The current layout is full, can we expand it?
-						mItemsInvalidated = true;
-						setupContentForNumItems(getItemCount(j) + 1, j);
-						findAndSetEmptyCells(child, j);
+			int childIndex = 0;
+			int miniCount;
+			for (int pageIndex = 0; pageIndex < mPageCount; pageIndex++) {
+				miniCount = Math.min(children.size(), (pageIndex + 1) * mMaxNumItems);
+				for (; childIndex < miniCount; childIndex++) {
+					ShortcutInfo child = (ShortcutInfo) children.get(childIndex);
+					child.screen = pageIndex;
+					if (mPageCount == 1) {
+						if (!findAndSetEmptyCells(child, pageIndex)) {
+							// The current layout is full, can we expand it?
+							mItemsInvalidated = true;
+							setupContentForNumItems(getItemCount(pageIndex) + 1, pageIndex);
+							findAndSetEmptyCells(child, pageIndex);
+						}
+					} else {
+						findAndSetEmptyCells(child, pageIndex);
 					}
-					createAndAddShortcut(child, j);
-
+					createAndAddShortcut(child, child.screen);
+					LauncherModel.addOrMoveItemInDatabase(mLauncher, child,
+							mInfo.id, child.screen, child.cellX, child.cellY);
 				}
 			}
-
 			mContent.requestLayout();
 			mContent.invalidate();
 			mRearrangeOnClose = false;
@@ -1383,6 +1383,7 @@ public class Folder extends LinearLayout implements DragSource,
 			// lp, true);
 			CellLayout cl = (CellLayout) (mContent.getChildAt(mContent
 					.getCurrentScreen()));
+			item.screen = mContent.getCurrentScreen();
 			cl.addViewToCellLayout(mCurrentDragView, -1, (int) item.id, lp,
 					true);
 			// Modified by lijuan.li end
@@ -1477,50 +1478,6 @@ public class Folder extends LinearLayout implements DragSource,
 			mRearrangeOnClose = true;
 		} else if (children.size() <= 1 && mPageCount == 1) {
 			replaceFolderWithFinalItem();
-		} else {
-			mPageCount = (mInfo.contents.size() - 1) / mMaxNumItems + 1;
-
-			if (mContent.getCurrentScreen() + 1 > mPageCount) {
-				mContent.setCurrentScreen(0);
-			}
-
-			mContent.removeAllViewsInLayout();
-
-			if (mPageCount > 1) {
-				for (int j = 0; j < mPageCount; j++) {
-					CellLayout cl = (CellLayout) LayoutInflater.from(
-							getContext()).inflate(R.layout.folder_layout, this,
-							false);
-					cl.setGridSize(mMaxCountX, mMaxCountY);
-					mContent.addView(cl);
-				}
-			} else {
-				CellLayout cl = (CellLayout) LayoutInflater.from(getContext())
-						.inflate(R.layout.folder_layout, this, false);
-				cl.setGridSize(0, 0);
-				mContent.addView(cl);
-			}
-
-			int childCount = 0;
-			int minCount = 0;
-			for (int pageIndex = 0; pageIndex < mPageCount; pageIndex++) {
-				minCount = Math.min(children.size(), (pageIndex + 1) * mMaxNumItems);
-				for (; childCount < minCount; childCount++) {
-					ShortcutInfo child = (ShortcutInfo) children.get(childCount);
-					if (!findAndSetEmptyCells(child, pageIndex)) {
-						// The current layout is full, can we expand it?
-						mItemsInvalidated = true;
-						setupContentForNumItems(getItemCount(pageIndex) + 1, pageIndex);
-						findAndSetEmptyCells(child, pageIndex);
-					}
-					createAndAddShortcut(child, pageIndex);
-
-				}
-
-			}
-			mContent.requestLayout();
-			mContent.invalidate();
-			// Modified by lijuan.li end
 		}
 	}
 
@@ -1596,6 +1553,26 @@ public class Folder extends LinearLayout implements DragSource,
 			mItemsInvalidated = false;
 		}
 		return mItemsInReadingOrder;
+	}
+	
+	public ArrayList<ShortcutInfo> getAllPageItemsInReadingOrder(
+			int oldPageCount) {
+		mItemsAllPageInReadingOrder.clear();
+		CellLayout cl;
+		int countX = 0;
+		for (int pageCount = 0; pageCount < oldPageCount; pageCount++) {
+			cl = (CellLayout) (mContent.getChildAt(pageCount));
+			for (int countY = 0; countY < cl.getCountY(); countY++) {
+				for (countX = 0; countX < cl.getCountX(); countX++) {
+					View v = cl.getChildAt(countX, countY);
+					if (v != null) {
+						ShortcutInfo info = (ShortcutInfo) v.getTag();
+						mItemsAllPageInReadingOrder.add(info);
+					}
+				}
+			}
+		}
+		return mItemsAllPageInReadingOrder;
 	}
 	// {Added by lijuan.li end
 	

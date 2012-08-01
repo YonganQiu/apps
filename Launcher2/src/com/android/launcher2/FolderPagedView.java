@@ -76,14 +76,6 @@ public class FolderPagedView extends ViewGroup {
 				.get(getContext());
 		mTouchSlop = configuration.getScaledTouchSlop();
 		mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
-		// removeAllViews();
-		// Log.e("lljhome", "Childcount" + getChildCount());
-		// CellLayout cl = (CellLayout)
-		// LayoutInflater.from(getContext()).inflate(
-		// R.layout.folder_layout, this, false);
-		//
-		// cl.setGridSize(0, 0);
-		// addView(cl);
 	}
 
 	@Override

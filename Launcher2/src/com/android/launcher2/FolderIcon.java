@@ -293,7 +293,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 
     public void addItem(ShortcutInfo item) {
         mInfo.add(item);
-        LauncherModel.addOrMoveItemInDatabase(mLauncher, item, mInfo.id, 0, item.cellX, item.cellY);
+        LauncherModel.addOrMoveItemInDatabase(mLauncher, item, mInfo.id, item.screen, item.cellX, item.cellY);
     }
 
     public void onDragEnter(Object dragInfo) {
