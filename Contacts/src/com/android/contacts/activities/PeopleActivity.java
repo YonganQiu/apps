@@ -338,7 +338,6 @@ public class PeopleActivity extends ContactsActivity
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.SIM_READING_STATE);
         registerReceiver(mSimStateReceiver, filter);
-        Log.d("^^", "register the broadcast");
         //Ended by gangzhou.qi at 2012-7-16 上午11:17:02
     }
 
@@ -747,7 +746,6 @@ public class PeopleActivity extends ContactsActivity
      */
     private void updateFragmentsVisibility() {
         TabState tab = mActionBarAdapter.getCurrentTab();
-
         // We use ViewPager on 1-pane.
         if (!PhoneCapabilityTester.isUsingTwoPanes(this)) {
             if (mActionBarAdapter.isSearchMode()) {
@@ -914,14 +912,27 @@ public class PeopleActivity extends ContactsActivity
     private class TabPagerListener implements ViewPager.OnPageChangeListener {
         @Override
         public void onPageScrollStateChanged(int state) {
+        	if(state == ViewPager.SCROLL_STATE_IDLE){
+        		//<!-Added by gangzhou.qi at 2012-8-1
+            	if(mActionBarAdapter.getCurrentTab() == TabState.DIALER && !mDialerFragment.isFragmentShow(R.id.dialpad_fragment)){
+    	        	mDialerFragment.setFragmentShow(R.id.dialpad_fragment,
+    						R.animator.fragment_slide_down_enter,
+    						R.animator.fragment_slide_down_exit,
+    						true);
+            	}
+            	//Added by gangzhou.qi at 2012-8-1 -!>
+        	}
         }
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+        	
         }
 
+        
         @Override
         public void onPageSelected(int position) {
+        	
             // Make sure not in the search mode, in which case position != TabState.ordinal().
             if (!mTabPagerAdapter.isSearchMode()) {
                 TabState selectedTab = TabState.fromInt(position);
@@ -1693,6 +1704,7 @@ public class PeopleActivity extends ContactsActivity
                   //<!-Added by gangzhou.qi at 2012-7-27
                     mTabPager.mSlipMenuRelativeLayoutTurnOn = false;
                     Log.d(TAG, "mTabPager.mSlipMenuRelativeLayoutTurnOn = false;");
+                    
                     //Added by gangzhou.qi at 2012-7-27 -!>
                     break;
             }
@@ -2294,7 +2306,6 @@ public class PeopleActivity extends ContactsActivity
 			if(Constants.SIM_READING_STATE.equals(intent.getAction())){
 				if(mAllFragment != null){
 					mAllFragment.setSIMStateView();
-					Log.d("^^", "peopleactivity onreceive the broadcastreceiver");
 				}
 			}
 		}

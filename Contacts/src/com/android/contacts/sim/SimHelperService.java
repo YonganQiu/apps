@@ -46,6 +46,9 @@ public class SimHelperService extends IntentService{
 	
 	public static final String EXTRA_ACCOUNT_NAME = "account_name";
 	public static final String EXTRA_ACCOUNT_TYPE = "account_type";
+	private static final int SIM_NAME_COLUMN = 0;
+	private static final int SIM_NUMBER_COLUMN = 1;
+	
 	private boolean isShowNotification = true;
 	private Uri mAdnUri = Uri.parse("content://icc/adn");
 	private Account mSimAccount = new Account(AccountTypeManager.ACCOUNT_NAME_SIM_DEFAULT, AccountTypeManager.ACCOUNT_TYPE_SIM);
@@ -156,7 +159,7 @@ public class SimHelperService extends IntentService{
         int i = 0;
         cursor.moveToPosition(-1);
         while (cursor.moveToNext()) {
-        	operationList.add(new OperationContact(null, cursor.getString(0) ,cursor.getString(1)));
+        	operationList.add(new OperationContact(null, cursor.getString(SIM_NAME_COLUMN) ,cursor.getString(SIM_NUMBER_COLUMN)));
         }
         
         return operationList;
@@ -173,6 +176,7 @@ public class SimHelperService extends IntentService{
         ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
         ContentProviderResult[] results = null;
         ContentProviderOperation operation;
+        ArrayList<Long> rawContactsIdList = new ArrayList<Long>();
         for (int i = 0; i < count; i++) {
             values.clear();
             if(account != null){
@@ -182,6 +186,20 @@ public class SimHelperService extends IntentService{
              operation = ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
                      .withValues(values).build();
              operations.add(operation);
+             if(operations.size() > 450){
+            	 try {
+                     results = resolver.applyBatch(ContactsContract.AUTHORITY, operations);
+                 } catch (RemoteException e) {
+                     e.printStackTrace();
+                 } catch (OperationApplicationException e) {
+                     e.printStackTrace();
+                 }
+            	 for(int j = 0 ; j < operations.size() ; j ++){
+            		 rawContactsIdList.add(ContentUris.parseId(results[j].uri));
+            		 Log.d("^^", "rawContactsIdList.length:" + rawContactsIdList.size());
+            	 }
+            	 operations.clear();
+             }
         }
 
         try {
@@ -191,13 +209,19 @@ public class SimHelperService extends IntentService{
         } catch (OperationApplicationException e) {
             e.printStackTrace();
         }
+        for(int j = 0 ; j < operations.size(); j ++){
+   		 rawContactsIdList.add(ContentUris.parseId(results[j].uri));
+   		 Log.d("^^", "rawContactsIdList.length:" + rawContactsIdList.size());
+   	    }
 
         operations.clear();
-        long rawContactId;
+        long rawContactId = 0;
 
         for (int i = 0; i < count; i++) {
             OperationContact OneOperationContact = operationContact.get(i);
-            rawContactId = ContentUris.parseId(results[i].uri);
+            if(i < rawContactsIdList.size()){
+               rawContactId = rawContactsIdList.get(i);
+             }
             Log.i(TAG, "importing name = " + OneOperationContact.operationName + ", number = " + OneOperationContact.operationNumber + ", id = " + rawContactId);
             if (!TextUtils.isEmpty(OneOperationContact.operationName)) {
                 values.clear();
@@ -251,10 +275,10 @@ public class SimHelperService extends IntentService{
     private static void importOneSimContact(
             final Cursor cursor, final ContentResolver resolver, Account account) {
         final NamePhoneTypePair namePhoneTypePair =
-                new NamePhoneTypePair(cursor.getString(cursor.getColumnIndex("display_name")));
+                new NamePhoneTypePair(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)));
             final String name = namePhoneTypePair.name;
             final int phoneType = namePhoneTypePair.phoneType;
-            final String phoneNumber = cursor.getString(cursor.getColumnIndex("data1"));
+            final String phoneNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.Data.DATA1));
             final String emailAddresses = null;
             final String[] emailAddressArray;
             

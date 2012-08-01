@@ -207,7 +207,7 @@ import javax.annotation.concurrent.GuardedBy;
 	    	typeToSort = Integer.toString(Calls.MISSED_TYPE);
 	    	break;
          }
-        if(Integer.toString(Constants.CALL_TYPE_ALL).equals(typeToSort)){
+        if(!Integer.toString(Constants.CALL_TYPE_ALL).equals(typeToSort)){
         	
         selection = String.format("(%s) AND (%s = ?)", selection, Calls.TYPE);
         selectionArgs.add(typeToSort);

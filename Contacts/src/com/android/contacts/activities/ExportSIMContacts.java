@@ -402,7 +402,6 @@ public class ExportSIMContacts extends Activity implements OnItemClickListener {
 //						firstAdn.getNumber(), currentIndex, pin2);
 //				
 //			} catch (RemoteException e) {
-//				Log.e("^^", e.toString(), e);
 //			}
 //			if(success){
 //				successCount ++;

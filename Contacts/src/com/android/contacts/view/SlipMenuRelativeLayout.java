@@ -90,24 +90,28 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
         }
         mVelocityTracker.addMovement(event);
 
+        Log.d("^^", "checkout the value isDialerPadShow:" + isDialerPadShow);
+        if(isDialerPadShow){
+        	return false;
+        }
         switch (actionMasked) {
             case MotionEvent.ACTION_DOWN:
-//              mTouchState = mScroller.isFinished() ? TOUCH_STATE_REST : TOUCH_STATE_SCROLLING;
-            	  mDownX = x;
-                break;
+//            	   mTouchState = anim.isRunning() ? TOUCH_STATE_SCROLLING : TOUCH_STATE_REST;
+            	   mDownX = x;
+                 break;
                 
             case MotionEvent.ACTION_MOVE:
-            	if (mTouchState != TOUCH_STATE_SCROLLING) {
-					float moveDistanceX = x - mDownX;
-					if (mTouchState == TOUCH_STATE_REST && !isDialerPadShow ) {
-						if ((Math.abs(moveDistanceX) > TOUCH_SLOP && mDownX < mLeftTrigger && !mIsPullOut) ||
-								(Math.abs(moveDistanceX) > TOUCH_SLOP && mIsPullOut && mDownX > mLimitedDistance[0])) {
-							mTouchState = TOUCH_STATE_SCROLLING;
-							mLastMotionX = x;
-							mTouchX = getChildAt(1).getX();
+	            	if (mTouchState != TOUCH_STATE_SCROLLING) {
+						float moveDistanceX = x - mDownX;
+						if (mTouchState == TOUCH_STATE_REST) {
+							if ((Math.abs(moveDistanceX) > TOUCH_SLOP && mDownX < mLeftTrigger && !mIsPullOut) ||
+									(Math.abs(moveDistanceX) > TOUCH_SLOP && mIsPullOut && mDownX > mLimitedDistance[0])) {
+								mTouchState = TOUCH_STATE_SCROLLING;
+								mLastMotionX = x;
+								mTouchX = getChildAt(1).getX();
+							}
 						}
 					}
-				}
         }
         
         return (mTouchState == TOUCH_STATE_SCROLLING);
@@ -160,9 +164,6 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
                 break;
                 
             case MotionEvent.ACTION_UP:
-
-            	mTouchState = TOUCH_STATE_REST;
-            	
             	if(anim != null){
             		anim.removeAllListeners();
             	}
@@ -172,7 +173,6 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
             	}else{
             		startAnimatorPushIn();
             	}
-            	
             	break;
         }
 		return true;
@@ -199,6 +199,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 		anim.setDuration(300);
 		anim.start();
 		mIsPullOut = true;
+		mTouchState = TOUCH_STATE_REST;
 	}
 
 	// start the animator to push in the paper.
@@ -217,6 +218,7 @@ public class SlipMenuRelativeLayout extends RelativeLayout{
 		anim.setDuration(300);
 		anim.start();
 		mIsPullOut = false;
+		mTouchState = TOUCH_STATE_REST;
 	}
 	
 	@Override

@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,12 +24,13 @@ import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import com.android.contacts.R;
+import com.android.contacts.activities.ViewPagerVisibilityListener;
 import com.android.contacts.calllog.CallLogFragment;
 import com.android.contacts.list.FilteredResultsFragment;
 import com.android.contacts.util.Constants;
 import com.android.contacts.view.SlipMenuRelativeLayout;
 
-public class DialerFragment extends Fragment {
+public class DialerFragment extends Fragment{
 	
 	SlipMenuRelativeLayout slipMenuRelativeLayout;
 	
@@ -46,6 +48,9 @@ public class DialerFragment extends Fragment {
 	private DialpadFragment mDialpadFragment;
 	//}Added by yongan.qiu end.
 
+	//for post runnable;
+	private Handler mHandler = new Handler(){
+	};
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,24 +61,47 @@ public class DialerFragment extends Fragment {
 			
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				CallLogFragment callFragment = (CallLogFragment) getCalllogFragment();
+				if (checkCalllogPullOut()) {
+					slipMenuRelativeLayout.startAnimatorPushIn();
+				}
+				final CallLogFragment callFragment = (CallLogFragment) getCalllogFragment();
 				if(callFragment != null){
 					switch(checkedId){
 					case R.id.type_all:
+						mHandler.postDelayed(new Runnable(){
+							@Override
+							public void run() {
+								callFragment.fetchCallsForDType(Constants.CALL_TYPE_ALL);
+							}
+						}, 500);
 						Log.d("^^", "1 pressed!");
-						callFragment.fetchCallsForDType(Constants.CALL_TYPE_ALL);
 						break;
 					case R.id.type_incoming:
+						mHandler.postDelayed(new Runnable(){
+							@Override
+							public void run() {
+								callFragment.fetchCallsForDType(Constants.CALL_TYPE_IN);
+							}
+						}, 500);
 						Log.d("^^", "2 pressed!");
-						callFragment.fetchCallsForDType(Constants.CALL_TYPE_IN);
 						break;
 					case R.id.type_outgoing:
+						mHandler.postDelayed(new Runnable(){
+							@Override
+							public void run() {
+								callFragment.fetchCallsForDType(Constants.CALL_TYPE_OUT);
+							}
+						}, 500);
 						Log.d("^^", "3 pressed!");
-						callFragment.fetchCallsForDType(Constants.CALL_TYPE_OUT);
 						break;
 					case R.id.type_missed:
+						mHandler.postDelayed(new Runnable(){
+							@Override
+							public void run() {
+								callFragment.fetchCallsForDType(Constants.CALL_TYPE_MISSED);
+							}
+						}, 500);
 						Log.d("^^", "4 pressed!");
-						callFragment.fetchCallsForDType(Constants.CALL_TYPE_MISSED);
 						break;
 				}
 				}
@@ -85,9 +113,10 @@ public class DialerFragment extends Fragment {
                 new OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
-                        setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
-                                R.animator.fragment_slide_down_exit, false);
-                        return false;
+                    	if(mDialpadFragment != null && mDialpadFragment.isVisible()){
+                        setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter, R.animator.fragment_slide_down_exit, false);
+                    	}
+                    	return false;
                     }
                 });
 
@@ -103,8 +132,19 @@ public class DialerFragment extends Fragment {
                 new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
-                                R.animator.fragment_slide_down_exit, true);
+                    	if (checkCalllogPullOut()) {
+        					slipMenuRelativeLayout.startAnimatorPushIn();
+        					mHandler.postDelayed(new Runnable(){
+    							@Override
+    							public void run() {
+    								setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
+    		                                R.animator.fragment_slide_down_exit, true);
+    							}
+                        	}, 500);
+        				}else{
+        					setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
+	                                R.animator.fragment_slide_down_exit, true);
+        				}
                     }
                 });
         
@@ -122,7 +162,6 @@ public class DialerFragment extends Fragment {
         setFragmentShow(R.id.dialpad_fragment, R.animator.fragment_slide_down_enter,
                 R.animator.fragment_slide_down_exit, true);
         
-        slipMenuRelativeLayout.isDialerPadShow = mDialpadFragment.isVisible();
     }
 	
 	@Override
@@ -153,7 +192,6 @@ public class DialerFragment extends Fragment {
 		if(slipMenuRelativeLayout == null){
 			slipMenuRelativeLayout = (SlipMenuRelativeLayout) getActivity().findViewById(R.id.slip_menu_layout);
 		}else{
-			Log.d("^^", "DialerFragment:" + "(getPulledState):" + slipMenuRelativeLayout.getPulledState());
 			return slipMenuRelativeLayout.getPulledState();
 		}
 		return false;
@@ -163,7 +201,6 @@ public class DialerFragment extends Fragment {
 		if(slipMenuRelativeLayout == null){
 			slipMenuRelativeLayout = (SlipMenuRelativeLayout) getActivity().findViewById(R.id.slip_menu_layout);
 		}else{
-			Log.d("^^", "DialerFragment:" + "(getLeftTriggerDistance):" + slipMenuRelativeLayout.getLeftTriggerDistance());
 			return slipMenuRelativeLayout.getLeftTriggerDistance();
 		}
 		return 0;
@@ -182,6 +219,7 @@ public class DialerFragment extends Fragment {
 			return fragment;
 	}
 	public void setFragmentShow(int id, int animEnter, int animExit, boolean isShow) {
+		Log.d("^^", "setFragmentShow:" + isShow);
 		FragmentManager fragmentManager = getFragmentManager();
 		Fragment fragment = fragmentManager.findFragmentById(id);
 		if(fragment != null && !fragment.isHidden() ^ isShow) {
@@ -190,19 +228,15 @@ public class DialerFragment extends Fragment {
 			if(isShow) {
 				transaction.show(fragment);
 				slipMenuRelativeLayout.isDialerPadShow = true;
+				Log.d("^^", "isDialerPadShow:true");
 			} else {
 				transaction.hide(fragment);
 				slipMenuRelativeLayout.isDialerPadShow = false;
+				Log.d("^^", "isDialerPadShow : false");
 			}
 			transaction.commitAllowingStateLoss();
 			fragmentManager.executePendingTransactions();
 		}
-		if(id == R.id.dialpad_fragment) {
-			Log.d("^^", "----------setvisibility:" + isShow);
-//            mCallTypeDialpadButtons.setVisibility(isShow ? View.GONE : View.VISIBLE);
-        }else{
-        	Log.d("^^", "id != R.id.dialpad_fragment  id:" + id);
-        }
 	}
 	
 	//{Added by yongan.qiu on 2012.6.21 begin.
@@ -228,7 +262,6 @@ public class DialerFragment extends Fragment {
 	
 	//add JiangzhouQ 12.06.18
 	public void onAnimationFragment(){
-		Log.d("^^", "onAnimationFragment.start");
 		if(!checkCalllogPullOut()){
 			slipMenuRelativeLayout.startAnimatorPullOut();
 		}else{
@@ -236,6 +269,4 @@ public class DialerFragment extends Fragment {
 		}
 	}
 	//end JiangzhouQ 12.06.18
-
-
 }
