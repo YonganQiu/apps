@@ -54,6 +54,8 @@ public class Constants {
     //end: added by yunzhou.song
     //{Added by yongan.qiu on 2012-7-16 begin.
     public static final String EXTRA_CONTACT_LIST_FILTER = "contact_list_filter";
+    public static final String EXTRA_ACTION_TITLE = "action_title";
+    public static final String EXTRA_ACTION_ICON = "action_icon";
     public static final String EXTRA_EMAIL_URIS =
             "com.android.contacts.extra.EMAIL_URIS";
 
@@ -64,6 +66,10 @@ public class Constants {
             Uri.parse("content://call_log/calls/group_by_number");
     //}Added by yongan.qiu end.
     
+    //{Added by yongan.qiu on 2012-7-31 begin.
+    public static final String ACTION_MULTI_PICK = "com.android.contacts.intent.action.MULTI_PICK";
+    //}Added by yongan.qiu end.
+
     //Added by gangzhou.qi at 2012-6-27 下午8:22:57
     public static final int CALL_TYPE_ALL = 0;
     public static final int CALL_TYPE_IN = 1;

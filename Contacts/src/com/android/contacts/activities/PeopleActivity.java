@@ -1823,18 +1823,22 @@ public class PeopleActivity extends ContactsActivity
             }
             //{Added by yongan.qiu on 2012-7-16 begin.
             case R.id.menu_msg: {
-                Intent intent = new Intent(Intent.ACTION_PICK);
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_msg);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_msg_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_PICK_PHONE);
                 return true;
             }
             case R.id.menu_email: {
-                Intent intent = new Intent(Intent.ACTION_PICK);
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE);
                 intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_email);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_light);
                 startActivityForResult(intent, REQUEST_CODE_PICK_EMAIL);
                 return true;
             }

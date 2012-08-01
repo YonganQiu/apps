@@ -628,6 +628,9 @@
     <string name="menu_msg">发送信息</string>
     <string name="menu_email">发送邮件</string>
 
+    <string name="multi_action_selection_activity_title">"选择联系人"</string>
+    <string name="action">"确定"</string>
+
     <!-- Added by yongan.qiu end. -->
 
  <!-- Added by Gangzhou.Qi 2012.07.12 -->

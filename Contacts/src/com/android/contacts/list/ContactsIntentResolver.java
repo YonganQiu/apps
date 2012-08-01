@@ -20,6 +20,7 @@ import com.android.contacts.CallContactActivity;
 import com.android.contacts.ContactsSearchManager;
 import com.android.contacts.activities.DialtactsActivity;
 import com.android.contacts.activities.PeopleActivity;
+import com.android.contacts.util.Constants;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -92,8 +93,13 @@ public class ContactsIntentResolver {
             request.setActionCode(ContactsRequest.ACTION_STREQUENT);
         } else if (UI.LIST_GROUP_ACTION.equals(action)) {
             request.setActionCode(ContactsRequest.ACTION_GROUP);
-            // We no longer support UI.GROUP_NAME_EXTRA_KEY
-        } else if (Intent.ACTION_PICK.equals(action)) {
+        // We no longer support UI.GROUP_NAME_EXTRA_KEY
+        //{Modified by yongan.qiu on 2012-7-31 begin.
+        //old:
+        /*} else if (Intent.ACTION_PICK.equals(action)) {*/
+        //new:
+        } else if (Intent.ACTION_PICK.equals(action) || Constants.ACTION_MULTI_PICK.equals(action)) {
+        //}Modified by yongan.qiu end.
             final String resolvedType = intent.resolveType(mContext);
             if (Contacts.CONTENT_TYPE.equals(resolvedType)) {
                 request.setActionCode(ContactsRequest.ACTION_PICK_CONTACT);

@@ -262,6 +262,22 @@
             />
         </activity>
 
+        <activity android:name=".activities.MultiActionSelectionActivity"
+            android:label="@string/multi_action_selection_activity_title"
+            android:uiOptions="splitActionBarWhenNarrow"
+            android:theme="@style/ContactPickerTheme"
+            android:launchMode="singleTop"
+            android:clearTaskOnLaunch="true"
+            android:configChanges="orientation|keyboardHidden|screenSize">
+            <intent-filter>
+                <action android:name="com.android.contacts.intent.action.MULTI_PICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.dir/contact" />
+                <data android:mimeType="vnd.android.cursor.dir/phone_v2" />
+                <data android:mimeType="vnd.android.cursor.dir/email_v2" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".activities.ContactSelectionActivity"
             android:label="@string/contactsList"
             android:theme="@style/ContactPickerTheme"

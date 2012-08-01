@@ -1903,6 +1903,9 @@
     <string name="menu_msg">Send Message</string>
     <string name="menu_email">Send Email</string>
 
+    <string name="multi_action_selection_activity_title">Choose a contact</string>
+    <string name="action">OK</string>
+
     <!-- Added by yongan.qiu end. -->
 
 
