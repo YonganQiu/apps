@@ -66,20 +66,24 @@ public class Constants {
             Uri.parse("content://call_log/calls/group_by_number");
     //}Added by yongan.qiu end.
     
+<<<<<<< HEAD
     //{Added by yongan.qiu on 2012-7-31 begin.
     public static final String ACTION_MULTI_PICK = "com.android.contacts.intent.action.MULTI_PICK";
     //}Added by yongan.qiu end.
 
     //Added by gangzhou.qi at 2012-6-27 下午8:22:57
+=======
+    //Added by gangzhou.qi at 2012-6-27 8:22:57
+>>>>>>> 群发短信功能
     public static final int CALL_TYPE_ALL = 0;
     public static final int CALL_TYPE_IN = 1;
     public static final int CALL_TYPE_OUT = 2;
     public static final int CALL_TYPE_MISSED = 3;
-	//Ended by gangzhou.qi at 2012-6-27 下午8:22:57
-    //Added by gangzhou.qi at 2012-7-5 上午9:59:42
+	//Ended by gangzhou.qi at 2012-6-27 8:22:57
+    //Added by gangzhou.qi at 2012-7-5 9:59:42
     public static final boolean TOTAL_DEBUG = true;
-	//Ended by gangzhou.qi at 2012-7-5 上午9:59:42
-    //Begin by gangzhou.qi at 2012-7-13 上午10:09:04
+	//Ended by gangzhou.qi at 2012-7-5 9:59:42
+    //Begin by gangzhou.qi at 2012-7-13 10:09:04
     public static final String SIM_OPERATION_TYPE = "sim_operation_type";
     public static final String SIM_OPERATION_ARRAY = "sim_operation_array";
     public static final int SIM_OPERATION_UNKNOWN = 0;
@@ -90,5 +94,6 @@ public class Constants {
     public static final int SIM_OPERATION_IMPORT_ALL = 5;
     
     public static final String SIM_READING_STATE = "sim_reading_state";
-	//Ended by gangzhou.qi at 2012-7-13 上午10:09:04
+	//Ended by gangzhou.qi at 2012-7-13 10:09:04
+    public static final String MMS_SEND_TO = "android.intent.action.COMPOSE_MESSAGE";
 }

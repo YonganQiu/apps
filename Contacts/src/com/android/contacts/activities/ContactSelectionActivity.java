@@ -727,7 +727,7 @@ public class ContactSelectionActivity extends ContactsActivity
             		intent.putExtra(extraName, uris);
             	}
             	intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            	setResult(RESULT_OK, intent);
+              setResult(RESULT_OK, intent);
             	finish();
             }
             case R.id.btn_cancel: {

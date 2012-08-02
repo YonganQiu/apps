@@ -2021,7 +2021,17 @@ public class PeopleActivity extends ContactsActivity
             case REQUEST_CODE_PICK_PHONE: {
                 if (resultCode == RESULT_OK && data != null) {
                     Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_PHONE_URIS);
-                    wrapFromPhoneUris(uris);
+                    Intent mmsIntent = new Intent(Constants.MMS_SEND_TO);
+                    mmsIntent.putExtra(Intents.EXTRA_PHONE_URIS, uris);
+                    mmsIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    try {
+                        startActivity(mmsIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // TODO no activity to send email.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    
                 }
                 break;
             }
@@ -2081,41 +2091,41 @@ public class PeopleActivity extends ContactsActivity
     private static final int EMAIL_DISPLAY_NAME = 1;
     private static final int EMAIL_ADDRESS = 2;
 
-    private Uri[] wrapFromPhoneUris(Parcelable[] uris) {
-        if (uris == null || uris.length < 1) {
-            return null;
-        }
-        StringBuilder idSet = new StringBuilder();
-        boolean needComma = false;
-        for (Parcelable uri : uris) {
-            ((Uri) uri).getLastPathSegment();
-            if (needComma) {
-                idSet.append(',');
-            } else {
-                needComma = true;
-            }
-            idSet.append(((Uri) uri).getLastPathSegment());
-        }
-        final String where = Phone._ID + " IN (" + idSet.toString() + ")";
-        Cursor cursor = getContentResolver().query(Phone.CONTENT_URI, PHONE_PROJECTION, where, null, null);
-        if (cursor == null || cursor.getCount() <= 0) {
-            return null;
-        }
-        
-        Uri[] newUris = new Uri[cursor.getCount()];
-        try {
-            while(cursor.moveToNext()) {
-                Log.i(TAG, "id = " + cursor.getLong(PHONE_ID)
-                        + "dispaly_name = " + cursor.getString(PHONE_DISPLAY_NAME)
-                        + "number = " + cursor.getString(PHONE_NUMBER));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            cursor.close();
-        }
-        return newUris;
-    }
+//    private Uri[] wrapFromPhoneUris(Parcelable[] uris) {
+//        if (uris == null || uris.length < 1) {
+//            return null;
+//        }
+//        StringBuilder idSet = new StringBuilder();
+//        boolean needComma = false;
+//        for (Parcelable uri : uris) {
+//            ((Uri) uri).getLastPathSegment();
+//            if (needComma) {
+//                idSet.append(',');
+//            } else {
+//                needComma = true;
+//            }
+//            idSet.append(((Uri) uri).getLastPathSegment());
+//        }
+//        final String where = Phone._ID + " IN (" + idSet.toString() + ")";
+//        Cursor cursor = getContentResolver().query(Phone.CONTENT_URI, PHONE_PROJECTION, where, null, null);
+//        if (cursor == null || cursor.getCount() <= 0) {
+//            return null;
+//        }
+//        
+//        Uri[] newUris = new Uri[cursor.getCount()];
+//        try {
+//            while(cursor.moveToNext()) {
+//                Log.i(TAG, "id = " + cursor.getLong(PHONE_ID)
+//                        + "dispaly_name = " + cursor.getString(PHONE_DISPLAY_NAME)
+//                        + "number = " + cursor.getString(PHONE_NUMBER));
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            cursor.close();
+//        }
+//        return newUris;
+//    }
 
     private String[] getAddressesFromEmailUris(Parcelable[] uris) {
         if (uris == null || uris.length < 1) {
