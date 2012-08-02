@@ -447,6 +447,16 @@ public abstract class PagedView extends ViewGroup {
                 ev.getText().add(getCurrentPageDescription());
                 sendAccessibilityEventUnchecked(ev);
             }
+            
+			// {add by jingjiang.yu at 2012.08.02 begin for screen scroll.
+			if (mOriginalPage != INVALID_PAGE) {
+				int whichPage = mOriginalPage;
+				mOriginalPage = INVALID_PAGE;
+				snapToPage(whichPage);
+			} else if (mTryoutScrollAniming) {
+				mTryoutScrollAniming = false;
+			}
+			// }add by jingjiang.yu end
             return true;
         }
         return false;
@@ -1665,6 +1675,26 @@ public abstract class PagedView extends ViewGroup {
     protected void snapToPage(int whichPage) {
         snapToPage(whichPage, PAGE_SNAP_ANIMATION_DURATION);
     }
+    
+	// {add by jingjiang.yu at 2012.08.02 begin for screen scroll.
+	private int mOriginalPage = INVALID_PAGE;
+	private boolean mTryoutScrollAniming = false;
+
+	public void tryoutScrollAnim() {
+		if (getPageCount() <= 1 || mTryoutScrollAniming) {
+			return;
+		}
+
+		mOriginalPage = mCurrentPage;
+
+		int whichPage = mOriginalPage + 1;
+		if (mOriginalPage >= getPageCount() - 1) {
+			whichPage = mOriginalPage - 1;
+		}
+		mTryoutScrollAniming = true;
+		snapToPage(whichPage);
+	}
+	// }add by jingjiang.yu end
 
     protected void snapToPage(int whichPage, int duration) {
         whichPage = Math.max(0, Math.min(whichPage, getPageCount() - 1));

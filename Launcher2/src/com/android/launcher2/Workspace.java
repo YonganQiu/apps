@@ -5016,22 +5016,6 @@ public class Workspace extends SmoothPagedView
 		tryoutScrollAnim();
 	}
 	
-	private boolean mForwardScroll = true;
-
-	public void tryoutScrollAnim() {
-		if (mCurrentPage == 0 && !mForwardScroll) {
-			mForwardScroll = true;
-		} else if (mCurrentPage == getPageCount() - 1 && mForwardScroll) {
-			mForwardScroll = false;
-		}
-
-		if (mForwardScroll) {
-			snapToPage(mCurrentPage + 1);
-		} else {
-			snapToPage(mCurrentPage - 1);
-		}
-	}
-	
 	public static class PreviewDragInfo {
 		public int dragIndex;
 		public boolean addButtonIsShowed;
