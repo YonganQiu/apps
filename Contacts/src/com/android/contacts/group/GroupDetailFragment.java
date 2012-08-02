@@ -52,6 +52,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
+import android.provider.ContactsContract.Intents;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.TextUtils;
@@ -527,7 +528,17 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
         switch (requestCode) {
             case REQUEST_CODE_PICK_PHONE: {
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_PHONE_URIS);
+                    Intent mmsIntent = new Intent(Constants.MMS_SEND_TO);
+                    mmsIntent.putExtra(Intents.EXTRA_PHONE_URIS, uris);
+                    mmsIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    try {
+                        startActivity(mmsIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // TODO no activity to send mms.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             }

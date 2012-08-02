@@ -2070,7 +2070,7 @@ public class PeopleActivity extends ContactsActivity
                     try {
                         startActivity(mmsIntent);
                     } catch (ActivityNotFoundException e) {
-                        // TODO no activity to send email.
+                        // TODO no activity to send mms.
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -2143,15 +2143,6 @@ public class PeopleActivity extends ContactsActivity
     }
 
     //{Added by yongan.qiu on 2012-7-16 begin.
-    private static final String[] PHONE_PROJECTION = {
-        Phone._ID,
-        Phone.DISPLAY_NAME,
-        Phone.NUMBER
-    };
-    private static final int PHONE_ID = 0;
-    private static final int PHONE_DISPLAY_NAME = 1;
-    private static final int PHONE_NUMBER = 2;
-
     private static final String[] EMAIL_PROJECTION = {
         Email._ID,
         Email.DISPLAY_NAME,
@@ -2160,42 +2151,6 @@ public class PeopleActivity extends ContactsActivity
     private static final int EMAIL_ID = 0;
     private static final int EMAIL_DISPLAY_NAME = 1;
     private static final int EMAIL_ADDRESS = 2;
-
-//    private Uri[] wrapFromPhoneUris(Parcelable[] uris) {
-//        if (uris == null || uris.length < 1) {
-//            return null;
-//        }
-//        StringBuilder idSet = new StringBuilder();
-//        boolean needComma = false;
-//        for (Parcelable uri : uris) {
-//            ((Uri) uri).getLastPathSegment();
-//            if (needComma) {
-//                idSet.append(',');
-//            } else {
-//                needComma = true;
-//            }
-//            idSet.append(((Uri) uri).getLastPathSegment());
-//        }
-//        final String where = Phone._ID + " IN (" + idSet.toString() + ")";
-//        Cursor cursor = getContentResolver().query(Phone.CONTENT_URI, PHONE_PROJECTION, where, null, null);
-//        if (cursor == null || cursor.getCount() <= 0) {
-//            return null;
-//        }
-//        
-//        Uri[] newUris = new Uri[cursor.getCount()];
-//        try {
-//            while(cursor.moveToNext()) {
-//                Log.i(TAG, "id = " + cursor.getLong(PHONE_ID)
-//                        + "dispaly_name = " + cursor.getString(PHONE_DISPLAY_NAME)
-//                        + "number = " + cursor.getString(PHONE_NUMBER));
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            cursor.close();
-//        }
-//        return newUris;
-//    }
 
     private String[] getAddressesFromEmailUris(Parcelable[] uris) {
         if (uris == null || uris.length < 1) {
