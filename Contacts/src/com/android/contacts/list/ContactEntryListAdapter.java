@@ -100,6 +100,28 @@ public abstract class ContactEntryListAdapter extends IndexerListAdapter {
     private String mContactsCount = "";
     private boolean mDarkTheme = false;
 
+    //{Added by yongan.qiu on 2012-8-2 begin.
+    private String mExtraSelection;
+
+    public void setExtraSelection(String selection) {
+        mExtraSelection = selection;
+    }
+
+    /**
+     * Append extra selection when configure adapter loader's selection.
+     * @param sb original string builder to append selection to
+     * @param selection the extra selection to append
+     */
+    protected void appendExtraSelection(StringBuilder sb) {
+        if (!TextUtils.isEmpty(mExtraSelection)) {
+            if (!TextUtils.isEmpty(sb)) {
+                sb.append(" AND ");
+            }
+            sb.append("(").append(mExtraSelection).append(")");
+        }
+    }
+    //}Added by yongan.qiu end.
+
     //Begin by gangzhou.qi at 2012-7-11 上午10:53:17
     private final ContentResolver mContentResolver;
     private String accountType = null;

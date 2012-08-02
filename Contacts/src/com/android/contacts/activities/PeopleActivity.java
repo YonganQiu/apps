@@ -1858,7 +1858,7 @@ public class PeopleActivity extends ContactsActivity
                 intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_email);
-                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_light);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_PICK_EMAIL);
                 return true;
             }
@@ -2213,7 +2213,7 @@ public class PeopleActivity extends ContactsActivity
             idSet.append(((Uri) uri).getLastPathSegment());
         }
         final String where = Email._ID + " IN (" + idSet.toString() + ")";
-        Cursor cursor = getContentResolver().query(Email.CONTENT_URI, PHONE_PROJECTION, where, null, null);
+        Cursor cursor = getContentResolver().query(Email.CONTENT_URI, EMAIL_PROJECTION, where, null, null);
         if (cursor == null || cursor.getCount() <= 0) {
             return null;
         }

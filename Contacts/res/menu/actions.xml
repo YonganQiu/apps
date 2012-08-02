@@ -53,7 +53,7 @@
 
     <item
         android:id="@+id/menu_email"
-        android:icon="@drawable/ic_menu_email_holo_light"
+        android:icon="@drawable/ic_menu_email_holo_dark"
         android:title="@string/menu_email"
         android:showAsAction="never" />
     <!-- Added by yongan.qiu end. -->

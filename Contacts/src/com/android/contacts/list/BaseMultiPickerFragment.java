@@ -53,9 +53,11 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     private OnDoneListener mOnDoneListener;
 
-    protected Parcelable[] mExcludeUris;
+    private Parcelable[] mExcludeUris;
 
-    protected ContactListFilter mFilter;
+    private ContactListFilter mFilter;
+
+    private String mExtraSelection;
 
     private View mAccountFilterHeader;
 
@@ -112,6 +114,10 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     public ContactListFilter getFilter() {
         return mFilter;
+    }
+
+    public void setExtraSelection(String selection) {
+        mExtraSelection = selection;
     }
 
     public BaseMultiPickerFragment(OnDoneListener listener, int actionTitle, int actionIcon) {
@@ -320,6 +326,8 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
         adapter.setSectionHeaderDisplayEnabled(true);
         adapter.setDisplayPhotos(true);
+
+        adapter.setExtraSelection(mExtraSelection);
 
         onCreateListAdapter(adapter);
         return adapter;

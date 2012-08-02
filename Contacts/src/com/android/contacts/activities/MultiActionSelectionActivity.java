@@ -78,6 +78,7 @@ public class MultiActionSelectionActivity extends ContactsActivity
 
     private Parcelable[] mExcludeUris;
     private ContactListFilter mContactListFilter;
+    private String mExtraSelection;
     private int mActionTitle;
     private int mActionIcon;
 
@@ -135,6 +136,7 @@ public class MultiActionSelectionActivity extends ContactsActivity
                 mExcludeUris = intent.getParcelableArrayExtra(extraName);
             }
             mContactListFilter = (ContactListFilter) intent.getParcelableExtra(Constants.EXTRA_CONTACT_LIST_FILTER);
+            mExtraSelection = intent.getStringExtra(Constants.EXTRA_SELECTION);
             mActionTitle = intent.getIntExtra(Constants.EXTRA_ACTION_TITLE, DEFAULT_TITLE_RES_ID);
             mActionIcon = intent.getIntExtra(Constants.EXTRA_ACTION_ICON, DEFAULT_ICON_RES_ID);
 
@@ -272,6 +274,7 @@ public class MultiActionSelectionActivity extends ContactsActivity
             fragment.setFilter(mContactListFilter);
         }
 
+        fragment.setExtraSelection(mExtraSelection);
         fragment.setLegacyCompatibilityMode(mRequest.isLegacyCompatibilityMode());
         fragment.setDirectoryResultLimit(DEFAULT_DIRECTORY_RESULT_LIMIT);
 

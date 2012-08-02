@@ -112,12 +112,26 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
     //{Added by yongan.qiu on 2012-7-16 begin.
     private void configureSelection(
             CursorLoader loader, long directoryId, ContactListFilter filter) {
-        if (filter == null || directoryId != Directory.DEFAULT) {
+        //{Modified by yongan.qiu on 2012-8-2 begin.
+        //old:
+        /*if (filter == null || directoryId != Directory.DEFAULT) {*/
+        //new:
+        if (directoryId != Directory.DEFAULT) {
+        //}Modified by yongan.qiu end.
             return;
         }
 
         final StringBuilder selection = new StringBuilder();
         final List<String> selectionArgs = new ArrayList<String>();
+
+        //{Added by yongan.qiu on 2012-8-2 begin.
+        if (filter == null) {
+            appendExtraSelection(selection);
+            loader.setSelection(selection.toString());
+            loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
+            return;
+        }
+        //}Added by yongan.qiu end.
 
         switch (filter.filterType) {
         case ContactListFilter.FILTER_TYPE_CUSTOM: {
@@ -144,6 +158,9 @@ public class EmailAddressListAdapter extends ContactEntryListAdapter {
             // No selection.
             break;
         }
+        //{Added by yongan.qiu on 2012-8-2 begin.
+        appendExtraSelection(selection);
+        //}Added by yongan.qiu end.
     loader.setSelection(selection.toString());
     loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
 

@@ -54,6 +54,7 @@ public class Constants {
     //end: added by yunzhou.song
     //{Added by yongan.qiu on 2012-7-16 begin.
     public static final String EXTRA_CONTACT_LIST_FILTER = "contact_list_filter";
+    public static final String EXTRA_SELECTION = "extra_selection";
     public static final String EXTRA_ACTION_TITLE = "action_title";
     public static final String EXTRA_ACTION_ICON = "action_icon";
     public static final String EXTRA_EMAIL_URIS =

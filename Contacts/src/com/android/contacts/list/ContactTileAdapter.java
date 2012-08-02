@@ -184,9 +184,32 @@ public class ContactTileAdapter extends BaseAdapter {
      */
     public void setContactCursor(Cursor cursor) {
         mContactCursor = cursor;
+        //{Added by yongan.qiu on 2012-8-2 begin.
+        loadContactIds(cursor);
+        //}Added by yongan.qiu end.
         mDividerPosition = getDividerPosition(cursor);
         notifyDataSetChanged();
     }
+
+    //{Added by yongan.qiu on 2012-8-2 begin.
+    private long[] mContactIds;
+    public long[] getContactIds() {
+        return mContactIds;
+    }
+    private void loadContactIds(Cursor cursor) {
+        if (cursor != null && cursor.getCount() > 0) {
+            long[] contactIds = new long[cursor.getCount()];
+            cursor.moveToPosition(-1);
+            int i = 0;
+            while(cursor.moveToNext()) {
+                contactIds[i++] = cursor.getLong(mIdIndex);
+            }
+            mContactIds = contactIds;
+        } else {
+            mContactIds = null;
+        }
+    }
+    //}Added by yongan.qiu end.
 
     /**
      * Iterates over the {@link Cursor}

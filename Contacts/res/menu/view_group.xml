@@ -15,24 +15,45 @@
 -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- Removed by yongan.qiu on 2012.8.2
     <item
         android:id="@+id/menu_edit_group"
         android:icon="@drawable/ic_menu_compose_holo_dark"
         android:title="@string/menu_editGroup"
         android:alphabeticShortcut="e" />
-    
-    <!-- begin: added by yunzhou.song -->
-    <!--
-    <item
-        android:id="@+id/menu_group_ringtone"
-        android:icon="@drawable/ic_menu_compose_holo_dark"
-        android:title="@string/group_ringtone"
-        android:alphabeticShortcut="r" />
-    -->
-    <!-- end: added by yunzhou.song -->
-
     <item
         android:id="@+id/menu_delete_group"
         android:icon="@drawable/ic_menu_trash_holo_light"
         android:title="@string/menu_deleteGroup" />
+-->
+
+<!-- Added by yongan.qiu on 2012.8.2 begin. -->
+    <item
+        android:id="@+id/menu_edit_group"
+        android:icon="@drawable/ic_menu_compose_holo_dark"
+        android:title="@string/menu_editGroup"
+        android:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_add_members"
+        android:icon="@drawable/ic_menu_add_members_holo_dark"
+        android:title="@string/menu_add_members"
+        android:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_msg"
+        android:icon="@drawable/ic_menu_msg_holo_dark"
+        android:title="@string/menu_msg"
+        android:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_email"
+        android:icon="@drawable/ic_menu_email_holo_dark"
+        android:title="@string/menu_email"
+        android:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_delete_group"
+        android:icon="@drawable/ic_menu_trash_holo_dark"
+        android:title="@string/menu_deleteGroup"
+        android:showAsAction="ifRoom" />
+<!-- Added by yongan.qiu end. -->
+
 </menu>

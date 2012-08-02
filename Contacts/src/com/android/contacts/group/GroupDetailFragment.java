@@ -29,11 +29,13 @@ import com.android.contacts.list.ContactTileAdapter;
 import com.android.contacts.list.ContactTileAdapter.DisplayType;
 import com.android.contacts.model.AccountType;
 import com.android.contacts.model.AccountTypeManager;
+import com.android.contacts.util.Constants;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.ActivityNotFoundException;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -45,10 +47,15 @@ import android.graphics.Rect;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Groups;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -97,7 +104,13 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
 
     private static final int LOADER_METADATA = 0;
     private static final int LOADER_MEMBERS = 1;
-    
+
+    //{Added by yongan.qiu on 2012-7-16 begin.
+    private static final int REQUEST_CODE_PICK_CONTACT = 1;
+    private static final int REQUEST_CODE_PICK_PHONE = 2;
+    private static final int REQUEST_CODE_PICK_EMAIL = 3;
+    //}Added by yongan.qiu end.
+
     private Context mContext;
 
     private View mRootView;
@@ -432,8 +445,16 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        mOptionsMenuGroupDeletable = isGroupDeletable() && isVisible();
-        mOptionsMenuGroupPresent = isGroupPresent() && isVisible();
+        //{Modified by yongan.qiu on 2012-8-2 begin.
+        //For sometimes options menu is prepared before fragment becomeing visible,
+        //in this case we will miss the "edit" and "delete" items.
+        //old:
+        /*mOptionsMenuGroupDeletable = isGroupDeletable() && isVisible();
+        mOptionsMenuGroupPresent = isGroupPresent() && isVisible();*/
+        //new:
+        mOptionsMenuGroupDeletable = isGroupDeletable();
+        mOptionsMenuGroupPresent = isGroupPresent();
+        //}Modified by yongan.qiu end.
 
         final MenuItem editMenu = menu.findItem(R.id.menu_edit_group);
         editMenu.setVisible(mOptionsMenuGroupPresent);
@@ -449,19 +470,32 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
                 if (mListener != null) mListener.onEditRequested(mGroupUri);
                 break;
             }
-            //begin: added by yunzhou.song
-//            case R.id.menu_group_ringtone: {
-//            	Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-//        		// Allow user to pick 'Default'
-//            	intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
-//            	// Show only ringtones
-//            	intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_RINGTONE);
-//            	// Don't show 'Silent'
-//            	//intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-//            	getActivity().startActivityForResult(intent, GroupDetailActivity.REQUEST_CODE_PICK_RINGTONE);
-//            	break;
-//            }
-            //end: added by yunzhou.song
+            //{Added by yongan.qiu on 2012-8-2 begin.
+            case R.id.menu_add_members: {
+                
+                break;
+            }
+            case R.id.menu_msg: {
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
+                intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_SELECTION, createExtraSelection());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_msg);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_msg_holo_dark);
+                startActivityForResult(intent, REQUEST_CODE_PICK_PHONE);
+                return true;
+            }
+            case R.id.menu_email: {
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
+                intent.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_SELECTION, createExtraSelection());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_email);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_dark);
+                startActivityForResult(intent, REQUEST_CODE_PICK_EMAIL);
+                return true;
+            }
+            //}Added by yongan.qiu end.
             case R.id.menu_delete_group: {
                 GroupDeletionDialogFragment.show(getFragmentManager(), mGroupId, mGroupName,
                         mCloseActivityAfterDelete);
@@ -470,6 +504,104 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
         }
         return false;
     }
+
+    //{Added by yongan.qiu on 2012-8-2 begin.
+    private String createExtraSelection() {
+        long[] contactIds = mAdapter.getContactIds();
+        StringBuilder selection = new StringBuilder();
+        selection.append(Data.CONTACT_ID + " IN (");
+        if (contactIds != null && contactIds.length > 0) {
+            for (Long id : contactIds) {
+                selection.append(id).append(',');
+            }
+            if (contactIds.length > 0) {
+                selection.delete(selection.length() - 1, selection.length());
+            }
+        }
+        selection.append(")");
+        return selection.toString();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_PICK_PHONE: {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    
+                }
+                break;
+            }
+            case REQUEST_CODE_PICK_EMAIL: {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Constants.EXTRA_EMAIL_URIS);
+                    String[] addresses = getAddressesFromEmailUris(uris);
+                    Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                    Uri emailAddress = Uri.fromParts("mailto", "", null);
+                    emailIntent.setData(emailAddress);
+                    emailIntent.putExtra(Intent.EXTRA_EMAIL, addresses);
+                    try {
+                        startActivity(emailIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // TODO no activity to send email.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
+    private static final String[] EMAIL_PROJECTION = {
+        Email._ID,
+        Email.DISPLAY_NAME,
+        Email.ADDRESS
+    };
+    private static final int EMAIL_ID = 0;
+    private static final int EMAIL_DISPLAY_NAME = 1;
+    private static final int EMAIL_ADDRESS = 2;
+
+    private String[] getAddressesFromEmailUris(Parcelable[] uris) {
+        if (uris == null || uris.length < 1) {
+            return null;
+        }
+        StringBuilder idSet = new StringBuilder();
+        boolean needComma = false;
+        for (Parcelable uri : uris) {
+            ((Uri) uri).getLastPathSegment();
+            if (needComma) {
+                idSet.append(',');
+            } else {
+                needComma = true;
+            }
+            idSet.append(((Uri) uri).getLastPathSegment());
+        }
+        final String where = Email._ID + " IN (" + idSet.toString() + ")";
+        Cursor cursor = getActivity().getContentResolver().query(Email.CONTENT_URI, EMAIL_PROJECTION, where, null, null);
+        if (cursor == null || cursor.getCount() <= 0) {
+            return null;
+        }
+        
+        String[] addresses = new String[cursor.getCount()];
+        int i = 0;
+        try {
+            while(cursor.moveToNext()) {
+                Log.i(TAG, "id = " + cursor.getLong(EMAIL_ID)
+                        + "dispaly_name = " + cursor.getString(EMAIL_DISPLAY_NAME)
+                        + "number = " + cursor.getString(EMAIL_ADDRESS));
+                addresses[i++] = cursor.getString(EMAIL_ADDRESS);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            cursor.close();
+        }
+        return addresses;
+    }
+    //}Added by yongan.qiu end.
 
     public void closeActivityAfterDelete(boolean closeActivity) {
         mCloseActivityAfterDelete = closeActivity;
