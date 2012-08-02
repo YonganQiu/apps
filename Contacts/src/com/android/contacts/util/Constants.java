@@ -66,15 +66,11 @@ public class Constants {
             Uri.parse("content://call_log/calls/group_by_number");
     //}Added by yongan.qiu end.
     
-<<<<<<< HEAD
     //{Added by yongan.qiu on 2012-7-31 begin.
     public static final String ACTION_MULTI_PICK = "com.android.contacts.intent.action.MULTI_PICK";
     //}Added by yongan.qiu end.
 
-    //Added by gangzhou.qi at 2012-6-27 下午8:22:57
-=======
     //Added by gangzhou.qi at 2012-6-27 8:22:57
->>>>>>> 群发短信功能
     public static final int CALL_TYPE_ALL = 0;
     public static final int CALL_TYPE_IN = 1;
     public static final int CALL_TYPE_OUT = 2;

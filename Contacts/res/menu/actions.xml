@@ -57,7 +57,14 @@
         android:title="@string/menu_email"
         android:showAsAction="never" />
     <!-- Added by yongan.qiu end. -->
-
+    <!-- Begin Added by gangzhou.qi at 2012.08.02 -->
+    <item
+        android:id="@+id/menu_add_favoriate"
+        android:icon="@drawable/ic_add_contact_holo_dark"
+        android:title="@string/description_plus_button"
+        android:showAsAction="ifRoom" />
+    
+    <!-- Ended Added by gangzhou.qi at 2012.08.02 -->
     <item
         android:id="@+id/menu_add_group"
         android:icon="@drawable/ic_add_group_holo_dark"
