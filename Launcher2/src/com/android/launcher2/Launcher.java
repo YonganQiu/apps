@@ -1854,6 +1854,13 @@ public final class Launcher extends Activity
         if (mWorkspace.isSwitchingState()) {
             return;
         }
+        
+      //{add by jingjiang.yu at 2012.08.02 begin for screen scroll.
+		if (mState == State.USER_DEFINED_SETTINGS) {
+			hideUserDefinedSettings(true, false);
+			return;
+		}
+      //}add by jingjiang.yu end
 
         Object tag = v.getTag();
         if (tag instanceof ShortcutInfo) {
@@ -2127,6 +2134,15 @@ public final class Launcher extends Activity
     }
 
     public boolean onLongClick(View v) {
+    	//{add by jingjiang.yu at 2012.08.02 begin for screen scroll.
+		if (mState == State.USER_DEFINED_SETTINGS) {
+			mWorkspace.performHapticFeedback(
+					HapticFeedbackConstants.LONG_PRESS,
+					HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
+			hideUserDefinedSettings(true, false);
+			return true;
+		}
+    	//}add by jingjiang.yu end
         if (mState != State.WORKSPACE) {
             return false;
         }
@@ -2157,9 +2173,9 @@ public final class Launcher extends Activity
                         HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
                 // {modified by zhong.chen 2012-6-28 for launcher user-defined
                 //startWallpaper();
-                if(mState != State.USER_DEFINED_SETTINGS) {
-                    showUserDefinedSettings(true, false);
-                }
+				if (mState != State.USER_DEFINED_SETTINGS) {
+					showUserDefinedSettings(true, false);
+				}
                 // }modified by zhong.chen 2012-6-28 for launcher user-defined end 
             } else {
                 if (!(itemUnderLongClick instanceof Folder)) {
@@ -3653,310 +3669,200 @@ public final class Launcher extends Activity
     private UserDefinedSettingsTabHost mUserDefinedTabHost;
     private UserDefinedSettingsPagedView mUserDefinedContent;
     
-    private void showUserDefinedSettingsHelper(final boolean animated, final boolean springLoaded) {
-        if (mStateAnimation != null) {
-            mStateAnimation.cancel();
-            mStateAnimation = null;
-        }
-        final Resources res = getResources();
-        final Launcher instance = this;
+	void showUserDefinedSettings(boolean animated, boolean fromResume) {
+		if (mState != State.WORKSPACE)
+			return;
 
-        final int duration = res.getInteger(R.integer.config_appsCustomizeZoomInTime);
-        final View toView = mUserDefinedTabHost;
-        Resources r = getResources();
-        final int userDefinedSettingsHeight = r.getDimensionPixelSize(R.dimen.user_defined_settings_height);
-        final int buttonBarHeight = r.getDimensionPixelSize(R.dimen.button_bar_height);
+		if (!mUserDefinedContent.checkDataReady()) {
+			mUserDefinedContent.initData();
+		}
 
-        // Shrink workspaces away if going to user defined settings from workspace
-        //mWorkspace.changeState(Workspace.State.NORMAL, animated);
-        mWorkspace.changeState(Workspace.State.USER_DEFINED, animated);
-        
-        final int bottom = mDragLayer.getHeight();
-        final int topY = bottom - userDefinedSettingsHeight;
-        
-        //final ValueAnimator yAnim = ValueAnimator.ofInt(bottom, toY).setDuration(duration);
-        ObjectAnimator yAnim = ObjectAnimator.ofFloat(toView, "y", bottom, topY);
-        yAnim.setDuration(duration);
-        yAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-        yAnim.addListener(new AnimatorListenerAdapter() {
-            boolean animationCancelled = false;
-            @Override
-            public void onAnimationStart(Animator animation) {
-                toView.setY(bottom);
-                toView.setVisibility(View.VISIBLE);
-            }
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                toView.setY(topY);
-                toView.bringToFront();
-                toView.requestFocus();
+		if (mStateAnimation != null) {
+			mStateAnimation.cancel();
+			mStateAnimation = null;
+		}
 
-                if (animationCancelled) {
-                    updateWallpaperVisibility(true);
-                }
-            }
-            
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                animationCancelled = true;
-            }
+		mSearchDropTargetBar.hideSearchBar(false);
 
-        });
-        
-        ArrayList<ObjectAnimator> anims = new ArrayList<ObjectAnimator>();
-        anims.add(yAnim);
-        if(null == mDockDivider) {
-            mDockDivider = (ImageView) findViewById(R.id.dock_divider);
-        }
-        if(null != mDockDivider) {
-            ObjectAnimator dockDividerAnim = ObjectAnimator.ofFloat(mDockDivider, "alpha", 0.0f, 1.0f);
-            dockDividerAnim.setDuration(duration / 2);
-            dockDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-            dockDividerAnim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mDockDivider.setAlpha(0f);
-                    mDockDivider.setVisibility(View.VISIBLE);
-                }
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mDockDivider != null) {
-                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mDockDivider.getWidth(), mDockDivider.getHeight());
-                        lp.topMargin = buttonBarHeight;
-                        lp.gravity = Gravity.TOP;
-                        mDockDivider.setLayoutParams(lp);
-                    }
-                    mDockDivider.setAlpha(1.0f);
-                    mDockDivider.setVisibility(View.VISIBLE);
-                    
-                }
-                
-            });
-            
-            anims.add(dockDividerAnim);
-                
-        }
-        if(null == mScrollIndicator) {
-            mScrollIndicator = (ImageView) findViewById(R.id.paged_view_indicator);
-        }
-        if(null != mScrollIndicator) {
-            ObjectAnimator scrollIndicatorAnim = ObjectAnimator.ofFloat(mScrollIndicator, "alpha", 0.0f, 1.0f);
-            scrollIndicatorAnim.setDuration(duration);
-            scrollIndicatorAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-            scrollIndicatorAnim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mScrollIndicator.setAlpha(0f);
-                    mScrollIndicator.setVisibility(View.VISIBLE);
-                }
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mScrollIndicator != null) {
-                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mScrollIndicator.getWidth(), mScrollIndicator.getHeight());
-                        lp.topMargin = buttonBarHeight;
-                        lp.gravity = Gravity.TOP;
-                        mScrollIndicator.setLayoutParams(lp);
-                    }
-                    mScrollIndicator.setAlpha(1.0f);
-                    mScrollIndicator.setVisibility(View.VISIBLE);
-                    
-                }
-                
-            });
-            
-            anims.add(scrollIndicatorAnim);
-        }
-        
-            
-        mStateAnimation = new AnimatorSet();
-        mStateAnimation.setDuration(duration);
-        mStateAnimation.playTogether(anims.toArray(new ObjectAnimator[]{}));
-        mStateAnimation.start();
-        
-        if (toView instanceof LauncherTransitionable) {
-            ((LauncherTransitionable) toView).onLauncherTransitionStart(instance, null, false);
-            ((LauncherTransitionable) toView).onLauncherTransitionEnd(instance, null, false);
+		if (mHotseat != null) {
+			mHotseat.setVisibility(View.INVISIBLE);
+		}
 
-            if (!springLoaded && !LauncherApplication.isScreenLarge()) {
-                // Hide the workspace scrollbar
-                mWorkspace.hideScrollingIndicator(true);
-                hideDockDivider();
-            }
-        }
-    }
+		int pageCount = mWorkspace.getPageCount();
+		for (int i = 0; i < pageCount; i++) {
+			CellLayout cell = (CellLayout) mWorkspace.getChildAt(i);
+			cell.setIsDragOverlapping(true);
+			cell.setBackgroundAlpha(1.0f);
+			cell.setBackgroundAlphaMultiplier(1.0f);
+		}
+
+		final Resources res = getResources();
+		final Launcher instance = this;
+
+		final int duration = res
+				.getInteger(R.integer.config_appsCustomizeZoomInTime);
+		final View toView = mUserDefinedTabHost;
+		Resources r = getResources();
+		final int userDefinedSettingsHeight = r
+				.getDimensionPixelSize(R.dimen.user_defined_settings_height);
+
+		final int bottom = mDragLayer.getHeight();
+		final int topY = bottom - userDefinedSettingsHeight;
+		ObjectAnimator yAnim = ObjectAnimator
+				.ofFloat(toView, "y", bottom, topY);
+		yAnim.setDuration(duration);
+		yAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+		yAnim.addListener(new AnimatorListenerAdapter() {
+			@Override
+			public void onAnimationStart(Animator animation) {
+				toView.setY(bottom);
+				toView.setVisibility(View.VISIBLE);
+			}
+
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				toView.setY(topY);
+				toView.bringToFront();
+				toView.requestFocus();
+			}
+
+		});
+
+		final float translationY = res
+				.getDimension(R.dimen.qsb_bar_height_inset)
+				+ res.getDimension(R.dimen.workspace_top_padding);
+
+		ValueAnimator animWithInterpolator = ValueAnimator.ofFloat(0f, 1f)
+				.setDuration(duration);
+		animWithInterpolator
+				.setInterpolator(new Workspace.ZoomOutInterpolator());
+		animWithInterpolator
+				.addUpdateListener(new LauncherAnimatorUpdateListener() {
+					@Override
+					void onAnimationUpdate(float a, float b) {
+						float currTranslationY = -translationY * b;
+						mWorkspace.setTranslationY(currTranslationY);
+						if (mScrollIndicator != null) {
+							mScrollIndicator.setTranslationY(currTranslationY);
+						}
+						if (mDockDivider != null) {
+							mDockDivider.setTranslationY(currTranslationY);
+						}
+					}
+				});
+
+		mStateAnimation = new AnimatorSet();
+		mStateAnimation.setDuration(duration);
+		mStateAnimation.playTogether(yAnim, animWithInterpolator);
+		mStateAnimation.start();
+
+		if (toView instanceof LauncherTransitionable) {
+			((LauncherTransitionable) toView).onLauncherTransitionStart(
+					instance, null, false);
+			((LauncherTransitionable) toView).onLauncherTransitionEnd(instance,
+					null, false);
+		}
+
+		mState = State.USER_DEFINED_SETTINGS;
+	}
     
-    void showUserDefinedSettings(boolean animated, boolean fromResume) {
-        if (mState != State.WORKSPACE) return;
-        
-        if(!mUserDefinedContent.checkDataReady())
-        {
-            mUserDefinedContent.initData();
-        }
-        if (mHotseat != null) {
-            mHotseat.setVisibility(View.INVISIBLE);
-        }
+	void hideUserDefinedSettings(final boolean animated,
+			final boolean immediately) {
+		if (mState != State.USER_DEFINED_SETTINGS) {
+			return;
+		}
+		if (mStateAnimation != null) {
+			mStateAnimation.cancel();
+			mStateAnimation = null;
+		}
 
-        showUserDefinedSettingsHelper(animated, fromResume);
-        mState = State.USER_DEFINED_SETTINGS;
-        //mState = State.APPS_CUSTOMIZE_SPRING_LOADED;
-        
-        // Send an accessibility event to announce the context change
-        //getWindow().getDecorView().sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
-        
-    }
-    
-    void hideUserDefinedSettings(final boolean animated, final boolean immediately) {
+		mSearchDropTargetBar.showSearchBar(true);
 
-        if (mStateAnimation != null) {
-            mStateAnimation.cancel();
-            mStateAnimation = null;
-        }
-        
-        final Resources res = getResources();
+		int pageCount = mWorkspace.getPageCount();
+		for (int i = 0; i < pageCount; i++) {
+			CellLayout cell = (CellLayout) mWorkspace.getChildAt(i);
+			cell.setIsDragOverlapping(false);
+			cell.setBackgroundAlpha(0);
+			cell.setBackgroundAlphaMultiplier(0);
+		}
 
-        final int duration = res.getInteger(R.integer.config_appsCustomizeZoomInTime);
-        final View toView = mUserDefinedTabHost;
-        Resources r = getResources();
-        final int userDefinedSettingsHeight = r.getDimensionPixelSize(R.dimen.user_defined_settings_height);
+		final Resources res = getResources();
 
-        final int buttonBarHeight = res.getDimensionPixelSize(R.dimen.button_bar_height);
-        
-        final int bottom = mDragLayer.getHeight();
-        final int topY = bottom - userDefinedSettingsHeight;
-        
-        //final ValueAnimator yAnim = ValueAnimator.ofInt(bottom, toY).setDuration(duration);
-        ObjectAnimator yAnim = ObjectAnimator.ofFloat(toView, "y", topY, bottom);
-        yAnim.setDuration(duration);
-        yAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-        
-        ArrayList<ObjectAnimator> anims = new ArrayList<ObjectAnimator>();
-        anims.add(yAnim);
-        
-        ObjectAnimator hotseatAnim = ObjectAnimator.ofFloat(mHotseat, "alpha", 0.0f, 1.0f);
-        hotseatAnim.setDuration(duration);
-        hotseatAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-        hotseatAnim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mHotseat.setAlpha(0f);
-                mHotseat.setVisibility(View.VISIBLE);
-            }
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mHotseat.setAlpha(1.0f);
-            }
-            
-        });
-        anims.add(hotseatAnim);
-        
-        if(null == mQsbDivider) {
-            mQsbDivider = (ImageView) findViewById(R.id.qsb_divider);
-        }
-        if(null == mDockDivider) {
-            mDockDivider = (ImageView) findViewById(R.id.dock_divider);
-        }
-        if(null == mScrollIndicator) {
-            mScrollIndicator = (ImageView) findViewById(R.id.paged_view_indicator);
-        }
-        
-        
-        if (mQsbDivider != null) {
-            ObjectAnimator qsbDividerAnim = ObjectAnimator.ofFloat(mQsbDivider, "alpha", 1.0f)
-                    .setDuration(duration);
-            qsbDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-            qsbDividerAnim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mQsbDivider.setAlpha(0f);
-                    mQsbDivider.setVisibility(View.VISIBLE);
-                }
-                
-            });
-            anims.add(qsbDividerAnim);
-        }
-        if (mDockDivider != null) {
-            ObjectAnimator dockDividerAnim = ObjectAnimator.ofFloat(mDockDivider, "alpha", 0.0f, 1.0f);
-            dockDividerAnim.setDuration(duration / 2);
-            dockDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-            dockDividerAnim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mDockDivider.setAlpha(0f);
-                    mDockDivider.setVisibility(View.VISIBLE);
-                }
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mDockDivider != null) {
-                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mDockDivider.getWidth(), mDockDivider.getHeight());
-                        lp.bottomMargin = buttonBarHeight;
-                        lp.gravity = Gravity.BOTTOM;
-                        mDockDivider.setLayoutParams(lp);
-                    }
-                    mDockDivider.setAlpha(1.0f);
-                    mDockDivider.setVisibility(View.VISIBLE);
-                    
-                }
-                
-            });
-            
-            anims.add(dockDividerAnim);
-        }
-        if (mScrollIndicator != null) {
-            ObjectAnimator dockDividerAnim = ObjectAnimator.ofFloat(mScrollIndicator, "alpha", 1.0f)
-                    .setDuration(duration);
-            dockDividerAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
-            dockDividerAnim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mScrollIndicator.setAlpha(0f);
-                    mScrollIndicator.setVisibility(View.INVISIBLE);
-                }
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mScrollIndicator.setAlpha(1.0f);
-                    mScrollIndicator.setVisibility(View.VISIBLE);
-                    if(mScrollIndicator != null) {
-                        FrameLayout.LayoutParams lp =  new FrameLayout.LayoutParams(mScrollIndicator.getWidth(), mScrollIndicator.getHeight());
-                        lp.bottomMargin = buttonBarHeight;
-                        /*lp.width = LayoutParams.WRAP_CONTENT;
-                        lp.height = LayoutParams.WRAP_CONTENT;*/
-                        lp.gravity = Gravity.BOTTOM;
-                        mScrollIndicator.setLayoutParams(lp);
-                    }
-                }
-                
-            });
-            anims.add(dockDividerAnim);
-        }
-        
-        mStateAnimation = new AnimatorSet();
-        mStateAnimation.setDuration(duration);
-        mStateAnimation.playTogether(anims.toArray(new ObjectAnimator[]{}));
-        mStateAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-//                mUserDefinedSettingsTabHost.reset();
-                mUserDefinedTabHost.setVisibility(View.GONE);
-                showWorkspace(true);
-            }
-            
-            @Override
-            public void onAnimationCancel(Animator animation) {
-//                mUserDefinedSettingsTabHost.reset();
-                mUserDefinedTabHost.setVisibility(View.GONE);
-                //mSearchDropTargetBar.showSearchBar(true);
-                showWorkspace(true);
-                //FIXME TODO showScrollIndicator(true);
-                showHotseat(true);
-            }
-        });
-        if(immediately) {
-            mStateAnimation.start();
-        } else {
-            showWorkspace(true);
-        }
-        
-    }
+		final int duration = res
+				.getInteger(R.integer.config_appsCustomizeZoomInTime);
+		final View toView = mUserDefinedTabHost;
+		Resources r = getResources();
+		final int userDefinedSettingsHeight = r
+				.getDimensionPixelSize(R.dimen.user_defined_settings_height);
+
+		final int bottom = mDragLayer.getHeight();
+		final int topY = bottom - userDefinedSettingsHeight;
+
+		ArrayList<ValueAnimator> anims = new ArrayList<ValueAnimator>();
+
+		ObjectAnimator yAnim = ObjectAnimator
+				.ofFloat(toView, "y", topY, bottom);
+		yAnim.setDuration(duration);
+		yAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+		anims.add(yAnim);
+
+		ObjectAnimator hotseatAnim = ObjectAnimator.ofFloat(mHotseat, "alpha",
+				0.0f, 1.0f);
+		hotseatAnim.setDuration(duration);
+		hotseatAnim.setInterpolator(new Workspace.ZoomOutInterpolator());
+		hotseatAnim.addListener(new AnimatorListenerAdapter() {
+			@Override
+			public void onAnimationStart(Animator animation) {
+				mHotseat.setAlpha(0f);
+				mHotseat.setVisibility(View.VISIBLE);
+			}
+
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				mHotseat.setAlpha(1.0f);
+			}
+
+		});
+		anims.add(hotseatAnim);
+
+		final float translationY = res
+				.getDimension(R.dimen.qsb_bar_height_inset)
+				+ res.getDimension(R.dimen.workspace_top_padding);
+
+		ValueAnimator animWithInterpolator = ValueAnimator.ofFloat(0f, 1f)
+				.setDuration(duration);
+		animWithInterpolator
+				.setInterpolator(new Workspace.ZoomOutInterpolator());
+		animWithInterpolator
+				.addUpdateListener(new LauncherAnimatorUpdateListener() {
+					@Override
+					void onAnimationUpdate(float a, float b) {
+						float currTranslationY = -translationY * a;
+						mWorkspace.setTranslationY(currTranslationY);
+						if (mScrollIndicator != null) {
+							mScrollIndicator.setTranslationY(currTranslationY);
+						}
+						if (mDockDivider != null) {
+							mDockDivider.setTranslationY(currTranslationY);
+						}
+					}
+				});
+
+		anims.add(animWithInterpolator);
+
+		mStateAnimation = new AnimatorSet();
+		mStateAnimation.setDuration(duration);
+		mStateAnimation.playTogether(anims.toArray(new ValueAnimator[] {}));
+		mStateAnimation.addListener(new AnimatorListenerAdapter() {
+			@Override
+			public void onAnimationEnd(Animator animation) {
+				mUserDefinedTabHost.setVisibility(View.GONE);
+			}
+		});
+
+		mState = State.WORKSPACE;
+		mStateAnimation.start();
+	}
     
     AnimatorSet getStateAnimation() {
         return mStateAnimation;
@@ -4130,6 +4036,12 @@ public final class Launcher extends Activity
     int getSearchViewLeft() {
         return mSearchIndicatorView.getLeft();
     }
+    
+	public void onWorkspacePageClick(View v) {
+		if (mState == State.USER_DEFINED_SETTINGS) {
+			hideUserDefinedSettings(true, false);
+		}
+	}
     // }added by zhong.chen 2012-7-12 for launcher apps sort end ===== end ====
 
 }

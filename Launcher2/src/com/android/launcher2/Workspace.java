@@ -168,9 +168,7 @@ public class Workspace extends SmoothPagedView
     // State variable that indicates whether the pages are small (ie when you're
     // in all apps or customize mode)
 
-    // {added by zhong.chen 2012-6-28 for launcher user-defined
-    enum State { NORMAL, SPRING_LOADED, SMALL, USER_DEFINED };
-    // }added by zhong.chen 2012-6-28 for launcher user-defined end
+    enum State { NORMAL, SPRING_LOADED, SMALL};
     private State mState = State.NORMAL;
     private boolean mIsSwitchingState = false;
     private boolean mSwitchStateAfterFirstLayout = false;
@@ -441,39 +439,29 @@ public class Workspace extends SmoothPagedView
         setMotionEventSplittingEnabled(true);
         
         // {added by zhong.chen 2012-6-28 for launcher user-defined
-        mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                                   float velocityY) {
-                if(null == e1 || null == e2) {
-                    return false;
-                }
-                int dy = (int) (e2.getY() - e1.getY());
-                
-                if (Math.abs(dy) > MIN_LENGTH_FOR_FLING && Math.abs(velocityY) > Math.abs(velocityX)) {
-                    if (velocityY < 0) {
-                        if(mState != State.USER_DEFINED) {
-                            mLauncher.showUserDefinedSettings(true, false);
-                        }
-                    } else {
-                        if(mState == State.USER_DEFINED) {
-                            mLauncher.hideUserDefinedSettings(true, false);
-                        }
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-            
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                if(mState == State.USER_DEFINED) {
-                    mLauncher.hideUserDefinedSettings(true, false);
-                    return true;
-                }
-                return false;
-            }
-        });
+		mGestureDetector = new GestureDetector(context,
+				new GestureDetector.SimpleOnGestureListener() {
+					@Override
+					public boolean onFling(MotionEvent e1, MotionEvent e2,
+							float velocityX, float velocityY) {
+						if (null == e1 || null == e2) {
+							return false;
+						}
+						int dy = (int) (e2.getY() - e1.getY());
+
+						if (Math.abs(dy) > MIN_LENGTH_FOR_FLING
+								&& Math.abs(velocityY) > Math.abs(velocityX)) {
+							if (velocityY < 0) {
+								mLauncher.showUserDefinedSettings(true, false);
+							} else {
+								mLauncher.hideUserDefinedSettings(true, false);
+							}
+							return true;
+						} else {
+							return false;
+						}
+					}
+				});
         // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
     }
@@ -1460,6 +1448,11 @@ public class Workspace extends SmoothPagedView
         }
         **/
     	super.screenScrolled(screenCenter);
+    	
+		if (isSmall() || mIsSwitchingState) {
+			return;
+		}
+    	
 		if (mScrollAnim == null) {
 			Log.w(TAG,
 					"mScrollAnim is null.when screenScrolled().mScrollAnimId:"
@@ -1467,30 +1460,26 @@ public class Workspace extends SmoothPagedView
 			return;
 		}
 		
-		int[] visiblePagesRange = new int[2];
-		getVisiblePages(visiblePagesRange);
-		final int leftScreen = visiblePagesRange[0];
-		final int rightScreen = visiblePagesRange[1];
-		if (leftScreen != -1 && rightScreen != -1) {
-			View v = null;
-			float scrollProgress = 0;
-			for (int i = leftScreen; i <= rightScreen; i++) {
-				v = getPageAt(i);
 
-				scrollProgress = getScrollProgress(screenCenter, v, i);
-				v.setCameraDistance(mDensity * CAMERA_DISTANCE);
-				if (i == 0 && scrollProgress < 0) {
-					// Overscroll to the left
-					mScrollAnim.leftScreenOverScroll(scrollProgress, v);
-				} else if (i == getPageCount() - 1 && scrollProgress > 0) {
-					// Overscroll to the right
-					mScrollAnim.rightScreenOverScroll(scrollProgress, v);
-				} else {
-					mScrollAnim.screenScroll(scrollProgress, v);
-				}
+		View v = null;
+		float scrollProgress = 0;
+		for (int i = 0; i < getPageCount(); i++) {
+			v = getPageAt(i);
 
+			scrollProgress = getScrollProgress(screenCenter, v, i);
+			v.setCameraDistance(mDensity * CAMERA_DISTANCE);
+			if (i == 0 && scrollProgress < 0) {
+				// Overscroll to the left
+				mScrollAnim.leftScreenOverScroll(scrollProgress, v);
+			} else if (i == getPageCount() - 1 && scrollProgress > 0) {
+				// Overscroll to the right
+				mScrollAnim.rightScreenOverScroll(scrollProgress, v);
+			} else {
+				mScrollAnim.screenScroll(scrollProgress, v);
 			}
+
 		}
+	
     	//}modify by jingjiang.yu end
     }
 
@@ -1947,21 +1936,20 @@ public class Workspace extends SmoothPagedView
         final State oldState = mState;
         final boolean oldStateIsNormal = (oldState == State.NORMAL);
         final boolean oldStateIsSmall = (oldState == State.SMALL);
-        // {added by zhong.chen 2012-6-28 for launcher user-defined
-        final boolean oldStateIsUserDefined = (oldState == State.USER_DEFINED);
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end
         mState = state;
         final boolean stateIsNormal = (state == State.NORMAL);
         final boolean stateIsSpringLoaded = (state == State.SPRING_LOADED);
-        // {added by zhong.chen 2012-6-28 for launcher user-defined
-        final boolean stateIsUserDefined = (state == State.USER_DEFINED);
-        // }added by zhong.chen 2012-6-28 for launcher user-defined end
         final boolean stateIsSmall = (state == State.SMALL);
         float finalScaleFactor = 1.0f;
         float finalBackgroundAlpha = stateIsSpringLoaded ? 1.0f : 0f;
         float translationX = 0;
         float translationY = 0;
         boolean zoomIn = true;
+      //{add by jingjiang.yu at 2012.08.01 begin for screen scroll.
+		if (oldStateIsNormal) {
+			resetAnimationData();
+		}
+      //}add by jingjiang.yu end
 
         if (state != State.NORMAL) {
             finalScaleFactor = mSpringLoadedShrinkFactor - (stateIsSmall ? 0.1f : 0);
@@ -2020,18 +2008,6 @@ public class Workspace extends SmoothPagedView
             if (LauncherApplication.isScreenLarge()) {
                 translationX = getOffsetXForRotation(rotation, cl.getWidth(), cl.getHeight());
             }
-
-            // {added by zhong.chen 2012-6-28 for launcher user-defined
-            if(stateIsUserDefined) {
-                cl.setIsDragOverlapping(true);
-                //cl.setBackgroundResource(R.drawable.user_defined_tab_bg);
-            } 
-            
-            if(oldStateIsUserDefined) {
-                cl.setIsDragOverlapping(false);
-                //cl.setBackgroundDrawable(null);
-            } 
-            // }added by zhong.chen 2012-6-28 for launcher user-defined end
 
             mOldAlphas[i] = initialAlpha;
             mNewAlphas[i] = finalAlpha;
@@ -2137,15 +2113,8 @@ public class Workspace extends SmoothPagedView
                 }
             });
 
-            // {modified by zhong.chen 2012-6-28 for launcher user-defined
-            if(oldStateIsUserDefined) {
-                AnimatorSet stateAnimation = mLauncher.getStateAnimation();
-                if(null != stateAnimation)
-                mAnimator.playTogether(animWithInterpolator, rotationAnim, stateAnimation);
-            } else {
-                mAnimator.playTogether(animWithInterpolator, rotationAnim);
-            }
-            // }modified by zhong.chen 2012-6-28 for launcher user-defined end
+
+            mAnimator.playTogether(animWithInterpolator, rotationAnim);
             
             mAnimator.setStartDelay(delay);
             // If we call this when we're not animated, onAnimationEnd is never called on
@@ -4879,6 +4848,8 @@ public class Workspace extends SmoothPagedView
 		cl.setOnInterceptTouchListener(this);
 		cl.setClickable(true);
 		cl.enableHardwareLayers();
+		cl.setOnLongClickListener(mLongClickListener);
+		cl.setOnClickListener(onPageClickListener);
 		addView(cl, pageCount);
 		pageCount++;
 		mScreenCount++;
@@ -4954,6 +4925,8 @@ public class Workspace extends SmoothPagedView
 			cl.setOnInterceptTouchListener(this);
 			cl.setClickable(true);
 			cl.enableHardwareLayers();
+			cl.setOnLongClickListener(mLongClickListener);
+			cl.setOnClickListener(onPageClickListener);
 			addView(cl);
 
 		}
@@ -4964,6 +4937,13 @@ public class Workspace extends SmoothPagedView
 		}
 		addView(mAddScreenButton);
 	}
+	
+	private OnClickListener onPageClickListener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			mLauncher.onWorkspacePageClick(v);
+		}
+	};
 	
 	/**
 	 * The workspace's last child is addScreenButton,
@@ -5005,6 +4985,12 @@ public class Workspace extends SmoothPagedView
 			return;
 		}
 
+		resetAnimationData();
+		
+		mScrollAnim = animInfo.getAnimObject(mScrollAnimList);
+	}
+	
+	private void resetAnimationData() {
 		if (mScrollAnim != null) {
 			int pageCount = getPageCount();
 			View v = null;
@@ -5013,7 +4999,6 @@ public class Workspace extends SmoothPagedView
 				mScrollAnim.resetAnimationData(v);
 			}
 		}
-		mScrollAnim = animInfo.getAnimObject(mScrollAnimList);
 	}
 	
 	public void updateSelectedScrollAnimId(ScrollAnimStyleInfo selectedAnimInfo) {

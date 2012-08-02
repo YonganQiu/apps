@@ -1044,6 +1044,10 @@ public abstract class PagedView extends ViewGroup {
                 if (finishedScrolling) {
                     mTouchState = TOUCH_STATE_REST;
                     mScroller.abortAnimation();
+                  //{add by jingjiang.yu at 2012.08.02 begin for screen scroll.
+                    scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
+                    invalidate();
+                  //}add by jingjiang.yu end
                 } else {
                     mTouchState = TOUCH_STATE_SCROLLING;
                 }
