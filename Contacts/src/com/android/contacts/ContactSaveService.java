@@ -93,6 +93,9 @@ public class ContactSaveService extends IntentService {
     public static final String EXTRA_RAW_CONTACTS_TO_ADD = "rawContactsToAdd";
     public static final String EXTRA_RAW_CONTACTS_TO_REMOVE = "rawContactsToRemove";
 
+    //<!-Added by gangzhou.qi at 2012-8-2
+    public static final String ACTION_SET_STARRED_MULTI = "setStarredMulti";
+	//Added by gangzhou.qi at 2012-8-2 -!>
     public static final String ACTION_SET_STARRED = "setStarred";
     public static final String ACTION_DELETE_CONTACT = "delete";
     public static final String EXTRA_CONTACT_URI = "contactUri";
@@ -192,7 +195,13 @@ public class ContactSaveService extends IntentService {
             updateGroup(intent);
         } else if (ACTION_SET_STARRED.equals(action)) {
             setStarred(intent);
-        } else if (ACTION_SET_SUPER_PRIMARY.equals(action)) {
+        } 
+        //<!-Added by gangzhou.qi at 2012-8-2
+        else if(ACTION_SET_STARRED_MULTI.equals(action)){
+        	setStarredMulti(intent);
+        }
+		//Added by gangzhou.qi at 2012-8-2 -!>
+        else if (ACTION_SET_SUPER_PRIMARY.equals(action)) {
             setSuperPrimary(intent);
         } else if (ACTION_CLEAR_PRIMARY.equals(action)) {
             clearPrimary(intent);
@@ -735,10 +744,19 @@ public class ContactSaveService extends IntentService {
         serviceIntent.setAction(ContactSaveService.ACTION_SET_STARRED);
         serviceIntent.putExtra(ContactSaveService.EXTRA_CONTACT_URI, contactUri);
         serviceIntent.putExtra(ContactSaveService.EXTRA_STARRED_FLAG, value);
-
         return serviceIntent;
     }
 
+    //<!-Added by gangzhou.qi at 2012-8-2
+    public static Intent createSetStarredIntent(Context context, Parcelable[] contactUris, boolean value) {
+        Intent serviceIntent = new Intent(context, ContactSaveService.class);
+        serviceIntent.setAction(ContactSaveService.ACTION_SET_STARRED_MULTI);
+        serviceIntent.putExtra(ContactSaveService.EXTRA_CONTACT_URIS, contactUris);
+        serviceIntent.putExtra(ContactSaveService.EXTRA_STARRED_FLAG, value);
+        return serviceIntent;
+    }
+	//Added by gangzhou.qi at 2012-8-2 -!>
+    
     private void setStarred(Intent intent) {
         Uri contactUri = intent.getParcelableExtra(EXTRA_CONTACT_URI);
         boolean value = intent.getBooleanExtra(EXTRA_STARRED_FLAG, false);
@@ -752,6 +770,22 @@ public class ContactSaveService extends IntentService {
         getContentResolver().update(contactUri, values, null, null);
     }
 
+    //<!-Added by gangzhou.qi at 2012-8-2
+    private void setStarredMulti(Intent intent) {
+        Parcelable[] contactUris = intent.getParcelableArrayExtra(EXTRA_CONTACT_URIS);
+        boolean value = intent.getBooleanExtra(EXTRA_STARRED_FLAG, false);
+        if (contactUris == null) {
+            Log.e(TAG, "Invalid arguments for setStarred request");
+            return;
+        }
+        final ContentValues values = new ContentValues(1);
+        values.put(Contacts.STARRED, value);
+        for(int i = 0 ; i < contactUris.length ; i ++){
+        	getContentResolver().update((Uri)contactUris[i], values, null, null);
+        }
+        
+    }
+	//Added by gangzhou.qi at 2012-8-2 -!>
     /**
      * Creates an intent that can be sent to this service to set the redirect to voicemail.
      */

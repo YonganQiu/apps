@@ -61,9 +61,12 @@
     <item
         android:id="@+id/menu_add_favoriate"
         android:icon="@drawable/ic_add_contact_holo_dark"
-        android:title="@string/description_plus_button"
+        android:title="@string/menu_add_favoriate"
         android:showAsAction="ifRoom" />
-    
+    <item
+        android:id="@+id/menu_remove_favoriate"
+        android:title="@string/menu_remove_favoriate"
+        android:showAsAction="never" />
     <!-- Ended Added by gangzhou.qi at 2012.08.02 -->
     <item
         android:id="@+id/menu_add_group"

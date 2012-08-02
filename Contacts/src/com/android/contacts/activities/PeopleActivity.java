@@ -155,6 +155,10 @@ public class PeopleActivity extends ContactsActivity
     private static final int REQUEST_CODE_PICK_EMAIL = 8;
     //}Added by yongan.qiu end.
 
+    //<!-Added by gangzhou.qi at 2012-8-2
+    private static final int REQUEST_CODE_ADD_FAVORIATE = 9;
+    private static final int REQUEST_CODE_REMOVE_FAVORIATE = 10;
+	//Added by gangzhou.qi at 2012-8-2 -!>
     private final DialogManager mDialogManager = new DialogManager(this);
 
     private ContactsIntentResolver mIntentResolver;
@@ -1634,6 +1638,7 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
                     //<!-Added by gangzhou.qi at 2012-8-2
                     makeMenuItemVisible(menu, R.id.menu_add_favoriate, true);
+                    makeMenuItemVisible(menu, R.id.menu_remove_favoriate, true);
                     //Added by gangzhou.qi at 2012-8-2 -!>
                   //<!-Added by gangzhou.qi at 2012-7-27
                     mTabPager.mSlipMenuRelativeLayoutTurnOn = true;
@@ -1658,6 +1663,7 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, true);
                   //<!-Added by gangzhou.qi at 2012-8-2
                     makeMenuItemVisible(menu, R.id.menu_add_favoriate, false);
+                    makeMenuItemVisible(menu, R.id.menu_remove_favoriate, false);
                     //Added by gangzhou.qi at 2012-8-2 -!>
                   //<!-Added by gangzhou.qi at 2012-7-27
                     mTabPager.mSlipMenuRelativeLayoutTurnOn = true;
@@ -1687,6 +1693,7 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
                   //<!-Added by gangzhou.qi at 2012-8-2
                     makeMenuItemVisible(menu, R.id.menu_add_favoriate, false);
+                    makeMenuItemVisible(menu, R.id.menu_remove_favoriate, false);
                     //Added by gangzhou.qi at 2012-8-2 -!>
                   //<!-Added by gangzhou.qi at 2012-7-27
                     mTabPager.mSlipMenuRelativeLayoutTurnOn = true;
@@ -1712,6 +1719,7 @@ public class PeopleActivity extends ContactsActivity
                     makeMenuItemVisible(menu, R.id.menu_sim_contacts, false);
                   //<!-Added by gangzhou.qi at 2012-8-2
                     makeMenuItemVisible(menu, R.id.menu_add_favoriate, false);
+                    makeMenuItemVisible(menu, R.id.menu_remove_favoriate, false);
                     //Added by gangzhou.qi at 2012-8-2 -!>
                   //<!-Added by gangzhou.qi at 2012-7-27
                     mTabPager.mSlipMenuRelativeLayoutTurnOn = false;
@@ -1855,6 +1863,29 @@ public class PeopleActivity extends ContactsActivity
                 return true;
             }
             //}Added by yongan.qiu end.
+            //<!-Added by gangzhou.qi at 2012-8-2
+            case R.id.menu_add_favoriate: {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_add_favoriate);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_add_contact_holo_dark);
+                startActivityForResult(intent, REQUEST_CODE_ADD_FAVORIATE);
+                return true;
+            }
+            
+            case R.id.menu_remove_favoriate: {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_remove_favoriate);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_trash_holo_light);
+                startActivityForResult(intent, REQUEST_CODE_REMOVE_FAVORIATE);
+                return true;
+            }
+			//Added by gangzhou.qi at 2012-8-2 -!>
         }
         return false;
     }
@@ -2066,6 +2097,33 @@ public class PeopleActivity extends ContactsActivity
                 break;
             }
             //}Added by yongan.qiu end.
+            //<!-Added by gangzhou.qi at 2012-8-2
+            case REQUEST_CODE_ADD_FAVORIATE:{
+                if (resultCode == RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_CONTACT_URIS);
+                    if (uris != null) {
+                        Intent intent = ContactSaveService.createSetStarredIntent(
+                        		PeopleActivity.this, uris, true);
+                        PeopleActivity.this.startService(intent);
+                    }
+                }
+                break;
+            }
+            
+            case REQUEST_CODE_REMOVE_FAVORIATE:{
+                if (resultCode == RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_CONTACT_URIS);
+                    if (uris != null) {
+                        Intent intent = ContactSaveService.createSetStarredIntent(
+                        		PeopleActivity.this, uris, false);
+                        PeopleActivity.this.startService(intent);
+                    }
+                }
+                break;
+            }
+			//Added by gangzhou.qi at 2012-8-2 -!>
+            
+            
 
             // TODO: Using the new startActivityWithResultFromFragment API this should not be needed
             // anymore

@@ -642,10 +642,11 @@
     <string name="prepareImportSimContacts">正在准备导入SIM卡联系人！</string>
      <string name="doingImportSimContacts">正在导入SIM卡联系人！</string>
      <string name="finishImportSimContacts">SIM卡联系人导入完毕</string>
-     
      <string name="prepareExportSimContacts">正在准备导出SIM卡联系人！</string>
      <string name="doingExportSimContacts">正在导出SIM卡联系人！</string>
      <string name="finishExportSimContacts">SIM卡联系人导出完毕！</string>
      <string name="preparingSimContacts">正在准备SIM卡联系人!</string>
+     <string name="menu_add_favoriate">添加收藏</string>
+     <string name="menu_remove_favoriate">取消收藏</string>
     <!-- Added by Gangzhou.Qi -->
 </resources>

@@ -1918,10 +1918,11 @@
     <string name="prepareImportSimContacts">Prepare to import SIM Contacts!</string>
      <string name="doingImportSimContacts">Importing SIM Contacts!</string>
      <string name="finishImportSimContacts">SIM contacts import completed!</string>
-     
      <string name="prepareExportSimContacts">Prepare to export SIM Contacts!</string>
      <string name="doingExportSimContacts">Exporting SIM Contacts!</string>
      <string name="finishExportSimContacts">SIM contacts export completed!</string>
      <string name="preparingSimContacts">Preparing SIM Contacts!</string>
+     <string name="menu_add_favoriate">Add stars</string>
+     <string name="menu_remove_favoriate">Remove stars</string>
     <!-- Added by Gangzhou.Qi -->
 </resources>
