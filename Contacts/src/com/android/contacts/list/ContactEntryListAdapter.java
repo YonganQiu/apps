@@ -110,7 +110,6 @@ public abstract class ContactEntryListAdapter extends IndexerListAdapter {
     /**
      * Append extra selection when configure adapter loader's selection.
      * @param sb original string builder to append selection to
-     * @param selection the extra selection to append
      */
     protected void appendExtraSelection(StringBuilder sb) {
         if (!TextUtils.isEmpty(mExtraSelection)) {

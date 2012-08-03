@@ -47,10 +47,7 @@ import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.SearchView.OnCloseListener;
-import android.widget.SearchView.OnQueryTextListener;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -114,7 +111,7 @@ public class MultiActionSelectionActivity extends ContactsActivity
 
         configureActivityTitle();
 
-        setContentView(R.layout.multi_picker);
+        setContentView(R.layout.multi_action_selection_activity);
         
         if (mActionCode != mRequest.getActionCode()) {
             mActionCode = mRequest.getActionCode();
@@ -148,7 +145,6 @@ public class MultiActionSelectionActivity extends ContactsActivity
     }
 
     private void prepareActionBar() {
-        findViewById(R.id.search_view).setVisibility(View.GONE);
         final ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowHomeEnabled(true);

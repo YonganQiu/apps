@@ -343,8 +343,7 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     @Override
     protected View inflateView(LayoutInflater inflater, ViewGroup container) {
-        // TODO Auto-generated method stub
-        return null;
+        return inflater.inflate(R.layout.contact_list_content, null);
     }
 
     /**

@@ -99,6 +99,7 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Intents;
 import android.provider.ContactsContract.ProviderStatus;
 import android.provider.ContactsContract.QuickContact;
@@ -1865,10 +1866,11 @@ public class PeopleActivity extends ContactsActivity
             //}Added by yongan.qiu end.
             //<!-Added by gangzhou.qi at 2012-8-2
             case R.id.menu_add_favoriate: {
-                Intent intent = new Intent(Intent.ACTION_PICK);
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
                 intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
-                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_SELECTION,createStaredSelection(false));
+                //intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_add_favoriate);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_add_contact_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_ADD_FAVORIATE);
@@ -1876,12 +1878,13 @@ public class PeopleActivity extends ContactsActivity
             }
             
             case R.id.menu_remove_favoriate: {
-                Intent intent = new Intent(Intent.ACTION_PICK);
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
                 intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
-                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_SELECTION,createStaredSelection(true));
+                //intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_remove_favoriate);
-                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_trash_holo_light);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_trash_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_REMOVE_FAVORIATE);
                 return true;
             }
@@ -1889,6 +1892,21 @@ public class PeopleActivity extends ContactsActivity
         }
         return false;
     }
+
+    //{Added by yongan.qiu on 2012-8-3 begin.
+    /**
+     * Create extra selection.
+     * @param started whether select from stared contacts
+     * @return extra selection
+     */
+    private String createStaredSelection(boolean stared) {
+        if (stared) {
+            return Contacts.STARRED + "!=0";
+        } else {
+            return Contacts.STARRED + "=0";
+        }
+    }
+    //}Added by yongan.qiu end.
 
     private int checkSimState(){
     	TelephonyManager telephonyManager = new TelephonyManager(this);

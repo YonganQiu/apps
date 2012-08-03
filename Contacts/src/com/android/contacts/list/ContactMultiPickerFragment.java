@@ -43,11 +43,6 @@ public class ContactMultiPickerFragment extends BaseMultiPickerFragment<DefaultC
     }
 
     @Override
-    protected View inflateView(LayoutInflater inflater, ViewGroup container) {
-        return inflater.inflate(R.layout.contact_picker_content, null);
-    }
-
-    @Override
     protected Uri getUri(int position) {
         return getAdapter().getContactUri(position);
     }

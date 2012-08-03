@@ -507,6 +507,10 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
     }
 
     //{Added by yongan.qiu on 2012-8-2 begin.
+    /**
+     * Create extra selection that representing selecting from this group.
+     * @return extra selection
+     */
     private String createExtraSelection() {
         long[] contactIds = mAdapter.getContactIds();
         StringBuilder selection = new StringBuilder();

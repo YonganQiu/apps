@@ -28,11 +28,6 @@ public class EmailAddressMultiPickerFragment extends BaseMultiPickerFragment<Ema
     }
 
     @Override
-    protected View inflateView(LayoutInflater inflater, ViewGroup container) {
-        return inflater.inflate(R.layout.contact_list_content, null);
-    }
-
-    @Override
     protected Uri getUri(int position) {
         return getAdapter().getDataUri(position);
     }

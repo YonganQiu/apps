@@ -199,9 +199,11 @@ public class DefaultContactListAdapter extends ContactListAdapter {
 
     private void configureSelection(
             CursorLoader loader, long directoryId, ContactListFilter filter) {
-        if (filter == null) {
+        //{Removed by yongan.qiu on 2012-8-3 begin.
+        /*if (filter == null) {
             return;
-        }
+        }*/
+        //}Removed by yongan.qiu end.
 
         if (directoryId != Directory.DEFAULT) {
             return;
@@ -209,6 +211,15 @@ public class DefaultContactListAdapter extends ContactListAdapter {
 
         StringBuilder selection = new StringBuilder();
         List<String> selectionArgs = new ArrayList<String>();
+
+        //{Added by yongan.qiu on 2012-8-3 begin.
+        if (filter == null) {
+            appendExtraSelection(selection);
+            loader.setSelection(selection.toString());
+            loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
+            return;
+        }
+        //}Added by yongan.qiu end.
 
         switch (filter.filterType) {
             case ContactListFilter.FILTER_TYPE_ALL_ACCOUNTS: {
@@ -256,6 +267,9 @@ public class DefaultContactListAdapter extends ContactListAdapter {
                 break;
             }
         }
+        //{Added by yongan.qiu on 2012-8-2 begin.
+        appendExtraSelection(selection);
+        //}Added by yongan.qiu end.
         loader.setSelection(selection.toString());
         loader.setSelectionArgs(selectionArgs.toArray(new String[0]));
     }
