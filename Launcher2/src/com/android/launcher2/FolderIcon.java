@@ -72,6 +72,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
     
     //{Added by lijuan.li 2012.7.30 begin for folderIcon preview
     private static final float FOLDERICON_ITEM_GAP = 6.0f;
+    private static final float SCALE_SIZE = 0.3f;
     //}Added by lijuan.li end
 
     // The degree to which the item in the back of the stack is scaled [0...1]
@@ -488,7 +489,7 @@ public class FolderIcon extends LinearLayout implements FolderListener {
 		Resources res = getResources();
 		mMaxCountX = res.getInteger(R.integer.foldericon_max_count_x);
 		mMaxCountY = res.getInteger(R.integer.foldericon_max_count_y);
-		float scale = 0.3f;
+		float scale = SCALE_SIZE;
 
 		float offset = FolderRingAnimator.sPreviewPadding;
 		float scaledSize = scale * mBaselineIconSize;

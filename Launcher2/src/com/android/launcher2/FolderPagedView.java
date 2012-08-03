@@ -198,10 +198,12 @@ public class FolderPagedView extends ViewGroup {
 		final int count = getChildCount();
 
 		int childLeft = 0;
+		int childWidth;
+		View child;
 		for (int i = 0; i < count; i++) {
-			final View child = getChildAt(i);
+			child = getChildAt(i);
 			if (child.getVisibility() != View.GONE) {
-				final int childWidth = child.getMeasuredWidth();
+				childWidth = child.getMeasuredWidth();
 				child.layout(childLeft, 0, childLeft + childWidth,
 						child.getMeasuredHeight());
 				childLeft += childWidth;
