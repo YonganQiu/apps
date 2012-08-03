@@ -772,17 +772,30 @@ public class ContactSaveService extends IntentService {
 
     //<!-Added by gangzhou.qi at 2012-8-2
     private void setStarredMulti(Intent intent) {
+    	final ContentResolver resolver = getContentResolver();
         Parcelable[] contactUris = intent.getParcelableArrayExtra(EXTRA_CONTACT_URIS);
         boolean value = intent.getBooleanExtra(EXTRA_STARRED_FLAG, false);
         if (contactUris == null) {
             Log.e(TAG, "Invalid arguments for setStarred request");
             return;
         }
+        ArrayList<ContentProviderOperation> operationList = new ArrayList<ContentProviderOperation>();
         final ContentValues values = new ContentValues(1);
         values.put(Contacts.STARRED, value);
+        ContentProviderOperation.Builder operation = null;
         for(int i = 0 ; i < contactUris.length ; i ++){
-        	getContentResolver().update((Uri)contactUris[i], values, null, null);
+        	operation = ContentProviderOperation.newUpdate((Uri)contactUris[i]);
+        	operation.withValues(values);
+        	operationList.add(operation.build());
         }
+        try {
+            resolver.applyBatch(ContactsContract.AUTHORITY, operationList);
+        } catch (RemoteException e) {
+            Log.e(TAG, String.format("%s: %s", e.toString(), e.getMessage()));
+        } catch (OperationApplicationException e) {
+            Log.e(TAG, String.format("%s: %s", e.toString(), e.getMessage()));
+        }
+        operationList.clear();
         
     }
 	//Added by gangzhou.qi at 2012-8-2 -!>
