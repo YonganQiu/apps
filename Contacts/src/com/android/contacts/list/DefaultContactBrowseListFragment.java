@@ -152,8 +152,10 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
 		//Ended by gangzhou.qi at 2012-7-16 上午10:03:17
         
         //begin: added by yunzhou.song
-        getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        getListView().setMultiChoiceModeListener(new ContactMultiChoiceModeListener());
+        //{Removed by yongan.qiu on 2012-8-3 begin.
+        /*getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        getListView().setMultiChoiceModeListener(new ContactMultiChoiceModeListener());*/
+        //}Removed by yongan.qiu end.
         //end: added by yunzhou.song
     }
 
@@ -355,7 +357,8 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
     }
     
     //begin: added by yunzhou.song
-    private class ContactMultiChoiceModeListener implements ListView.MultiChoiceModeListener {
+    //{Removed by yongan.qiu on 2012-8-3 begin.
+    /*private class ContactMultiChoiceModeListener implements ListView.MultiChoiceModeListener {
     	private TextView mSelectedConvCount;
     	private View mMultiSelectActionBarView;
     	private HashSet<Uri> mSelectedUriSet;
@@ -506,6 +509,7 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
 			//}Added by yongan.qiu end.
 
 		}
-	}
+	}*/
+    //}Removed by yongan.qiu end.
     //end: added by yunzhou.song
 }

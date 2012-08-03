@@ -80,6 +80,7 @@ import android.app.FragmentTransaction;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -152,13 +153,15 @@ public class PeopleActivity extends ContactsActivity
     private static final int SUBACTIVITY_ACCOUNT_FILTER = 6;
 
     //{Added by yongan.qiu on 2012-7-16 begin.
-    private static final int REQUEST_CODE_PICK_PHONE = 7;
-    private static final int REQUEST_CODE_PICK_EMAIL = 8;
+    private static final int REQUEST_CODE_DELETE_CONTACTS = 7;
+    private static final int REQUEST_CODE_SHARE_CONTACTS = 8;
+    private static final int REQUEST_CODE_SEND_MSG = 9;
+    private static final int REQUEST_CODE_SEND_EMAIL = 10;
     //}Added by yongan.qiu end.
 
     //<!-Added by gangzhou.qi at 2012-8-2
-    private static final int REQUEST_CODE_ADD_FAVORIATE = 9;
-    private static final int REQUEST_CODE_REMOVE_FAVORIATE = 10;
+    private static final int REQUEST_CODE_ADD_FAVORIATE = 11;
+    private static final int REQUEST_CODE_REMOVE_FAVORIATE = 12;
 	//Added by gangzhou.qi at 2012-8-2 -!>
     private final DialogManager mDialogManager = new DialogManager(this);
 
@@ -1587,6 +1590,8 @@ public class PeopleActivity extends ContactsActivity
 
         final MenuItem addContactMenu = menu.findItem(R.id.menu_add_contact);
         //{Added by yongan.qiu on 2012-7-16 begin.
+        final MenuItem deleteContactsMenu = menu.findItem(R.id.menu_delete_contacts);
+        final MenuItem shareContactsMenu = menu.findItem(R.id.menu_share_contacts);
         final MenuItem messageMenu = menu.findItem(R.id.menu_msg);
         final MenuItem emailMenu = menu.findItem(R.id.menu_email);
         //}Added by yongan.qiu end.
@@ -1605,6 +1610,8 @@ public class PeopleActivity extends ContactsActivity
             addContactMenu.setVisible(false);
             addGroupMenu.setVisible(false);
             //{Added by yongan.qiu on 2012-7-16 begin.
+            deleteContactsMenu.setVisible(false);
+            shareContactsMenu.setVisible(false);
             messageMenu.setVisible(false);
             emailMenu.setVisible(false);
             //}Added by yongan.qiu end.
@@ -1625,6 +1632,8 @@ public class PeopleActivity extends ContactsActivity
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
                     //{Added by yongan.qiu on 2012-7-16 begin.
+                    deleteContactsMenu.setVisible(false);
+                    shareContactsMenu.setVisible(false);
                     messageMenu.setVisible(false);
                     emailMenu.setVisible(false);
                     //}Added by yongan.qiu end.
@@ -1650,6 +1659,8 @@ public class PeopleActivity extends ContactsActivity
                     addContactMenu.setVisible(true);
                     addGroupMenu.setVisible(false);
                     //{Added by yongan.qiu on 2012-7-16 begin.
+                    deleteContactsMenu.setVisible(true);
+                    shareContactsMenu.setVisible(true);
                     messageMenu.setVisible(true);
                     emailMenu.setVisible(true);
                     //}Added by yongan.qiu end.
@@ -1680,6 +1691,8 @@ public class PeopleActivity extends ContactsActivity
                     }
                     addContactMenu.setVisible(false);
                     //{Added by yongan.qiu on 2012-7-16 begin.
+                    deleteContactsMenu.setVisible(false);
+                    shareContactsMenu.setVisible(false);
                     messageMenu.setVisible(false);
                     emailMenu.setVisible(false);
                     //}Added by yongan.qiu end.
@@ -1705,6 +1718,8 @@ public class PeopleActivity extends ContactsActivity
                     addContactMenu.setVisible(false);
                     addGroupMenu.setVisible(false);
                     //{Added by yongan.qiu on 2012-7-16 begin.
+                    deleteContactsMenu.setVisible(false);
+                    shareContactsMenu.setVisible(false);
                     messageMenu.setVisible(false);
                     emailMenu.setVisible(false);
                     //}Added by yongan.qiu end.
@@ -1843,13 +1858,31 @@ public class PeopleActivity extends ContactsActivity
                 return true;
             }
             //{Added by yongan.qiu on 2012-7-16 begin.
+            case R.id.menu_delete_contacts: {
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_delete_contacts);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_trash_holo_dark);
+                startActivityForResult(intent, REQUEST_CODE_DELETE_CONTACTS);
+                return true;
+            }
+            case R.id.menu_share_contacts: {
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_share_contacts);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_share_contacts_holo_dark);
+                startActivityForResult(intent, REQUEST_CODE_SHARE_CONTACTS);
+                return true;
+            }
             case R.id.menu_msg: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_msg);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_msg_holo_dark);
-                startActivityForResult(intent, REQUEST_CODE_PICK_PHONE);
+                startActivityForResult(intent, REQUEST_CODE_SEND_MSG);
                 return true;
             }
             case R.id.menu_email: {
@@ -1858,7 +1891,7 @@ public class PeopleActivity extends ContactsActivity
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_email);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_dark);
-                startActivityForResult(intent, REQUEST_CODE_PICK_EMAIL);
+                startActivityForResult(intent, REQUEST_CODE_SEND_EMAIL);
                 return true;
             }
             //}Added by yongan.qiu end.
@@ -2073,7 +2106,54 @@ public class PeopleActivity extends ContactsActivity
                 break;
             }
             //{Added by yongan.qiu on 2012-7-16 begin.
-            case REQUEST_CODE_PICK_PHONE: {
+            case REQUEST_CODE_DELETE_CONTACTS: {
+                if (resultCode == RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_CONTACT_URIS);
+                    Uri[] uriArray = new Uri[uris.length];
+                    int i = 0;
+                    for (Parcelable uri : uris) {
+                        uriArray[i] = (Uri) uri;
+                    }
+                    ContactDeletionInteraction.start(this, uriArray, false);
+                }
+                break;
+            }
+            case REQUEST_CODE_SHARE_CONTACTS: {
+                if (resultCode == RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_CONTACT_URIS);
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+
+                    ContentResolver resolver = getContentResolver();
+                    Cursor cursor;
+                    String lookupKey;
+                    ArrayList<Uri> shareUris = new ArrayList<Uri>();
+                    Uri shareUri;
+                    for(int i = 0; i < uris.length; i++) {
+                        cursor = resolver.query((Uri)uris[i], LOOKUP_KEY_PROJECTION, null, null, null);
+                        if (cursor != null) {
+                            if (cursor.getCount() > 0 && cursor.moveToNext()) {
+                                shareUri = Uri.withAppendedPath(Contacts.CONTENT_VCARD_URI, cursor.getString(LOOKUP_KEY));
+                                shareUris.add(shareUri);
+                            }
+                            cursor.close();
+                        }
+                    }
+
+                    shareIntent.setType(Contacts.CONTENT_VCARD_TYPE);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, shareUris);
+                    shareIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    try {
+                        startActivity(shareIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // TODO no activity to send mms.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    
+                }
+                break;
+            }
+            case REQUEST_CODE_SEND_MSG: {
                 if (resultCode == RESULT_OK && data != null) {
                     Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_PHONE_URIS);
                     Intent mmsIntent = new Intent(Constants.MMS_SEND_TO);
@@ -2090,7 +2170,7 @@ public class PeopleActivity extends ContactsActivity
                 }
                 break;
             }
-            case REQUEST_CODE_PICK_EMAIL: {
+            case REQUEST_CODE_SEND_EMAIL: {
                 if (resultCode == RESULT_OK && data != null) {
                     Parcelable[] uris = data.getParcelableArrayExtra(Constants.EXTRA_EMAIL_URIS);
                     String[] addresses = getAddressesFromEmailUris(uris);
@@ -2155,6 +2235,11 @@ public class PeopleActivity extends ContactsActivity
     }
 
     //{Added by yongan.qiu on 2012-7-16 begin.
+    private static final String[] LOOKUP_KEY_PROJECTION = new String[] {
+        Contacts._ID,
+        Contacts.LOOKUP_KEY };
+    private static int LOOKUP_KEY = 1;
+
     private static final String[] EMAIL_PROJECTION = {
         Email._ID,
         Email.DISPLAY_NAME,

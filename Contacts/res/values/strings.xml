@@ -1900,6 +1900,8 @@
 
     <string name="account_sim">Sim-only, unsynced</string>
 
+    <string name="menu_delete_contacts">Delete contacts</string>
+    <string name="menu_share_contacts">Share contacts</string>
     <string name="menu_msg">Send messages</string>
     <string name="menu_email">Send emails</string>
     <string name="menu_add_members">Add members</string>

@@ -46,6 +46,16 @@
 
     <!-- Added by yongan.qiu on 2012.7.16 begin. -->
     <item
+        android:id="@+id/menu_delete_contacts"
+        android:icon="@drawable/ic_menu_trash_holo_dark"
+        android:title="@string/menu_delete_contacts"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/menu_share_contacts"
+        android:icon="@drawable/ic_menu_share_contacts_holo_dark"
+        android:title="@string/menu_share_contacts"
+        android:showAsAction="never" />
+    <item
         android:id="@+id/menu_msg"
         android:icon="@drawable/ic_menu_msg_holo_dark"
         android:title="@string/menu_msg"

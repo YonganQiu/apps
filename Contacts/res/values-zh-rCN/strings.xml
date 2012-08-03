@@ -625,6 +625,8 @@
 
     <string name="account_sim">"仅保存在SIM卡中，不同步"</string>
 
+    <string name="menu_delete_contacts">删除</string>
+    <string name="menu_share_contacts">分享</string>
     <string name="menu_msg">发送信息</string>
     <string name="menu_email">发送邮件</string>
     <string name="menu_add_members">添加成员</string>
