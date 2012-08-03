@@ -84,6 +84,7 @@ import android.widget.Toast;
 import com.android.launcher.R;
 import com.android.launcher2.FolderIcon.FolderRingAnimator;
 import com.android.launcher2.InstallWidgetReceiver.WidgetMimeTypeHandlerData;
+import com.android.launcher2.ScrollAnimStyleInfo.ScreenScrollAnimationDefault;
 
 /**
  * The workspace is a wide area with a wallpaper and a finite number of pages.
@@ -1415,9 +1416,7 @@ public class Workspace extends SmoothPagedView
             cl.setOverScrollAmount(Math.abs(scrollProgress), index == 0);
             float rotation = - WORKSPACE_OVERSCROLL_ROTATION * scrollProgress;
             cl.setCameraDistance(mDensity * CAMERA_DISTANCE);
-            // {modified by zhong.chen 2012-7-3 for launcher user-defined
-            cl.setPivotX(cl.getMeasuredWidth() * 0.5f/*(index == 0 ? 0.75f : 0.25f)*/);
-            // }modified by zhong.chen 2012-7-3 for launcher user-defined end
+            cl.setPivotX(cl.getMeasuredWidth() * (index == 0 ? 0.75f : 0.25f));
             cl.setPivotY(cl.getMeasuredHeight() * 0.5f);
             cl.setRotationY(rotation);
             cl.setOverscrollTransformsDirty(true);
@@ -1457,6 +1456,11 @@ public class Workspace extends SmoothPagedView
 			Log.w(TAG,
 					"mScrollAnim is null.when screenScrolled().mScrollAnimId:"
 							+ mScrollAnimId);
+			return;
+		}
+		
+		if (mScrollAnim instanceof ScreenScrollAnimationDefault) {
+			screenScrolledStandardUI(screenCenter);
 			return;
 		}
 		
@@ -4991,7 +4995,8 @@ public class Workspace extends SmoothPagedView
 	}
 	
 	private void resetAnimationData() {
-		if (mScrollAnim != null) {
+		if (mScrollAnim != null
+				&& !(mScrollAnim instanceof ScreenScrollAnimationDefault)) {
 			int pageCount = getPageCount();
 			View v = null;
 			for (int i = 0; i < pageCount; i++) {

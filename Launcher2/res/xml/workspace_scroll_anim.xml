@@ -1,6 +1,8 @@
 <anims>
+	<anim id="default" title_id="workspace_default_scroll_anim_title"
+		icon_id="workspace_default_scroll_anim_icon" default_anim="true" />
 	<anim id="random" title_id="workspace_random_scroll_anim_title"
-		icon_id="workspace_random_scroll_anim_icon" default_anim="true" />
+		icon_id="workspace_random_scroll_anim_icon"/>
 	<anim id="wheel" title_id="workspace_wheel_scroll_anim_title"
 		icon_id="workspace_wheel_scroll_anim_icon" class="com.android.launcher2.ScreenScrollAnimationWheel" />
 	<anim id="cube" title_id="workspace_cube_scroll_anim_title"

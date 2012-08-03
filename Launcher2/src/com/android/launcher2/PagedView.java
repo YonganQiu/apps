@@ -68,10 +68,7 @@ public abstract class PagedView extends ViewGroup {
     //}modify by jingjiang.yu end
     protected static final float NANOTIME_DIV = 1000000000.0f;
 
-    //{modify by jingjiang.yu at 2012.07.12 begin
-    //private static final float OVERSCROLL_ACCELERATE_FACTOR = 2;
-    private static final float OVERSCROLL_ACCELERATE_FACTOR = 0.5f;
-    //}modify by jingjiang.yu end
+    private static final float OVERSCROLL_ACCELERATE_FACTOR = 2;
     private static final float OVERSCROLL_DAMP_FACTOR = 0.14f;
     //{modify by jingjiang.yu at 2012.05.02 begin
     //private static final int MINIMUM_SNAP_VELOCITY = 2200;
