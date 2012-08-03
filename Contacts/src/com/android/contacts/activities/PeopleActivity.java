@@ -1846,7 +1846,6 @@ public class PeopleActivity extends ContactsActivity
             case R.id.menu_msg: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
-                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_msg);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_msg_holo_dark);
@@ -1856,7 +1855,6 @@ public class PeopleActivity extends ContactsActivity
             case R.id.menu_email: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE);
-                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_email);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_dark);
@@ -1868,9 +1866,7 @@ public class PeopleActivity extends ContactsActivity
             case R.id.menu_add_favoriate: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_SELECTION,createStaredSelection(false));
-                //intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_add_favoriate);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_add_contact_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_ADD_FAVORIATE);
@@ -1880,9 +1876,7 @@ public class PeopleActivity extends ContactsActivity
             case R.id.menu_remove_favoriate: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
                 intent.putExtra(Constants.EXTRA_SELECTION,createStaredSelection(true));
-                //intent.putExtra(Constants.EXTRA_CONTACT_LIST_FILTER, mContactListFilterController.getFilter());
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_remove_favoriate);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_trash_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_REMOVE_FAVORIATE);

@@ -16,10 +16,12 @@
 
 package com.android.contacts.group;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.android.contacts.ContactPhotoManager;
+import com.android.contacts.ContactSaveService;
 import com.android.contacts.GroupMemberLoader;
 import com.android.contacts.GroupMetaDataLoader;
 import com.android.contacts.R;
@@ -36,6 +38,7 @@ import android.app.Fragment;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -132,6 +135,9 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
     private long mGroupId;
     private String mGroupName;
     private String mAccountTypeString;
+    //{Added by yongan.qiu on 2012-8-3 begin.
+    private String mAccountNameString;
+    //}Added by yongan.qiu end.
     private String mDataSet;
     private boolean mIsReadOnly;
 
@@ -314,6 +320,9 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
         cursor.moveToPosition(-1);
         if (cursor.moveToNext()) {
             mAccountTypeString = cursor.getString(GroupMetaDataLoader.ACCOUNT_TYPE);
+            //{Added by yongan.qiu on 2012-8-3 begin.
+            mAccountNameString = cursor.getString(GroupMetaDataLoader.ACCOUNT_NAME);
+            //}Added by yongan.qiu end.
             mDataSet = cursor.getString(GroupMetaDataLoader.DATA_SET);
             mGroupId = cursor.getLong(GroupMetaDataLoader.GROUP_ID);
             mGroupName = cursor.getString(GroupMetaDataLoader.TITLE);
@@ -473,14 +482,20 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
             }
             //{Added by yongan.qiu on 2012-8-2 begin.
             case R.id.menu_add_members: {
-                
-                break;
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_ACCOUNT_TYPE, mAccountTypeString);
+                intent.putExtra(Constants.EXTRA_ACCOUNT_NAME, mAccountNameString);
+                intent.putExtra(Constants.EXTRA_SELECTION, createMembersSelection(Data._ID, false));
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_add_members);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_add_members_holo_dark);
+                startActivityForResult(intent, REQUEST_CODE_PICK_CONTACT);
+                return true;
             }
             case R.id.menu_msg: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
-                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
-                intent.putExtra(Constants.EXTRA_SELECTION, createExtraSelection());
+                intent.putExtra(Constants.EXTRA_SELECTION, createMembersSelection(Data.CONTACT_ID, true));
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_msg);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_msg_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_PICK_PHONE);
@@ -489,8 +504,7 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
             case R.id.menu_email: {
                 Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
                 intent.setType(ContactsContract.CommonDataKinds.Email.CONTENT_TYPE);
-                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
-                intent.putExtra(Constants.EXTRA_SELECTION, createExtraSelection());
+                intent.putExtra(Constants.EXTRA_SELECTION, createMembersSelection(Data.CONTACT_ID, true));
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_email);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_email_holo_dark);
                 startActivityForResult(intent, REQUEST_CODE_PICK_EMAIL);
@@ -509,12 +523,18 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
     //{Added by yongan.qiu on 2012-8-2 begin.
     /**
      * Create extra selection that representing selecting from this group.
+     * @param contactIdColumnName the column name of contact id
+     * @param inGroup true while selected from members, false in the other side
      * @return extra selection
      */
-    private String createExtraSelection() {
+    private String createMembersSelection(String contactIdColumnName, boolean inGroup) {
         long[] contactIds = mAdapter.getContactIds();
         StringBuilder selection = new StringBuilder();
-        selection.append(Data.CONTACT_ID + " IN (");
+        if (inGroup) {
+            selection.append(contactIdColumnName + " IN (");
+        } else {
+            selection.append(contactIdColumnName + " NOT IN (");
+        }
         if (contactIds != null && contactIds.length > 0) {
             for (Long id : contactIds) {
                 selection.append(id).append(',');
@@ -527,9 +547,43 @@ public class GroupDetailFragment extends Fragment implements OnScrollListener {
         return selection.toString();
     }
 
+    private static final String[] RAW_CONTACT_ID_PROJECTION = new String[] { Contacts._ID,
+            Contacts.NAME_RAW_CONTACT_ID };
+    private static int NAME_RAW_CONTACT_ID = 1;
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
+            case REQUEST_CODE_PICK_CONTACT: {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_CONTACT_URIS);
+                    ContentResolver resolver = getActivity().getContentResolver();
+                    Cursor cursor;
+                    long rawContactId;
+                    ArrayList<Long> rawContactIds = new ArrayList<Long>();
+
+                    for(int i = 0; i < uris.length; i++) {
+                        cursor = resolver.query((Uri)uris[i], RAW_CONTACT_ID_PROJECTION, null, null, null);
+                        if (cursor != null) {
+                            if (cursor.getCount() > 0 && cursor.moveToNext()) {
+                                rawContactId = cursor.getLong(NAME_RAW_CONTACT_ID);
+                                rawContactIds.add(rawContactId);
+                            }
+                            cursor.close();
+                        }
+                    }
+                    long[] ids = new long[rawContactIds.size()];
+                    int i = 0;
+                    for (long id : rawContactIds) {
+                        ids[i++] = id;
+                    }
+
+                    Intent saveIntent = ContactSaveService.createGroupUpdateIntent(mContext, 
+                            mGroupId, null, ids, null, null, null);
+                    getActivity().startService(saveIntent);
+                }
+                break;
+            }
             case REQUEST_CODE_PICK_PHONE: {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     Parcelable[] uris = data.getParcelableArrayExtra(Intents.EXTRA_PHONE_URIS);

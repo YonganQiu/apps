@@ -629,6 +629,12 @@ public class ContactSaveService extends IntentService {
         serviceIntent.putExtra(ContactSaveService.EXTRA_RAW_CONTACTS_TO_REMOVE,
                 rawContactsToRemove);
 
+        //{Added by yongan.qiu on 2012-8-3 begin.
+        if (callbackActivity == null) {
+            return serviceIntent;
+        }
+        //}Added by yongan.qiu end.
+
         // Callback intent will be invoked by the service once the group is updated
         Intent callbackIntent = new Intent(context, callbackActivity);
         callbackIntent.setAction(callbackAction);
@@ -663,6 +669,11 @@ public class ContactSaveService extends IntentService {
         removeMembersFromGroup(resolver, rawContactsToRemove, groupId);
 
         Intent callbackIntent = intent.getParcelableExtra(EXTRA_CALLBACK_INTENT);
+        //{Added by yongan.qiu on 2012-8-3 begin.
+        if (callbackIntent == null) {
+            return;
+        }
+        //}Added by yongan.qiu end.
         callbackIntent.setData(groupUri);
         deliverCallback(callbackIntent);
     }

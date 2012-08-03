@@ -442,11 +442,21 @@ public class GroupEditorFragment extends Fragment implements SelectAccountDialog
         mImageButton.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(Intent.ACTION_PICK);
-				intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-				intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
-				intent.putExtra(Constants.EXTRA_ACCOUNT_NAME, mAccountName);
-				intent.putExtra(Constants.EXTRA_ACCOUNT_TYPE, mAccountType);
+			    //{Modified by yongan.qiu on 2012-8-3 begin.
+                //old:
+                /*Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_MULTIPLE_CHOICE, true);
+                intent.putExtra(Constants.EXTRA_ACCOUNT_NAME, mAccountName);
+                intent.putExtra(Constants.EXTRA_ACCOUNT_TYPE, mAccountType);*/
+                //new:
+                Intent intent = new Intent(Constants.ACTION_MULTI_PICK);
+                intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+                intent.putExtra(Constants.EXTRA_ACCOUNT_TYPE, mAccountType);
+                intent.putExtra(Constants.EXTRA_ACCOUNT_NAME, mAccountName);
+                intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_add_members);
+                intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_add_members_holo_dark);
+                //}Modified by yongan.qiu end.
 				intent.putExtra(Intents.EXTRA_CONTACT_URIS, getGroupContactUris());
 				getActivity().startActivityForResult(intent, GroupEditorActivity.REQUEST_CODE_PICK_CONTACTS);
 			}});

@@ -55,6 +55,10 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     private Parcelable[] mExcludeUris;
 
+    private String mAccountType;
+
+    private String mAccountName;
+
     private ContactListFilter mFilter;
 
     private String mExtraSelection;
@@ -94,6 +98,19 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     public Parcelable[] getExcludeUris() {
         return mExcludeUris;
+    }
+
+    /** 
+     * If set account and filter in the same time,
+     * only filter works.
+     */
+    public void setAccount(String accountType, String accountName) {
+        mAccountType = accountType;
+        mAccountName = accountName;
+    }
+
+    private boolean hasAccount() {
+        return (mAccountType != null && mAccountName != null);
     }
 
     public void setFilter(ContactListFilter filter) {
@@ -327,6 +344,10 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
         adapter.setSectionHeaderDisplayEnabled(true);
         adapter.setDisplayPhotos(true);
 
+        if (hasAccount()) {
+            adapter.setFilter(ContactListFilter.createAccountFilter(
+                    mAccountType, mAccountName, null, null));
+        }
         adapter.setExtraSelection(mExtraSelection);
 
         onCreateListAdapter(adapter);

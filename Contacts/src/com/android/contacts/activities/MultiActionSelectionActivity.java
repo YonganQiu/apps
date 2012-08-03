@@ -74,6 +74,8 @@ public class MultiActionSelectionActivity extends ContactsActivity
     private ContactsRequest mRequest;
 
     private Parcelable[] mExcludeUris;
+    private String mAccountType;
+    private String mAccountName;
     private ContactListFilter mContactListFilter;
     private String mExtraSelection;
     private int mActionTitle;
@@ -132,6 +134,8 @@ public class MultiActionSelectionActivity extends ContactsActivity
             if (extraName != null) {
                 mExcludeUris = intent.getParcelableArrayExtra(extraName);
             }
+            mAccountType = intent.getStringExtra(Constants.EXTRA_ACCOUNT_TYPE);
+            mAccountName = intent.getStringExtra(Constants.EXTRA_ACCOUNT_NAME);
             mContactListFilter = (ContactListFilter) intent.getParcelableExtra(Constants.EXTRA_CONTACT_LIST_FILTER);
             mExtraSelection = intent.getStringExtra(Constants.EXTRA_SELECTION);
             mActionTitle = intent.getIntExtra(Constants.EXTRA_ACTION_TITLE, DEFAULT_TITLE_RES_ID);
@@ -266,6 +270,9 @@ public class MultiActionSelectionActivity extends ContactsActivity
         }
 
         fragment.setExcludeUris(mExcludeUris);
+        if (mAccountType != null && mAccountName != null) {
+            fragment.setAccount(mAccountType, mAccountName);
+        }
         if (mContactListFilter != null) {
             fragment.setFilter(mContactListFilter);
         }
