@@ -1694,6 +1694,10 @@ public abstract class PagedView extends ViewGroup {
 		mTryoutScrollAniming = true;
 		snapToPage(whichPage);
 	}
+	
+	public boolean isTryoutScrollAniming() {
+		return mTryoutScrollAniming;
+	}
 	// }add by jingjiang.yu end
 
     protected void snapToPage(int whichPage, int duration) {

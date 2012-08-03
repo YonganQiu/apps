@@ -5002,7 +5002,7 @@ public class Workspace extends SmoothPagedView
 	}
 	
 	public void updateSelectedScrollAnimId(ScrollAnimStyleInfo selectedAnimInfo) {
-		if (selectedAnimInfo == null) {
+		if (selectedAnimInfo == null || isTryoutScrollAniming()) {
 			return;
 		}
 
