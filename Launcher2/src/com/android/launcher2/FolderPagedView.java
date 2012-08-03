@@ -303,7 +303,6 @@ public class FolderPagedView extends ViewGroup {
 
 			// Remember where the motion event started
 			mLastMotionX = ev.getX();
-			ev.getY();
 			mLastTouch = mScrollX;
 			break;
 		case MotionEvent.ACTION_MOVE:
