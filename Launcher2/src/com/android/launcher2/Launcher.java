@@ -140,8 +140,12 @@ public final class Launcher extends Activity
 
     static final String EXTRA_SHORTCUT_DUPLICATE = "duplicate";
 
-    static final int SCREEN_COUNT = 5;
-    static final int DEFAULT_SCREEN = 2;
+    // {modify by jingjiang.yu at 2012.08.04 begin for scale preview.
+    // static final int SCREEN_COUNT = 5;
+    // static final int DEFAULT_SCREEN = 2;
+    static int screenCount = 1;
+    static int defaultScreen = 1;
+    // }modify by jingjiang.yu end
 
     static final int DIALOG_CREATE_SHORTCUT = 1;
     static final int DIALOG_RENAME_FOLDER = 2;
@@ -183,7 +187,10 @@ public final class Launcher extends Activity
     private static final int DISMISS_CLING_DURATION = 250;
 
     private static final Object sLock = new Object();
-    private static int sScreen = DEFAULT_SCREEN;
+    // {modify by jingjiang.yu at 2012.08.04 begin for scale preview.
+    // private static int sScreen = DEFAULT_SCREEN;
+    private static int sScreen = 1;
+    // }modify by jingjiang.yu end
 
     private final BroadcastReceiver mCloseSystemDialogsReceiver
             = new CloseSystemDialogsIntentReceiver();
@@ -3210,7 +3217,10 @@ public final class Launcher extends Activity
         if (mWorkspace != null) {
             return mWorkspace.getCurrentPage();
         } else {
-            return SCREEN_COUNT / 2;
+            // {modify by jingjiang.yu at 2012.08.04 begin for scale preview.
+            // return SCREEN_COUNT / 2;
+            return screenCount / 2;
+            // }modify by jingjiang.yu end
         }
     }
 

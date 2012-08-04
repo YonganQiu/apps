@@ -252,7 +252,7 @@ public class Workspace extends SmoothPagedView
     
     
     //{add by zhongheng.zheng at 2012.6.18 begin for constant of quick sliding
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final int QUICK_SLIDE_AREA_EXPAND_Y = 20;
     //}add by zhongheng.zheng end
     
@@ -401,6 +401,7 @@ public class Workspace extends SmoothPagedView
 			editor = prefs.edit();
 			editor.putInt(WORKSPACE_DEFAULT_PAGE_KEY, mDefaultPage);
 		}
+		Launcher.defaultScreen = mDefaultPage;
 
 		mScreenCount = prefs.getInt(WORKSPACE_SCREEN_COUNT_KEY, -1);
 		if (mScreenCount == -1) {
@@ -411,6 +412,7 @@ public class Workspace extends SmoothPagedView
 			}
 			editor.putInt(WORKSPACE_SCREEN_COUNT_KEY, mScreenCount);
 		}
+		Launcher.screenCount = mScreenCount;
 
 		if (editor != null) {
 			editor.commit();
@@ -4862,6 +4864,7 @@ public class Workspace extends SmoothPagedView
 	}
 	
 	private void updatePageCountInPrefs(final int pageCount) {
+	    Launcher.screenCount = pageCount;
 		new AsyncTask<Void, Void, Void>() {
 			@Override
 			protected Void doInBackground(Void... params) {
@@ -4890,6 +4893,7 @@ public class Workspace extends SmoothPagedView
 
 		if (mDefaultPage != homePage) {
 			mDefaultPage = homePage;
+			Launcher.defaultScreen = mDefaultPage;
 
 			new AsyncTask<Void, Void, Void>() {
 				@Override

@@ -55,7 +55,10 @@ public class AddWidgetReceiver extends BroadcastReceiver {
             success = (appWidgetId >= 0);
             if (!success) {
                 // The target screen is full, let's try the other screens
-                for (int i = 0; i < Launcher.SCREEN_COUNT; i++) {
+                // {modify by jingjiang.yu at 2012.08.04 begin for scale preview.
+                // for (int i = 0; i < Launcher.SCREEN_COUNT; i++) {
+                for (int i = 0; i < Launcher.screenCount; i++) {
+                // }modify by jingjiang.yu end
                     appWidgetId = addWidget(context, appWidgetInfo, i);
                     success = (appWidgetId >= 0);
                     if (i != screen && success) break;

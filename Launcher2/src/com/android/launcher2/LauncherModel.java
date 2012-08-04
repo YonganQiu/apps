@@ -926,13 +926,17 @@ public class LauncherModel extends BroadcastReceiver {
 
                 // We use the last index to refer to the hotseat and the screen as the rank, so
                 // test and update the occupied state accordingly
-                if (occupied[Launcher.SCREEN_COUNT][item.screen][0] != null) {
+                // {modify by jingjiang.yu at 2012.08.04 begin for scale
+                // preview.
+                // if (occupied[Launcher.SCREEN_COUNT][item.screen][0] != null) {
+                if (occupied[Launcher.screenCount][item.screen][0] != null) {
+                    // }modify by jingjiang.yu end
                     Log.e(TAG, "Error loading shortcut into hotseat " + item
                         + " into position (" + item.screen + ":" + item.cellX + "," + item.cellY
-                        + ") occupied by " + occupied[Launcher.SCREEN_COUNT][item.screen][0]);
+                        + ") occupied by " + occupied[Launcher.screenCount][item.screen][0]);
                     return false;
                 } else {
-                    occupied[Launcher.SCREEN_COUNT][item.screen][0] = item;
+                    occupied[Launcher.screenCount][item.screen][0] = item;
                     return true;
                 }
             } else if (item.container != LauncherSettings.Favorites.CONTAINER_DESKTOP) {
@@ -986,7 +990,10 @@ public class LauncherModel extends BroadcastReceiver {
             // Load workspace in reverse order to ensure that latest items are loaded first (and
             // before any earlier duplicates)
             final ItemInfo occupied[][][] =
-                    new ItemInfo[Launcher.SCREEN_COUNT + 1][mCellCountX + 1][mCellCountY + 1];
+                    //{modify by jingjiang.yu at 2012.08.04 begin for scale preview.
+                    //new ItemInfo[Launcher.SCREEN_COUNT + 1][mCellCountX + 1][mCellCountY + 1];
+                    new ItemInfo[Launcher.screenCount + 1][mCellCountX + 1][mCellCountY + 1];
+                    //}modify by jingjiang.yu end
 
             try {
                 final int idIndex = c.getColumnIndexOrThrow(LauncherSettings.Favorites._ID);
@@ -1202,7 +1209,10 @@ public class LauncherModel extends BroadcastReceiver {
                 Log.d(TAG, "workspace layout: ");
                 for (int y = 0; y < mCellCountY; y++) {
                     String line = "";
-                    for (int s = 0; s < Launcher.SCREEN_COUNT; s++) {
+                    // {modify by jingjiang.yu at 2012.08.04 begin for scale preview.
+                    // for (int s = 0; s < Launcher.SCREEN_COUNT; s++) {
+                    for (int s = 0; s < Launcher.screenCount; s++) {
+                    // }modify by jingjiang.yu end
                         if (s > 0) {
                             line += " | ";
                         }
