@@ -219,6 +219,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             ApplicationInfo info = mWallpapers.get(i);
             PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
                     R.layout.apps_customize_application, layout, false);
+            info.isSystemApp = true;
             icon.applyFromApplicationInfo(info, true, null);
             icon.setOnClickListener(this);
             // icon.setOnLongClickListener(this);
@@ -247,6 +248,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
             ApplicationInfo info = mThemes.get(i);
             PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
                     R.layout.apps_customize_application, layout, false);
+            info.isSystemApp = true;
             icon.applyFromApplicationInfo(info, true, null);
             icon.setOnClickListener(this);
             // icon.setOnLongClickListener(this);
@@ -263,31 +265,34 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         layout.createHardwareLayers();
     }
 
-	private void syncEffectPageItems(int page, boolean immediate) {
-		int numCells = mCellCountX * mCellCountY;
-		int startIndex = page * numCells;
-		int endIndex = Math.min(startIndex + numCells, mEffects.size());
-		PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page
-				+ mNumWallpaperPages + mNumThemePages);
+    private void syncEffectPageItems(int page, boolean immediate) {
+        int numCells = mCellCountX * mCellCountY;
+        int startIndex = page * numCells;
+        int endIndex = Math.min(startIndex + numCells, mEffects.size());
+        PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page
+                + mNumWallpaperPages + mNumThemePages);
 
-		layout.removeAllViewsOnPage();
-		for (int i = startIndex; i < endIndex; ++i) {
-			ScrollAnimStyleInfo animInfo = mEffects.get(i);
-			PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
-					R.layout.apps_customize_application, layout, false);
-			icon.applyFromScrollAnimInfo(animInfo);
-			icon.setOnClickListener(this);
+        layout.removeAllViewsOnPage();
+        for (int i = startIndex; i < endIndex; ++i) {
+            ScrollAnimStyleInfo animInfo = mEffects.get(i);
+            PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
+                    R.layout.apps_customize_application, layout, false);
+            icon.applyFromScrollAnimInfo(
+                    animInfo,
+                    createIconBitmap(animInfo.getIconId(mContext), mContext, animInfo.isSelected(),
+                            false));
+            icon.setOnClickListener(this);
 
-			int index = i - startIndex;
-			int x = index % mCellCountX;
-			int y = index / mCellCountX;
-			layout.addViewToCellLayout(icon, -1, i,
-					new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
-		}
+            int index = i - startIndex;
+            int x = index % mCellCountX;
+            int y = index / mCellCountX;
+            layout.addViewToCellLayout(icon, -1, i,
+                    new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
+        }
 
-		layout.getChildrenLayout().mChildrenDoAnim = false;
-		layout.createHardwareLayers();
-	}
+        layout.getChildrenLayout().mChildrenDoAnim = false;
+        layout.createHardwareLayers();
+    }
 
     private void setupPage(PagedViewCellLayout layout) {
         layout.setCellCount(mCellCountX, mCellCountY);
@@ -724,15 +729,19 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 
 	}
     
-	private void effectIconOnClick(View v) {
-		final ScrollAnimStyleInfo animInfo = (ScrollAnimStyleInfo) v.getTag();
-		animateClickFeedback(v, new Runnable() {
-			@Override
-			public void run() {
-				mLauncher.getWorkspace().updateSelectedScrollAnimId(animInfo);
-			}
-		});
-	}
+    private void effectIconOnClick(View v) {
+        final ScrollAnimStyleInfo animInfo = (ScrollAnimStyleInfo) v.getTag();
+        animateClickFeedback(v, new Runnable() {
+            @Override
+            public void run() {
+                boolean updateSucceed = mLauncher.getWorkspace()
+                        .updateSelectedScrollAnimId(animInfo);
+                if(updateSucceed){
+                    invalidatePageData();
+                }
+            }
+        });
+    }
 
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         return FocusHelper.handleAppsCustomizeKeyEvent(v, keyCode, event);

@@ -4998,20 +4998,22 @@ public class Workspace extends SmoothPagedView
 		}
 	}
 	
-	public void updateSelectedScrollAnimId(ScrollAnimStyleInfo selectedAnimInfo) {
-		if (selectedAnimInfo == null || isTryoutScrollAniming()) {
-			return;
-		}
+    public boolean updateSelectedScrollAnimId(ScrollAnimStyleInfo selectedAnimInfo) {
+        boolean updateResult = false;
+        if (selectedAnimInfo == null || isTryoutScrollAniming()) {
+            return updateResult;
+        }
+        if (!selectedAnimInfo.getAnimId().equals(mScrollAnimId)) {
+            mScrollAnimId = selectedAnimInfo.getAnimId();
+            updateScrollAnimObject(true);
+            ScrollAnimStyleInfo.updateSelectedScrollAnimId(getContext(),
+                    selectedAnimInfo, mScrollAnimList);
+            updateResult = true;
+        }
 
-		if (!selectedAnimInfo.getAnimId().equals(mScrollAnimId)) {
-			mScrollAnimId = selectedAnimInfo.getAnimId();
-			updateScrollAnimObject(true);
-			ScrollAnimStyleInfo.updateSelectedScrollAnimId(getContext(),
-					selectedAnimInfo, mScrollAnimList);
-		}
-		
-		tryoutScrollAnim();
-	}
+        tryoutScrollAnim();
+        return updateResult;
+    }
 	
 	public static class PreviewDragInfo {
 		public int dragIndex;

@@ -128,14 +128,11 @@ public class PagedViewIcon extends TextView implements Checkable {
     }
     
 	// {add by jingjiang.yu at 2012.07.09 begin for screen scroll.
-	public void applyFromScrollAnimInfo(ScrollAnimStyleInfo animInfo) {
+	public void applyFromScrollAnimInfo(ScrollAnimStyleInfo animInfo, Bitmap iconBitmap) {
 		setText(animInfo.getTitleId(getContext()));
 		setTag(animInfo);
-
-		Resources resources = getResources();
-		mIcon = Utilities.createIconBitmap(
-				resources.getDrawable(animInfo.getIconId(getContext())), 0, 0,
-				getContext());
+		
+		mIcon = iconBitmap;
 		setCompoundDrawablesWithIntrinsicBounds(null, new FastBitmapDrawable(
 				mIcon), null, null);
 	}
