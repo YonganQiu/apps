@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="letter_icons_bar" translatable="false">
+           <item>@drawable/bar_letter_all</item>
+           <item>@drawable/bar_letter_other</item>
+    		<item>@drawable/bar_letter_a</item>
+    		<item>@drawable/bar_letter_b</item>
+    		<item>@drawable/bar_letter_c</item>
+    		<item>@drawable/bar_letter_d</item>
+    		<item>@drawable/bar_letter_e</item>
+    		<item>@drawable/bar_letter_f</item>
+    		<item>@drawable/bar_letter_g</item>
+    		<item>@drawable/bar_letter_h</item>
+    		<item>@drawable/bar_letter_i</item>
+    		<item>@drawable/bar_letter_j</item>
+    		<item>@drawable/bar_letter_k</item>
+    		<!-- <item>@android:drawable/ic_go_search_api_holo_light</item> -->
+    		<item>@drawable/bar_letter_l</item>
+    		<item>@drawable/bar_letter_m</item>
+    		<item>@drawable/bar_letter_n</item>
+    		<item>@drawable/bar_letter_o</item>
+    		<item>@drawable/bar_letter_p</item>
+    		<item>@drawable/bar_letter_q</item>
+    		<item>@drawable/bar_letter_r</item>
+    		<item>@drawable/bar_letter_s</item>
+    		<item>@drawable/bar_letter_t</item>
+    		<item>@drawable/bar_letter_u</item>
+    		<item>@drawable/bar_letter_v</item>
+    		<item>@drawable/bar_letter_w</item>
+    		<item>@drawable/bar_letter_x</item>
+    		<item>@drawable/bar_letter_y</item>
+    		<item>@drawable/bar_letter_z</item>
+    </array>
+    <!-- <array name="big_letter_icons_bar" translatable="false">
+           <item>@drawable/big_letter_all</item>
+           <item>@drawable/big_letter_other</item>
+    		<item>@drawable/big_letter_a</item>
+    		<item>@drawable/big_letter_b</item>
+    		<item>@drawable/big_letter_c</item>
+    		<item>@drawable/big_letter_d</item>
+    		<item>@drawable/big_letter_e</item>
+    		<item>@drawable/big_letter_f</item>
+    		<item>@drawable/big_letter_g</item>
+    		<item>@drawable/big_letter_h</item>
+    		<item>@drawable/big_letter_i</item>
+    		<item>@drawable/big_letter_j</item>
+    		<item>@drawable/big_letter_k</item>
+    		<item>@android:drawable/ic_go_search_api_holo_light</item>
+    		<item>@drawable/big_letter_l</item>
+    		<item>@drawable/big_letter_m</item>
+    		<item>@drawable/big_letter_n</item>
+    		<item>@drawable/big_letter_o</item>
+    		<item>@drawable/big_letter_p</item>
+    		<item>@drawable/big_letter_q</item>
+    		<item>@drawable/big_letter_r</item>
+    		<item>@drawable/big_letter_s</item>
+    		<item>@drawable/big_letter_t</item>
+    		<item>@drawable/big_letter_u</item>
+    		<item>@drawable/big_letter_v</item>
+    		<item>@drawable/big_letter_w</item>
+    		<item>@drawable/big_letter_x</item>
+    		<item>@drawable/big_letter_y</item>
+    		<item>@drawable/big_letter_z</item>
+    </array> -->
+    
+    <!-- <array name="letter_icons_bg" translatable="false">
+    		<item>@drawable/letter_bg_a</item>
+    		<item>@drawable/letter_bg_b</item>
+    		<item>@drawable/letter_bg_c</item>
+    		<item>@drawable/letter_bg_d</item>
+    		<item>@drawable/letter_bg_e</item>
+    		<item>@drawable/letter_bg_f</item>
+    		<item>@drawable/letter_bg_g</item>
+    		<item>@drawable/letter_bg_h</item>
+    		<item>@drawable/letter_bg_i</item>
+    		<item>@drawable/letter_bg_j</item>
+    </array> -->
+    
+    <string-array name="apps_sort_letter_keys" translatable="false">
+           <item>#</item>
+    		<item>A</item>
+    		<item>B</item>
+    		<item>C</item>
+    		<item>D</item>
+    		<item>E</item>
+    		<item>F</item>
+    		<item>G</item>
+    		<item>H</item>
+    		<item>I</item>
+    		<item>J</item>
+    		<item>K</item>
+    		<item>L</item>
+    		<item>M</item>
+    		<item>N</item>
+    		<item>O</item>
+    		<item>P</item>
+    		<item>Q</item>
+    		<item>R</item>
+    		<item>S</item>
+    		<item>T</item>
+    		<item>U</item>
+    		<item>V</item>
+    		<item>W</item>
+    		<item>X</item>
+    		<item>Y</item>
+    		<item>Z</item>
+    </string-array>
+</resources>
