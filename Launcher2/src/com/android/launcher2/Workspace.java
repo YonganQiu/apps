@@ -84,7 +84,6 @@ import android.widget.Toast;
 import com.android.launcher.R;
 import com.android.launcher2.FolderIcon.FolderRingAnimator;
 import com.android.launcher2.InstallWidgetReceiver.WidgetMimeTypeHandlerData;
-import com.android.launcher2.ScrollAnimStyleInfo.ScreenScrollAnimationDefault;
 
 /**
  * The workspace is a wide area with a wallpaper and a finite number of pages.
@@ -1459,12 +1458,6 @@ public class Workspace extends SmoothPagedView
 			return;
 		}
 		
-		if (mScrollAnim instanceof ScreenScrollAnimationDefault) {
-			screenScrolledStandardUI(screenCenter);
-			return;
-		}
-		
-
 		View v = null;
 		float scrollProgress = 0;
 		for (int i = 0; i < getPageCount(); i++) {
@@ -4995,8 +4988,7 @@ public class Workspace extends SmoothPagedView
 	}
 	
 	private void resetAnimationData() {
-		if (mScrollAnim != null
-				&& !(mScrollAnim instanceof ScreenScrollAnimationDefault)) {
+		if (mScrollAnim != null) {
 			int pageCount = getPageCount();
 			View v = null;
 			for (int i = 0; i < pageCount; i++) {

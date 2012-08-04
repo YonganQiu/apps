@@ -38,7 +38,6 @@ public class ScrollAnimStyleInfo {
 	private static final String WORKSPACE_SCROLL_ANIM_XML_ATTR_CLASS_NAME = "class";
 	private static final String WORKSPACE_SCROLL_ANIM_XML_ATTR_DEFAULT_ANIM = "default_anim";
 	public static final String RANDOM_SCROLL_ANIM_ID = "random";
-	public static final String DEFAULT_SCROLL_ANIM_ID = "default";
 	private static final String WORKSPACE_SELECTED_SCROLL_ANIM_ID = "workspace.selected_scroll.anim.id";
 
 	public boolean isDefault() {
@@ -224,10 +223,6 @@ public class ScrollAnimStyleInfo {
 					} else {
 						anim.setDefault(false);
 					}
-					
-					if (DEFAULT_SCROLL_ANIM_ID.equals(anim.mAnimId)) {
-						anim.mAnimObject = new ScreenScrollAnimationDefault();
-					}
 					anims.add(anim);
 				}
 				while (xrp.getEventType() != XmlResourceParser.END_TAG) {
@@ -388,28 +383,5 @@ public class ScrollAnimStyleInfo {
 		}
 
 		return resourceId;
-	}
-
-	public static class ScreenScrollAnimationDefault implements
-			ScreenScrollAnimation {
-		@Override
-		public void screenScroll(float scrollProgress, View v) {
-
-		}
-
-		@Override
-		public void leftScreenOverScroll(float scrollProgress, View v) {
-
-		}
-
-		@Override
-		public void rightScreenOverScroll(float scrollProgress, View v) {
-
-		}
-
-		@Override
-		public void resetAnimationData(View v) {
-
-		}
 	}
 }
