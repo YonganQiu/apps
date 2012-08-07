@@ -16,6 +16,7 @@
 package com.android.contacts.list;
 
 import com.android.contacts.R;
+import com.android.contacts.model.AccountTypeManager;
 
 import android.content.Context;
 import android.content.CursorLoader;
@@ -25,6 +26,7 @@ import android.net.Uri;
 import android.net.Uri.Builder;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.Contacts.AggregationSuggestions;
 import android.provider.ContactsContract.Directory;
 import android.text.TextUtils;
@@ -89,8 +91,17 @@ public class JoinContactListAdapter extends ContactListAdapter {
                         ContactsContract.DIRECTORY_PARAM_KEY, String.valueOf(Directory.DEFAULT))
                 .build();
         loader.setUri(allContactsUri);
-        loader.setSelection(Contacts._ID + "!=?");
-        loader.setSelectionArgs(new String[]{String.valueOf(mTargetContactId)});
+        //{Modified by yongan.qiu on 2012-8-6 begin.
+        //old:
+        /*loader.setSelection(Contacts._ID + "!=?");
+        loader.setSelectionArgs(new String[]{String.valueOf(mTargetContactId)});*/
+        //new:
+        loader.setSelection(Contacts._ID + "!=? AND " + Contacts._ID + " IN (" + "SELECT DISTINCT "
+                + RawContacts.CONTACT_ID + " FROM raw_contacts" + " WHERE "
+                + RawContacts.ACCOUNT_TYPE + "!=?)");
+        loader.setSelectionArgs(new String[] { String.valueOf(mTargetContactId),
+                AccountTypeManager.ACCOUNT_TYPE_SIM });
+        //}Modified by yongan.qiu end.
         if (getSortOrder() == ContactsContract.Preferences.SORT_ORDER_PRIMARY) {
             loader.setSortOrder(Contacts.SORT_KEY_PRIMARY);
         } else {

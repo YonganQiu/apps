@@ -104,6 +104,7 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.Intents;
 import android.provider.ContactsContract.ProviderStatus;
 import android.provider.ContactsContract.QuickContact;
+import android.provider.ContactsContract.RawContacts;
 import android.provider.Settings;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
@@ -1921,6 +1922,12 @@ public class PeopleActivity extends ContactsActivity
     }
 
     //{Added by yongan.qiu on 2012-8-3 begin.
+    private static final String EXCLUDE_SIM = Contacts._ID + " IN ("
+            + "SELECT DISTINCT " + RawContacts.CONTACT_ID
+            + " FROM raw_contacts"
+            + " WHERE " + RawContacts.ACCOUNT_TYPE + "!=\""
+            + AccountTypeManager.ACCOUNT_TYPE_SIM + "\")";
+
     /**
      * Create extra selection.
      * @param started whether select from stared contacts
@@ -1928,9 +1935,9 @@ public class PeopleActivity extends ContactsActivity
      */
     private String createStaredSelection(boolean stared) {
         if (stared) {
-            return Contacts.STARRED + "!=0";
+            return Contacts.STARRED + "!=0 AND " + EXCLUDE_SIM;
         } else {
-            return Contacts.STARRED + "=0";
+            return Contacts.STARRED + "=0 AND " + EXCLUDE_SIM;
         }
     }
     //}Added by yongan.qiu end.

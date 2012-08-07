@@ -26,7 +26,7 @@ import android.widget.ListView;
  */
 public class PhoneNumberMultiPickerFragment extends BaseMultiPickerFragment<PhoneNumberListAdapter> {
 
-    public PhoneNumberMultiPickerFragment(OnDoneListener listener, int actionTitle, int actionIcon) {
+    public PhoneNumberMultiPickerFragment(OnPickListener listener, int actionTitle, int actionIcon) {
         super(listener, actionTitle, actionIcon);
     }
 

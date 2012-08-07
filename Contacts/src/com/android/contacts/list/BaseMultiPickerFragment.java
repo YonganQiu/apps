@@ -41,8 +41,8 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
     /**
      * Called when "action" menu item clicked.
      */
-    public interface OnDoneListener {
-        public void onDone();
+    public interface OnPickListener {
+        public void onPickFinished();
     }
 
     private static final String TAG = BaseMultiPickerFragment.class.getSimpleName();
@@ -51,7 +51,7 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     private static final int REQUEST_CODE_ACCOUNT_FILTER = 1;
 
-    private OnDoneListener mOnDoneListener;
+    private OnPickListener mOnPickListener;
 
     private Parcelable[] mExcludeUris;
 
@@ -91,6 +91,39 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
         }
     }
     private OnClickListener mFilterHeaderClickListener = new FilterHeaderClickListener();
+
+    public BaseMultiPickerFragment(OnPickListener listener, int actionTitle, int actionIcon) {
+        if (listener == null) {
+            Log.w(TAG, "a listener should be specified!");
+        } else {
+            mOnPickListener = listener;
+        }
+        mActionTitle = actionTitle;
+        mActionIcon = actionIcon;
+
+        setPhotoLoaderEnabled(true);
+        setSectionHeaderDisplayEnabled(true);
+        setQuickContactEnabled(false);
+        setDirectorySearchMode(DirectoryListLoader.SEARCH_MODE_CONTACT_SHORTCUT);
+    }
+
+    @Override
+    public void onCreate(Bundle savedState) {
+        super.onCreate(savedState);
+        final ActionBar actionBar = getActivity().getActionBar();
+        if (actionBar != null) {
+            View customView = (ViewGroup) LayoutInflater.from(getActivity()).inflate(
+                    R.layout.multi_action_selected_count, null);
+            mSelectedConvCount = (TextView) customView
+                    .findViewById(R.id.selected_count);
+
+            actionBar.setDisplayShowCustomEnabled(true);
+            LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, Gravity.RIGHT);
+            actionBar.setCustomView(customView, lp);
+        }
+        setHasOptionsMenu(true);
+        ContactListFilterController.getInstance(getActivity()).addListener(this);
+    }
 
     public void setExcludeUris(Parcelable[] excludeUris) {
         mExcludeUris = excludeUris;
@@ -135,39 +168,6 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
 
     public void setExtraSelection(String selection) {
         mExtraSelection = selection;
-    }
-
-    public BaseMultiPickerFragment(OnDoneListener listener, int actionTitle, int actionIcon) {
-        if (listener == null) {
-            Log.w(TAG, "a listener should be specified!");
-        } else {
-            mOnDoneListener = listener;
-        }
-        mActionTitle = actionTitle;
-        mActionIcon = actionIcon;
-
-        setPhotoLoaderEnabled(true);
-        setSectionHeaderDisplayEnabled(true);
-        setQuickContactEnabled(false);
-        setDirectorySearchMode(DirectoryListLoader.SEARCH_MODE_CONTACT_SHORTCUT);
-    }
-
-    @Override
-    public void onCreate(Bundle savedState) {
-        super.onCreate(savedState);
-        final ActionBar actionBar = getActivity().getActionBar();
-        if (actionBar != null) {
-            View customView = (ViewGroup) LayoutInflater.from(getActivity()).inflate(
-                    R.layout.multi_action_selected_count, null);
-            mSelectedConvCount = (TextView) customView
-                    .findViewById(R.id.selected_count);
-
-            actionBar.setDisplayShowCustomEnabled(true);
-            LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, Gravity.RIGHT);
-            actionBar.setCustomView(customView, lp);
-        }
-        setHasOptionsMenu(true);
-        ContactListFilterController.getInstance(getActivity()).addListener(this);
     }
 
     private void clearSelection() {
@@ -223,6 +223,7 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
         mAccountFilterHeader.setOnClickListener(mFilterHeaderClickListener);
         updateFilterHeaderView();
 
+        setSelectionVisible(true);
         setVisibleScrollbarEnabled(true);
     }
 
@@ -255,11 +256,6 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.select_all_or_none: {
@@ -277,8 +273,8 @@ public abstract class BaseMultiPickerFragment<T extends ContactEntryListAdapter>
  
             }
             case R.id.action: {
-                if (mOnDoneListener != null) {
-                    mOnDoneListener.onDone();
+                if (mOnPickListener != null) {
+                    mOnPickListener.onPickFinished();
                 }
                 return true;
             }

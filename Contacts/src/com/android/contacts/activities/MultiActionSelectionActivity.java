@@ -3,7 +3,7 @@ package com.android.contacts.activities;
 import com.android.contacts.ContactsActivity;
 import com.android.contacts.R;
 import com.android.contacts.list.BaseMultiPickerFragment;
-import com.android.contacts.list.BaseMultiPickerFragment.OnDoneListener;
+import com.android.contacts.list.BaseMultiPickerFragment.OnPickListener;
 import com.android.contacts.list.ContactEntryListAdapter;
 import com.android.contacts.list.ContactEntryListFragment;
 import com.android.contacts.list.ContactListFilter;
@@ -157,9 +157,9 @@ public class MultiActionSelectionActivity extends ContactsActivity
         }
     }
 
-    OnDoneListener mOnDoneListener = new OnDoneListener() {
+    OnPickListener mOnPickListener = new OnPickListener() {
         @Override
-        public void onDone() {
+        public void onPickFinished() {
             Set<Uri> selectedUriSet = mListFragment.getSelectedUriSet();
             if (DEBUG) {
                 Log.i(TAG, "Selection done. SelectedUriSet = " + selectedUriSet);
@@ -249,19 +249,19 @@ public class MultiActionSelectionActivity extends ContactsActivity
         switch (mActionCode) {
             case ContactsRequest.ACTION_PICK_CONTACT: {
                 fragment = new ContactMultiPickerFragment(
-                        mOnDoneListener, mActionTitle, mActionIcon);
+                        mOnPickListener, mActionTitle, mActionIcon);
                 break;
             }
 
             case ContactsRequest.ACTION_PICK_PHONE: {
                 fragment = new PhoneNumberMultiPickerFragment(
-                        mOnDoneListener, mActionTitle, mActionIcon);
+                        mOnPickListener, mActionTitle, mActionIcon);
                 break;
             }
 
             case ContactsRequest.ACTION_PICK_EMAIL: {
                 fragment = new EmailAddressMultiPickerFragment(
-                        mOnDoneListener, mActionTitle, mActionIcon);
+                        mOnPickListener, mActionTitle, mActionIcon);
                 break;
             }
 

@@ -18,7 +18,7 @@ import android.widget.ListView;
  */
 public class EmailAddressMultiPickerFragment extends BaseMultiPickerFragment<EmailAddressListAdapter> {
 
-    public EmailAddressMultiPickerFragment(OnDoneListener listener, int actionTitle, int actionIcon) {
+    public EmailAddressMultiPickerFragment(OnPickListener listener, int actionTitle, int actionIcon) {
         super(listener, actionTitle, actionIcon);
     }
 

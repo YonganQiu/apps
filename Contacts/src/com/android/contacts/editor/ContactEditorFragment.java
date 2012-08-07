@@ -907,8 +907,16 @@ public class ContactEditorFragment extends Fragment implements
         // Split only if more than one raw profile and not a user profile
         menu.findItem(R.id.menu_split).setVisible(mState != null && mState.size() > 1 &&
                 !isEditingUserProfile());
-        // Cannot join a user profile
-        menu.findItem(R.id.menu_join).setVisible(!isEditingUserProfile());
+        //{Modified by yongan.qiu on 2012-8-6 begin.
+        //old:
+        /*// Cannot join a user profile
+        menu.findItem(R.id.menu_join).setVisible(!isEditingUserProfile());*/
+        //new:
+        //Cannot join a user profile or a sim contact
+        menu.findItem(R.id.menu_join).setVisible(!isEditingUserProfile()
+                                && !(mState != null && mState.size() == 1 && AccountTypeManager.ACCOUNT_TYPE_SIM
+                                        .equals(mState.get(0).getValues().getAsString(RawContacts.ACCOUNT_TYPE))));
+        //}Modified by yongan.qiu end.
 
 
         int size = menu.size();

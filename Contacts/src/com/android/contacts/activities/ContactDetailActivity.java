@@ -26,6 +26,7 @@ import com.android.contacts.detail.ContactDetailLayoutController;
 import com.android.contacts.detail.ContactLoaderFragment;
 import com.android.contacts.detail.ContactLoaderFragment.ContactLoaderFragmentListener;
 import com.android.contacts.interactions.ContactDeletionInteraction;
+import com.android.contacts.model.AccountTypeManager;
 import com.android.contacts.model.AccountWithDataSet;
 import com.android.contacts.util.PhoneCapabilityTester;
 
@@ -38,6 +39,7 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract.RawContacts;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -146,7 +148,9 @@ public class ContactDetailActivity extends ContactsActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem starredMenuItem = menu.findItem(R.id.menu_star);
-        ViewGroup starredContainer = (ViewGroup) getLayoutInflater().inflate(
+        //{Modified by yongan.qiu on 2012-8-6 begin.
+        //old:
+        /*ViewGroup starredContainer = (ViewGroup) getLayoutInflater().inflate(
                 R.layout.favorites_star, null, false);
         final CheckBox starredView = (CheckBox) starredContainer.findViewById(R.id.star);
         starredView.setOnClickListener(new OnClickListener() {
@@ -165,7 +169,35 @@ public class ContactDetailActivity extends ContactsActivity {
         if (mContactData != null) {
             ContactDetailDisplayUtils.setStarred(mContactData, starredView);
         }
-        starredMenuItem.setActionView(starredContainer);
+        starredMenuItem.setActionView(starredContainer);*/
+        //new:
+        //Donot show star button when viewing sim contact
+        if (mContactData == null || mContactData.getEntities().size() != 1
+                || AccountTypeManager.ACCOUNT_TYPE_SIM.equals(mContactData.getEntities().get(0)
+                        .getEntityValues().get(RawContacts.ACCOUNT_TYPE))) {
+            starredMenuItem.setVisible(false);
+        } else {
+            ViewGroup starredContainer = (ViewGroup) getLayoutInflater().inflate(
+                    R.layout.favorites_star, null, false);
+            final CheckBox starredView = (CheckBox) starredContainer.findViewById(R.id.star);
+            starredView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Toggle "starred" state
+                    // Make sure there is a contact
+                    if (mLookupUri != null) {
+                        Intent intent = ContactSaveService.createSetStarredIntent(
+                                ContactDetailActivity.this, mLookupUri, starredView.isChecked());
+                        ContactDetailActivity.this.startService(intent);
+                    }
+                }
+            });
+            // If there is contact data, update the starred state
+            ContactDetailDisplayUtils.setStarred(mContactData, starredView);
+            starredMenuItem.setActionView(starredContainer);
+            starredMenuItem.setVisible(true);
+        }
+        //}Modified by yongan.qiu end.
         
         //begin: added by yunzhou.song
 		boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;

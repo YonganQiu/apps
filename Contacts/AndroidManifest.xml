@@ -394,19 +394,9 @@
             android:clearTaskOnLaunch="true"/>
 
         <!-- Views the details of a single group -->
-
-        <!-- Removed by yongan.qiu on 2012.8.2
         <activity android:name=".activities.GroupDetailActivity"
             android:label=""
             android:theme="@style/DetailActivityTheme"/>
-        -->
-
-        <!-- Added by yongan.qiu yon 2012.8.2 begin. -->
-        <activity android:name=".activities.GroupDetailActivity"
-            android:label=""
-            android:uiOptions="splitActionBarWhenNarrow"
-            android:theme="@style/DetailActivityTheme"/>
-        <!-- Added by yongan.qiu yon end. -->
 
         <!-- Create a new or edit an existing group -->
         <activity

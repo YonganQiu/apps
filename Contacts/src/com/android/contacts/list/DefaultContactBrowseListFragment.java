@@ -21,8 +21,12 @@ import com.android.contacts.ContactsApplication;
 import com.android.contacts.R;
 import com.android.contacts.editor.ContactEditorFragment;
 import com.android.contacts.interactions.ContactDeletionInteraction;
+import com.android.contacts.model.AccountTypeManager;
+import com.android.contacts.model.LocalAccountType;
+import com.android.contacts.model.SimAccountType;
 import com.android.contacts.util.AccountFilterUtil;
 
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
@@ -238,8 +242,23 @@ public class DefaultContactBrowseListFragment extends ContactBrowseListFragment 
                         : ContactListFilter.FILTER_TYPE_ALL_ACCOUNTS;
                 switch (filterType) {
                     case ContactListFilter.FILTER_TYPE_ACCOUNT:
+                        //{Modified by yongan.qiu on 2012-8-6 begin.
+                        //old:
+                        /*mCounterHeaderView.setText(getString(
+                                R.string.listTotalAllContactsZeroGroup, filter.accountName));*/
+                        //new:
+                        CharSequence name;
+                        Context context = getActivity();
+                        if (AccountTypeManager.ACCOUNT_TYPE_LOCAL.equals(filter.accountType)) {
+                            name = new LocalAccountType(context).getDisplayLabel(context);
+                        } else if (AccountTypeManager.ACCOUNT_TYPE_SIM.equals(filter.accountType)) {
+                            name = new SimAccountType(context).getDisplayLabel(context);
+                        } else {
+                            name = filter.accountName;
+                        }
                         mCounterHeaderView.setText(getString(
-                                R.string.listTotalAllContactsZeroGroup, filter.accountName));
+                                R.string.listTotalAllContactsZeroGroup, name));
+                        //}Modified by yongan.qiu end.
                         break;
                     case ContactListFilter.FILTER_TYPE_WITH_PHONE_NUMBERS_ONLY:
                         mCounterHeaderView.setText(R.string.listTotalPhoneContactsZero);

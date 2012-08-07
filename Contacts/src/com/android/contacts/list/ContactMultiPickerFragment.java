@@ -28,7 +28,7 @@ import android.widget.ListView;
  */
 public class ContactMultiPickerFragment extends BaseMultiPickerFragment<DefaultContactListAdapter> {
 
-    public ContactMultiPickerFragment(OnDoneListener listener, int actionTitle, int actionIcon) {
+    public ContactMultiPickerFragment(OnPickListener listener, int actionTitle, int actionIcon) {
         super(listener, actionTitle, actionIcon);
     }
 

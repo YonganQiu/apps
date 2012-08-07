@@ -195,7 +195,9 @@ public abstract class ContactListAdapter extends ContactEntryListAdapter {
         view.setUnknownNameText(mUnknownNameText);
         view.setQuickContactEnabled(isQuickContactEnabled());
         //begin: added by yunzhou.song
-        setSelectionVisible(true);
+        //{Removed by yongan.qiu on 2012-8-6 begin.
+        /*setSelectionVisible(true);*/
+        //}Removed by yongan.qiu end.
         //end: added by yunzhou.song
         view.setActivatedStateSupported(isSelectionVisible());
         return view;
