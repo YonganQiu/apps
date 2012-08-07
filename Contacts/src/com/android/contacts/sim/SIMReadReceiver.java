@@ -28,6 +28,9 @@ public class SIMReadReceiver extends BroadcastReceiver{
 			//Ended by gangzhou.qi at 2012-7-6 下午5:23:08
 		}else if(action == PHONEBOOK_READY ){
 			Log.d(TAG, "jiangzhou Receive hexiaobo's action!");
+			Intent prepareSimIntent = new Intent(context ,SimHelperService.class);
+			prepareSimIntent.setAction(SimHelperService.ACTION_PREPARE);
+        	context.startService(prepareSimIntent);
 		}
 	}
 

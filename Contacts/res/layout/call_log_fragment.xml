@@ -43,13 +43,14 @@
             android:scrollbarStyle="outsideOverlay"
             android:divider="@null"
         />
-        <!-- <TextView android:id="@android:id/empty"
+        <TextView android:id="@+id/empty_page"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="@string/recentCalls_empty"
-            android:gravity="center"
+            android:gravity="center_horizontal"
             android:textColor="?android:attr/textColorSecondary"
             android:textAppearance="?android:attr/textAppearanceLarge"
-        /> -->
+            android:paddingTop="100dp"
+        />
     </FrameLayout>
 </LinearLayout>

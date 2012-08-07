@@ -71,9 +71,6 @@ public class SimHelperService extends IntentService{
 		}
 		
 	}
-	
-	
-	
 
 	public SimHelperService() {
 		super(TAG);

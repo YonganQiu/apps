@@ -122,6 +122,16 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
         }
         mCallLogFetched = true;
         destroyEmptyLoaderIfAllDataFetched();
+        //Added by gangzhou.qi at 2012-8-6 Begin
+        TextView emptyView = (TextView) getView().findViewById(R.id.empty_page);
+		if (emptyView != null) {
+			if (cursor.getCount() == 0) {
+				emptyView.setVisibility(View.VISIBLE);
+			} else {
+				emptyView.setVisibility(View.GONE);
+			}
+		}
+		//Added by gangzhou.qi at 2012-8-6 End
     }
 
     /**
