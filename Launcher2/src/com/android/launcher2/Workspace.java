@@ -4793,47 +4793,47 @@ public class Workspace extends SmoothPagedView
 		}
 	}
 	
-	private void deleteScreen(int screenIndex) {
-		CellLayoutChildren moveCell = null;
-		int moveCellChildCount = 0;
-		int pageCount = getPageCount();
-		View cell;
-		ItemInfo item;
-		for (int moveScreenIndex = screenIndex + 1; moveScreenIndex < pageCount; moveScreenIndex++) {
-			moveCell = ((CellLayout) getChildAt(moveScreenIndex))
-					.getChildrenLayout();
-			moveCellChildCount = moveCell.getChildCount();
-			for (int cellIndex = 0; cellIndex < moveCellChildCount; cellIndex++) {
-				cell = moveCell.getChildAt(cellIndex);
-				item = (ItemInfo) cell.getTag();
-				cell.setId(LauncherModel.getCellLayoutChildId(item.container,
-						moveScreenIndex - 1, item.cellX, item.cellY,
-						item.spanX, item.spanY));
-				LauncherModel.moveItemInDatabase(mLauncher, item,
-						item.container, moveScreenIndex - 1, item.cellX,
-						item.cellY);
-			}
-		}
+    private void deleteScreen(int screenIndex) {
+        CellLayoutChildren moveCell = null;
+        int moveCellChildCount = 0;
+        int pageCount = getPageCount();
+        View cell;
+        ItemInfo item;
+        for (int moveScreenIndex = screenIndex + 1; moveScreenIndex < pageCount; moveScreenIndex++) {
+            moveCell = ((CellLayout) getChildAt(moveScreenIndex))
+                    .getChildrenLayout();
+            moveCellChildCount = moveCell.getChildCount();
+            for (int cellIndex = 0; cellIndex < moveCellChildCount; cellIndex++) {
+                cell = moveCell.getChildAt(cellIndex);
+                item = (ItemInfo) cell.getTag();
+                cell.setId(LauncherModel.getCellLayoutChildId(item.container,
+                        moveScreenIndex - 1, item.cellX, item.cellY,
+                        item.spanX, item.spanY));
+                LauncherModel.moveItemInDatabase(mLauncher, item,
+                        item.container, moveScreenIndex - 1, item.cellX,
+                        item.cellY);
+            }
+        }
 
-		removeViewAt(screenIndex);
-		final int newPageCount = getPageCount();
+        removeViewAt(screenIndex);
+        final int newPageCount = getPageCount();
 
-		if (screenIndex <= mDefaultPage) {
-			setHomePage(--mDefaultPage);
-		}
+        if (screenIndex <= mDefaultPage) {
+            setHomePage(mDefaultPage - 1);
+        }
 
-		mScreenCount--;
+        mScreenCount--;
 
-		if (newPageCount < mMaxScreenCount) {
-			mAddScreenButton.setVisibility(View.VISIBLE);
-		}
+        if (newPageCount < mMaxScreenCount) {
+            mAddScreenButton.setVisibility(View.VISIBLE);
+        }
 
-		calculatePreviewScale();
+        calculatePreviewScale();
 
-		invalidate();
+        invalidate();
 
-		updatePageCountInPrefs(newPageCount);
-	}
+        updatePageCountInPrefs(newPageCount);
+    }
 	
 	private void onAddScreenButtonClicked() {
 		int pageCount = getPageCount();
