@@ -607,6 +607,14 @@ public abstract class PagedView extends ViewGroup {
     public void setPageSpacing(int pageSpacing) {
         mPageSpacing = pageSpacing;
         invalidateCachedOffsets();
+        // {add by jingjiang.yu at 2012.08.07 begin for scroll error when first layout.
+        int pageCount = getPageCount();
+        if (pageCount > 0) {
+            mMaxScrollX = getChildOffset(pageCount - 1) - getRelativeChildOffset(pageCount - 1);
+        } else {
+            mMaxScrollX = 0;
+        }
+        // }add by jingjiang.yu end
     }
 
     @Override
