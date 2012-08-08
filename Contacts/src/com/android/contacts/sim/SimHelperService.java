@@ -127,17 +127,18 @@ public class SimHelperService extends IntentService{
 		if (cur != null && cur.getCount() <= 0) {
 			return;
 		}
-		mNotificationManager.notify(0, createPrepareNotification(0, cur.getCount()));
+		mNotificationManager.notify(0, createNotification(0, cur.getCount()));
 		try {
 			cur.moveToPosition(-1);
 			ArrayList<OperationContact> operationContactFromSim = loadSimRecordsFromCursor(cur);
 			importBatch(operationContactFromSim, getContentResolver(),new Account(intent.getStringExtra(EXTRA_ACCOUNT_NAME), intent.getStringExtra(EXTRA_ACCOUNT_TYPE)));
+			mNotificationManager.notify(0, createNotification(cur.getCount(), cur.getCount()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{
 			cur.close();
 		}
-		mNotificationManager.notify(0, createFinishNotification(cur.getCount(), cur.getCount()));
+		
 		((ContactsApplication) getApplication()).SIMPreparing = false;
 		sendBroadcast();
 		
@@ -254,7 +255,7 @@ public class SimHelperService extends IntentService{
                 operations.clear();
             }
             if(isShowNotification && i % 20 == 0 ){
-            	mNotificationManager.notify(0, createProgressNotification(i, count));
+            	mNotificationManager.notify(0, createNotification(i, count));
             }
         }
 
@@ -373,10 +374,6 @@ public class SimHelperService extends IntentService{
         
     }
     
-	
-	
-
-	
     private void deleteAllSimContacts (final ContentResolver resolver){
     	final ArrayList<ContentProviderOperation> operationList =
                 new ArrayList<ContentProviderOperation>();
@@ -395,42 +392,34 @@ public class SimHelperService extends IntentService{
         Log.d(TAG, "delete sim task!");
     }
     
-    private Notification createPrepareNotification(int currentCount, int totalCount){
-    	Log.d(TAG, "createPrepareNotification currentCount:" + currentCount + " totalCount:" + totalCount);
+    private Notification createNotification(int currentCount, int totalCount){
     	Notification.Builder builder = new Notification.Builder(SimHelperService.this);
-    	Log.d("^^", "SIMOperationService buidler:" + builder);
-    	builder.setOngoing(true)
+    	builder
     	.setSmallIcon(android.R.drawable.stat_notify_sdcard)
     	.setContentText(getString(R.string.percentage,
-                String.valueOf(currentCount / totalCount)))
-    	.setContentTitle(getString(R.string.prepareImportSimContacts))
-    	.setTicker(getString(R.string.prepareImportSimContacts))
-    	.setProgress(totalCount , 0, false);
+                String.valueOf(currentCount * 100 / totalCount)));
+    	Log.d("^^", "String.valueOf(currentCount / totalCount):" + String.valueOf(currentCount / totalCount) + " currentCount:" + currentCount + " totalCount:" + totalCount);
+    	 if(currentCount == 0){
+        	 builder
+        	 .setOngoing(true)
+        	.setContentTitle(getString(R.string.prepareImportSimContacts))
+         	.setTicker(getString(R.string.prepareImportSimContacts))
+         	.setProgress(totalCount , 0, false);
+         }else if(currentCount == totalCount){
+        	 builder
+        	.setContentTitle(getString(R.string.finishImportSimContacts))
+         	.setTicker(getString(R.string.finishImportSimContacts));
+         }else{
+        	 builder
+        	 .setOngoing(true)
+        	.setContentTitle(getString(R.string.doingImportSimContacts))
+         	.setTicker(getString(R.string.doingImportSimContacts))
+         	.setProgress(totalCount, currentCount, false);
+         }
     	return builder.getNotification();
     }
     
-    private Notification createProgressNotification(int currentCount, int totalCount){
-    	Log.d(TAG, "createProgressNotification  currentCount:" + currentCount + " totalCount:" + totalCount);
-    	Notification.Builder builder = new Notification.Builder(this);
-    	builder.setOngoing(true)
-    	.setSmallIcon(android.R.drawable.stat_notify_sdcard)
-    	.setContentText(getString(R.string.percentage,
-                String.valueOf(currentCount / totalCount)))
-    	.setContentTitle(getString(R.string.doingImportSimContacts))
-    	.setTicker(getString(R.string.doingImportSimContacts))
-    	.setProgress(totalCount, currentCount, false);
-    	return builder.getNotification();
-    }
     
-    private Notification createFinishNotification(int currentCount, int totalCount){
-    	Log.d(TAG, "createFinishNotification currentCount:" + currentCount + " totalCount:" + totalCount);
-    	Notification.Builder builder = new Notification.Builder(this);
-    	builder.setSmallIcon(android.R.drawable.stat_notify_sdcard)
-    	.setContentText(getString(R.string.percentage,
-                String.valueOf(currentCount / totalCount)))
-    	.setContentTitle(getString(R.string.finishImportSimContacts))
-    	.setTicker(getString(R.string.finishImportSimContacts));
-    	return builder.getNotification();
-    }
+    
     
 }
