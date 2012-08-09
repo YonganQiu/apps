@@ -1826,20 +1826,20 @@ public class PeopleActivity extends ContactsActivity
                 return true;
             }
             case R.id.menu_sim_contacts: {
-            	Intent intent = new Intent(this,SimHelperService.class);
-            	intent.setAction(SimHelperService.ACTION_PREPARE);
-            	startService(intent);
-            	return true;
-//            	if(checkSimState() == 5 ){
-//            		 Intent intent = new Intent("android.intent.action.SIMPICK");
-////           		 intent.setType("vnd.android.cursor.dir/phone");
-//           		 intent.setType("vnd.android.cursor.dir/phone_v2");
-////           		 intent.setType("vnd.android.cursor.dir/person");
-////           		 intent.setType("vnd.android.cursor.dir/contact");
-//           		 intent.putExtra("multiple_choice", true);
-//           		 startActivityForResult(intent, 1);
-//           		 return true;
-//            	}
+//            	Intent intent = new Intent(this,SimHelperService.class);
+//            	intent.setAction(SimHelperService.ACTION_PREPARE);
+//            	startService(intent);
+//            	return true;
+            	if(checkSimState() == 5 ){
+            		 Intent intent = new Intent("android.intent.action.SIMPICK");
+//           		 intent.setType("vnd.android.cursor.dir/phone");
+           		 intent.setType("vnd.android.cursor.dir/phone_v2");
+//           		 intent.setType("vnd.android.cursor.dir/person");
+//           		 intent.setType("vnd.android.cursor.dir/contact");
+           		 intent.putExtra("multiple_choice", true);
+           		 startActivityForResult(intent, 1);
+           		 return true;
+            	}
             }
             case R.id.menu_dialpad: {
             	mDialerFragment.setFragmentShow(R.id.dialpad_fragment,

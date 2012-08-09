@@ -104,26 +104,26 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
 
     /** Called by the CallLogQueryHandler when the list of calls has been fetched or updated. */
     @Override
-    public void onCallsFetched(Cursor cursor) {
-        if (getActivity() == null || getActivity().isFinishing()) {
-            return;
-        }
-        mAdapter.setLoading(false);
-        mAdapter.changeCursor(cursor);
-        // This will update the state of the "Clear call log" menu item.
-        getActivity().invalidateOptionsMenu();
-        if (mScrollToTop) {
-            final ListView listView = getListView();
-            if (listView.getFirstVisiblePosition() > 5) {
-                listView.setSelection(5);
-            }
-            listView.smoothScrollToPosition(0);
-            mScrollToTop = false;
-        }
-        mCallLogFetched = true;
-        destroyEmptyLoaderIfAllDataFetched();
-        //Added by gangzhou.qi at 2012-8-6 Begin
-        TextView emptyView = (TextView) getView().findViewById(R.id.empty_page);
+	public void onCallsFetched(Cursor cursor) {
+		if (getActivity() == null || getActivity().isFinishing()) {
+			return;
+		}
+		mAdapter.setLoading(false);
+		mAdapter.changeCursor(cursor);
+		// This will update the state of the "Clear call log" menu item.
+		getActivity().invalidateOptionsMenu();
+		if (mScrollToTop) {
+			final ListView listView = getListView();
+			if (listView.getFirstVisiblePosition() > 5) {
+				listView.setSelection(5);
+			}
+			listView.smoothScrollToPosition(0);
+			mScrollToTop = false;
+		}
+		mCallLogFetched = true;
+		destroyEmptyLoaderIfAllDataFetched();
+		// Added by gangzhou.qi at 2012-8-6 Begin
+		TextView emptyView = (TextView) getView().findViewById(R.id.empty_page);
 		if (emptyView != null) {
 			if (cursor.getCount() == 0) {
 				emptyView.setVisibility(View.VISIBLE);
@@ -131,8 +131,8 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
 				emptyView.setVisibility(View.GONE);
 			}
 		}
-		//Added by gangzhou.qi at 2012-8-6 End
-    }
+		// Added by gangzhou.qi at 2012-8-6 End
+	}
 
     /**
      * Called by {@link CallLogQueryHandler} after a successful query to voicemail status provider.

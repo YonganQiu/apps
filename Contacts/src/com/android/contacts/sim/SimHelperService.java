@@ -396,27 +396,24 @@ public class SimHelperService extends IntentService{
     	Notification.Builder builder = new Notification.Builder(SimHelperService.this);
     	builder
     	.setSmallIcon(android.R.drawable.stat_notify_sdcard)
-    	.setContentText(getString(R.string.percentage,
-                String.valueOf(currentCount * 100 / totalCount)));
+    	.setContentText(getString(R.string.percentage, String.valueOf(currentCount * 100 / totalCount)));
     	Log.d("^^", "String.valueOf(currentCount / totalCount):" + String.valueOf(currentCount / totalCount) + " currentCount:" + currentCount + " totalCount:" + totalCount);
-    	 if(currentCount == 0){
-        	 builder
-        	 .setOngoing(true)
-        	.setContentTitle(getString(R.string.prepareImportSimContacts))
-         	.setTicker(getString(R.string.prepareImportSimContacts))
-         	.setProgress(totalCount , 0, false);
-         }else if(currentCount == totalCount){
-        	 builder
-        	.setContentTitle(getString(R.string.finishImportSimContacts))
-         	.setTicker(getString(R.string.finishImportSimContacts));
-         }else{
-        	 builder
-        	 .setOngoing(true)
-        	.setContentTitle(getString(R.string.doingImportSimContacts))
-         	.setTicker(getString(R.string.doingImportSimContacts))
-         	.setProgress(totalCount, currentCount, false);
-         }
-    	return builder.getNotification();
+		if (currentCount == 0) {
+			builder.setOngoing(true)
+					.setContentTitle(
+							getString(R.string.prepareImportSimContacts))
+					.setTicker(getString(R.string.prepareImportSimContacts))
+					.setProgress(totalCount, 0, false);
+		} else if (currentCount == totalCount) {
+			builder.setContentTitle(getString(R.string.finishImportSimContacts))
+					.setTicker(getString(R.string.finishImportSimContacts));
+		} else {
+			builder.setOngoing(true)
+					.setContentTitle(getString(R.string.doingImportSimContacts))
+					.setTicker(getString(R.string.doingImportSimContacts))
+					.setProgress(totalCount, currentCount, false);
+		}
+		return builder.getNotification();
     }
     
     

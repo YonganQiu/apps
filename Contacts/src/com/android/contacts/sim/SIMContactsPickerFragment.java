@@ -679,11 +679,11 @@ public class SIMContactsPickerFragment extends
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 			switch (item.getItemId()) {
             case R.id.delete:
-				if (!mSelectedSimContactSet.isEmpty()) {
+				if (!mSimContactList.isEmpty()) {
 					
-					SimContact[] simContacts = new SimContact[mSelectedSimContactSet
+					SimContact[] simContacts = new SimContact[mSimContactList
 							.size()];
-					mSelectedSimContactSet.toArray(simContacts);
+					mSimContactList.toArray(simContacts);
 					deleteTask = new deleteAsyncTask();
 					deleteTask.execute(simContacts);
 					
@@ -703,8 +703,8 @@ public class SIMContactsPickerFragment extends
 							nHandler.sendMessage(msg);
 						}
 					});
-					mProgressDialog.setMax(mSelectedSimContactSet.size());
-					toDeleteCount = mSelectedSimContactSet.size();
+					mProgressDialog.setMax(mSimContactList.size());
+					toDeleteCount = mSimContactList.size();
 					mProgressDialog.show();
 
 				}
