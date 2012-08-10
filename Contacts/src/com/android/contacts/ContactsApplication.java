@@ -18,6 +18,7 @@ package com.android.contacts;
 
 import com.android.contacts.list.ContactListFilterController;
 import com.android.contacts.model.AccountTypeManager;
+import com.android.contacts.numberarea.NumberAreaManager;
 import com.android.contacts.test.InjectedServices;
 import com.android.contacts.util.Constants;
 import com.google.common.annotations.VisibleForTesting;
@@ -40,6 +41,9 @@ public final class ContactsApplication extends Application {
     private AccountTypeManager mAccountTypeManager;
     private ContactPhotoManager mContactPhotoManager;
     private ContactListFilterController mContactListFilterController;
+    //{Added by yongan.qiu on 2012-8-9 begin.
+    private NumberAreaManager mNumberAreaManager;
+    //}Added by yongan.qiu end.
 
     //Begin by gangzhou.qi at 2012-7-15 下午11:54:48
     public boolean SIMPreparing = false;
@@ -111,6 +115,16 @@ public final class ContactsApplication extends Application {
             }
             return mContactListFilterController;
         }
+
+        //{Added by yongan.qiu on 2012-8-9 begin.
+        if (NumberAreaManager.NUMBER_AREA_SERVICE.equals(name)) {
+            if (mNumberAreaManager == null) {
+                mNumberAreaManager = NumberAreaManager.createNumberAreaManager(this);
+                mNumberAreaManager.preloadAreasInBackground();
+            }
+            return mNumberAreaManager;
+        }
+        //}Added by yongan.qiu end.
 
         return super.getSystemService(name);
     }

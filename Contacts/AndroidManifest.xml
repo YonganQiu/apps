@@ -49,6 +49,11 @@
     <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Added by yongan.qiu on 2012-8-7 begin. -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>  
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>   
+    <!-- Added by yongan.qiu end. -->
+
     <application
         android:name="com.android.contacts.ContactsApplication"
         android:label="@string/contactsList"
@@ -275,6 +280,7 @@
                 <data android:mimeType="vnd.android.cursor.dir/contact" />
                 <data android:mimeType="vnd.android.cursor.dir/phone_v2" />
                 <data android:mimeType="vnd.android.cursor.dir/email_v2" />
+                <data android:mimeType="sim/contact" />
             </intent-filter>
         </activity>
 
@@ -712,5 +718,17 @@
        </activity>
        <!-- end: added by yunzhou.song -->
 
+        <!-- Added by yongan.qiu on 2012-8-7 begin. -->
+        <receiver android:name=".numberarea.PhoneStateReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
+            </intent-filter>
+        </receiver>
+        <provider android:name=".numberarea.NumberAreaProvider"
+            android:authorities="number_area"
+            android:syncable="false" android:multiprocess="false">
+        </provider>
+        <!-- Added by yongan.qiu end. -->
     </application>
 </manifest>

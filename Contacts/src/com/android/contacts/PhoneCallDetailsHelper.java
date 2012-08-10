@@ -19,7 +19,11 @@ package com.android.contacts;
 import com.android.contacts.calllog.CallTypeHelper;
 import com.android.contacts.calllog.PhoneNumberHelper;
 import com.android.contacts.format.FormatUtils;
+import com.android.contacts.numberarea.NumberArea;
+import com.android.contacts.numberarea.NumberAreaManager;
+import com.android.contacts.numberarea.NumberAreaQuery;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -102,17 +106,42 @@ public class PhoneCallDetailsHelper {
         }
 
         final CharSequence nameText;
-        final CharSequence numberText;
+        //{Modified by yongan.qiu on 2012-8-10 begin.
+        //old:
+        /*final CharSequence numberText;*/
+        //new:
+        CharSequence numberText = null;
+        boolean areaLoading = false;
+        //}Modified by yongan.qiu end.
         final CharSequence displayNumber =
             mPhoneNumberHelper.getDisplayNumber(details.number, details.formattedNumber);
         if (TextUtils.isEmpty(details.name)) {
             nameText = displayNumber;
-            if (TextUtils.isEmpty(details.geocode)
+            //{Modified by yongan.qiu on 2012-8-9 begin.
+            //old:
+            /*if (TextUtils.isEmpty(details.geocode)
                     || mPhoneNumberHelper.isVoicemailNumber(details.number)) {
                 numberText = mResources.getString(R.string.call_log_empty_gecode);
             } else {
                 numberText = details.geocode;
+            }*/
+            //new:
+            NumberAreaManager numberAreaManager = (NumberAreaManager) views.numberView.getContext()
+                    .getApplicationContext()
+                    .getSystemService(NumberAreaManager.NUMBER_AREA_SERVICE);
+            
+            if (details.number != null && NumberArea.isValidPhoneNumber(details.number.toString())) {
+                numberAreaManager.loadArea(views.numberView, NumberArea.cropValidPhoneNumber(details.number.toString()));
+                areaLoading = true;
+            } else {
+                if (TextUtils.isEmpty(details.geocode)
+                        || mPhoneNumberHelper.isVoicemailNumber(details.number)) {
+                    numberText = mResources.getString(R.string.call_log_empty_gecode);
+                } else {
+                    numberText = details.geocode;
+                }
             }
+            //}Modified by yongan.qiu end.
         } else {
             nameText = details.name;
             if (numberFormattedLabel != null) {
@@ -126,7 +155,14 @@ public class PhoneCallDetailsHelper {
         }
 
         views.nameView.setText(nameText);
-        views.numberView.setText(numberText);
+        //{Modified by yongan.qiu on 2012-8-10 begin.
+        //old:
+        /*views.numberView.setText(numberText);*/
+        //new:
+        if (!areaLoading) {
+            views.numberView.setText(numberText);
+        }
+        //}Modified by yongan.qiu end.
     }
 
     /** Sets the text of the header view for the details page of a phone call. */

@@ -17,9 +17,11 @@
 package com.android.contacts.calllog;
 
 import com.android.common.io.MoreCloseables;
+import com.android.contacts.ContactPhotoManager;
 import com.android.contacts.ContactsUtils;
 import com.android.contacts.R;
 import com.android.contacts.activities.ViewPagerVisibilityListener;
+import com.android.contacts.numberarea.NumberAreaManager;
 import com.android.contacts.util.Constants;
 import com.android.contacts.util.EmptyLoader;
 import com.android.contacts.voicemail.VoicemailStatusHelper;
@@ -50,10 +52,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.AbsListView.OnScrollListener;
 
 import java.util.List;
 
@@ -61,6 +65,9 @@ import java.util.List;
  * Displays a list of call log entries.
  */
 public class CallLogFragment extends ListFragment implements ViewPagerVisibilityListener,
+        //{Added by yongan.qiu on 2012-8-10 begin.
+        OnScrollListener,
+        //}Added by yongan.qiu end.
         CallLogQueryHandler.Listener, CallLogAdapter.CallFetcher {
     private static final String TAG = "CallLogFragment";
 
@@ -88,6 +95,11 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
     private boolean mEmptyLoaderRunning;
     private boolean mCallLogFetched;
     private boolean mVoicemailStatusFetched;
+
+    //{Added by yongan.qiu on 2012-8-10 begin.
+    private ContactPhotoManager mContactPhotoManager;
+    private NumberAreaManager mNumberAreaManager;
+    //}Added by yongan.qiu end.
 
     //Added by gangzhou.qi at 2012-6-27 下午8:35:42
     private int mTypeCall = Constants.CALL_TYPE_ALL;
@@ -180,6 +192,32 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
         return view;
     }
 
+    //{Added by yongan.qiu on 2012-8-10 begin.
+    protected void configureAreaLoader() {
+        if (mNumberAreaManager == null) {
+            mNumberAreaManager = (NumberAreaManager) getActivity().getApplicationContext()
+                    .getSystemService(NumberAreaManager.NUMBER_AREA_SERVICE);
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+            int totalItemCount) {
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+        // When list view is moving, pause area loader.
+        if (scrollState == OnScrollListener.SCROLL_STATE_FLING || scrollState == OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+            mContactPhotoManager.pause();
+            mNumberAreaManager.pause();
+        } else {
+            mContactPhotoManager.resume();
+            mNumberAreaManager.resume();
+        }
+    }
+    //}Added by yongan.qiu end.
+
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -188,6 +226,13 @@ public class CallLogFragment extends ListFragment implements ViewPagerVisibility
                 new ContactInfoHelper(getActivity(), currentCountryIso));
         setListAdapter(mAdapter);
         getListView().setItemsCanFocus(true);
+
+        //{Added by yongan.qiu on 2012-8-10 begin.
+        getListView().setOnScrollListener(this);
+        mContactPhotoManager = mAdapter.getPhotoManager();
+        configureAreaLoader();
+        //}Added by yongan.qiu end.
+
         refreshData();
     }
 

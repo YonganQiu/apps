@@ -81,6 +81,10 @@ public class ContactsRequest implements Parcelable {
     
     public static final int ACTION_VIEW_CALL_LOG = 160;
 
+    //{Added by yongan.qiu on 2012-8-7 begin.
+    public static final int ACTION_PICK_SIM_CONTACT = 200;
+    //}Added by yongan.qiu end.
+
     private boolean mValid = true;
     private int mActionCode = ACTION_DEFAULT;
     private Intent mRedirectIntent;

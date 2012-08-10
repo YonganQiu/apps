@@ -721,6 +721,12 @@ import libcore.util.Objects;
         return callTypes;
     }
 
+    //{Added by yongan.qiu on 2012-8-10 begin.
+    public ContactPhotoManager getPhotoManager() {
+        return mContactPhotoManager;
+    }
+    //}Added by yongan.qiu end.
+
     private void setPhoto(CallLogListItemViews views, long photoId, Uri contactUri , String contactName) {
         views.quickContactView.assignContactUri(contactUri);
         //Added by gangzhou.qi at 2012-7-5 下午4:05:41

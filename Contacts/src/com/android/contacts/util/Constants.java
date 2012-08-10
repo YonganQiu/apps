@@ -16,6 +16,8 @@
 
 package com.android.contacts.util;
 
+import java.util.concurrent.TimeUnit;
+
 import android.net.Uri;
 
 public class Constants {
@@ -69,6 +71,18 @@ public class Constants {
     
     //{Added by yongan.qiu on 2012-7-31 begin.
     public static final String ACTION_MULTI_PICK = "com.android.contacts.intent.action.MULTI_PICK";
+    //}Added by yongan.qiu end.
+
+    //{Added by yongan.qiu on 2012-8-7 begin.
+    /** CONTENT_TYPE of sim contact. */
+    public static final String SIM_CONTACT_CONTENT_TYPE = "sim/contact";
+    //}Added by yongan.qiu end.
+
+    //{Added by yongan.qiu on 2012-8-10 begin.
+    /**
+     * The time window from the current time within which call log will be added to the list.
+     */
+    public static final long NEW_SECTION_TIME_WINDOW = TimeUnit.DAYS.toMillis(7);
     //}Added by yongan.qiu end.
 
     //Added by gangzhou.qi at 2012-6-27 8:22:57

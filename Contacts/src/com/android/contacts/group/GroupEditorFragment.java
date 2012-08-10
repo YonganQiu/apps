@@ -440,9 +440,9 @@ public class GroupEditorFragment extends Fragment implements SelectAccountDialog
         //begin: added by yunzhou.song
         mImageButton = (ImageButton)editorView.findViewById(R.id.contacts_picker);
         mImageButton.setOnClickListener(new OnClickListener(){
-			@Override
-			public void onClick(View v) {
-			    //{Modified by yongan.qiu on 2012-8-3 begin.
+            @Override
+            public void onClick(View v) {
+                //{Modified by yongan.qiu on 2012-8-3 begin.
                 //old:
                 /*Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
@@ -457,9 +457,11 @@ public class GroupEditorFragment extends Fragment implements SelectAccountDialog
                 intent.putExtra(Constants.EXTRA_ACTION_TITLE, R.string.menu_add_members);
                 intent.putExtra(Constants.EXTRA_ACTION_ICON, R.drawable.ic_menu_add_members_holo_dark);
                 //}Modified by yongan.qiu end.
-				intent.putExtra(Intents.EXTRA_CONTACT_URIS, getGroupContactUris());
-				getActivity().startActivityForResult(intent, GroupEditorActivity.REQUEST_CODE_PICK_CONTACTS);
-			}});
+                intent.putExtra(Intents.EXTRA_CONTACT_URIS, getGroupContactUris());
+                getActivity().startActivityForResult(intent,
+                        GroupEditorActivity.REQUEST_CODE_PICK_CONTACTS);
+            }
+        });
         //end: added by yunzhou.song
 
         mListView = (ListView) editorView.findViewById(android.R.id.list);

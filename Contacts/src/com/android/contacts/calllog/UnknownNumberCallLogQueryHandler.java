@@ -54,11 +54,6 @@ import javax.annotation.concurrent.GuardedBy;
     private static final String TAG = "CallLogQueryHandler";
 
     private static final int QUERY_ALL_UNKNOWN_CALLS_TOKEN = 1;
-    /**
-     * The time window from the current time within which an unread entry will be added to the new
-     * section.
-     */
-    private static final long NEW_SECTION_TIME_WINDOW = TimeUnit.DAYS.toMillis(7);
 
     private final WeakReference<Listener> mListener;
 
@@ -111,7 +106,7 @@ import javax.annotation.concurrent.GuardedBy;
         String selection = String.format("(%s IS NULL OR %s = 0) AND %s > ?",
                 Calls.CACHED_NUMBER_TYPE, Calls.CACHED_NUMBER_TYPE, Calls.DATE);
         List<String> selectionArgs = Lists.newArrayList(
-                Long.toString(System.currentTimeMillis() - NEW_SECTION_TIME_WINDOW));
+                Long.toString(System.currentTimeMillis() - Constants.NEW_SECTION_TIME_WINDOW));
         if (!TextUtils.isEmpty(mQueryString)) {
             selection = String.format("%s AND %s LIKE '%%%s%%'", selection, Calls.NUMBER, mQueryString);
         }

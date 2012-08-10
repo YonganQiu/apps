@@ -18,6 +18,7 @@ import com.android.contacts.list.OnPhoneNumberPickerActionListener;
 import com.android.contacts.list.OnPostalAddressPickerActionListener;
 import com.android.contacts.list.PhoneNumberMultiPickerFragment;
 import com.android.contacts.list.PostalAddressPickerFragment;
+import com.android.contacts.list.SimContactMultiPickerFragment;
 import com.android.contacts.util.Constants;
 import com.android.contacts.widget.ContextMenuAdapter;
 
@@ -122,6 +123,7 @@ public class MultiActionSelectionActivity extends ContactsActivity
             String extraName = null;
             switch(mActionCode) {
             case ContactsRequest.ACTION_PICK_CONTACT:
+            case ContactsRequest.ACTION_PICK_SIM_CONTACT:
                 extraName = Intents.EXTRA_CONTACT_URIS;
                 break;
             case ContactsRequest.ACTION_PICK_PHONE:
@@ -170,6 +172,7 @@ public class MultiActionSelectionActivity extends ContactsActivity
                 String extraName = null;
                 switch(mActionCode) {
                 case ContactsRequest.ACTION_PICK_CONTACT:
+                case ContactsRequest.ACTION_PICK_SIM_CONTACT:
                     extraName = Intents.EXTRA_CONTACT_URIS;
                     break;
                 case ContactsRequest.ACTION_PICK_PHONE:
@@ -224,7 +227,8 @@ public class MultiActionSelectionActivity extends ContactsActivity
 
         int actionCode = mRequest.getActionCode();
         switch (actionCode) {
-            case ContactsRequest.ACTION_PICK_CONTACT: {
+            case ContactsRequest.ACTION_PICK_CONTACT:
+            case ContactsRequest.ACTION_PICK_SIM_CONTACT: {
                 setTitle(R.string.multi_action_selection_activity_title);
                 break;
             }
@@ -249,6 +253,12 @@ public class MultiActionSelectionActivity extends ContactsActivity
         switch (mActionCode) {
             case ContactsRequest.ACTION_PICK_CONTACT: {
                 fragment = new ContactMultiPickerFragment(
+                        mOnPickListener, mActionTitle, mActionIcon);
+                break;
+            }
+
+            case ContactsRequest.ACTION_PICK_SIM_CONTACT: {
+                fragment = new SimContactMultiPickerFragment(
                         mOnPickListener, mActionTitle, mActionIcon);
                 break;
             }

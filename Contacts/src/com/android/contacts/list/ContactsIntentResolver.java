@@ -119,6 +119,11 @@ public class ContactsIntentResolver {
             } else if (Email.CONTENT_TYPE.equals(resolvedType)) {
                 request.setActionCode(ContactsRequest.ACTION_PICK_EMAIL);
             }
+            //{Added by yongan.qiu on 2012-8-7 begin.
+            else if (Constants.SIM_CONTACT_CONTENT_TYPE.equals(resolvedType)) {
+                request.setActionCode(ContactsRequest.ACTION_PICK_SIM_CONTACT);
+            }
+            //}Added by yongan.qiu end.
         } else if (Intent.ACTION_CREATE_SHORTCUT.equals(action)) {
             String component = intent.getComponent().getClassName();
             if (component.equals("alias.DialShortcut")) {
