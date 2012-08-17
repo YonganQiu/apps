@@ -2018,10 +2018,10 @@ public class AppsCustomizePagedView extends PagedViewWithDraggableItems implemen
         int othersIndex = Utilities.getSearchLetterIndexByTitle("#");
         int zIndex = Utilities.getSearchLetterIndexByTitle("z");
         int len = zIndex - othersIndex + 1;
-        boolean[] enables = new boolean[len];
+        boolean[] enables = new boolean[len + 1];
         //All applications selected
         enables[0] = true;
-        mSortedAppsIndexs = new SortedAppsIndexs[len];
+        mSortedAppsIndexs = new SortedAppsIndexs[len + 1];
         ArrayList<Integer> appsIndexList = null;
         SortedAppsIndexs aToZ;
         for (int i = 0; i < size; i++) {
