@@ -133,6 +133,25 @@
         <item>按安装时间</item>
         <item>按使用频率</item>
     </string-array>
+    
+    <string-array name="wallpapers_labels">
+        <item>建筑式样</item>
+        <item>泡泡糖</item>
+        <item>峡谷</item>
+        <item>色品</item>
+        <item>悦目</item>
+        <item>保真</item>
+        <item>植物群</item>
+        <item>光亮</item>
+        <item>树叶</item>
+        <item>经典</item>
+    </string-array>
+    
+    <string-array name="theme_labels">
+        <item>默认</item>
+        <item>经典</item>
+        <item>复古</item>
+    </string-array>
     <!-- all applications sorting > -->
 
 </resources>

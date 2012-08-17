@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -13,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -71,6 +73,12 @@ public class UserDefinedSettingsPagedView extends PagedView implements
 
     // Previews & outlines
 
+    private TypedArray mWallpapersIds;
+    private String[] mWallpapersLabels;
+    
+    private TypedArray mThemeIds;
+    private String[] mThemeLabels;
+    
     public enum ContentType {
         Wallpaper,
         Theme,
@@ -105,6 +113,14 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         // preview icons
         // (top + bottom)
         mFadeInAdjacentScreens = false;
+        
+        mWallpapersIds = context.getResources()
+                .obtainTypedArray(R.array.wallpapers_ids);
+        mWallpapersLabels = context.getResources().getStringArray(R.array.wallpapers_labels);
+        
+        mThemeIds = context.getResources()
+                .obtainTypedArray(R.array.themes_ids);
+        mThemeLabels = context.getResources().getStringArray(R.array.theme_labels);
     }
 
     @Override
@@ -221,6 +237,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
                     R.layout.apps_customize_application, layout, false);
             info.isSystemApp = true;
             icon.applyFromApplicationInfo(info, true, null);
+            icon.setIconType(PagedViewIcon.IconType.OTHER);
             icon.setOnClickListener(this);
             // icon.setOnLongClickListener(this);
             // icon.setOnTouchListener(this);
@@ -250,6 +267,7 @@ public class UserDefinedSettingsPagedView extends PagedView implements
                     R.layout.apps_customize_application, layout, false);
             info.isSystemApp = true;
             icon.applyFromApplicationInfo(info, true, null);
+            icon.setIconType(PagedViewIcon.IconType.OTHER);
             icon.setOnClickListener(this);
             // icon.setOnLongClickListener(this);
             // icon.setOnTouchListener(this);
@@ -265,34 +283,34 @@ public class UserDefinedSettingsPagedView extends PagedView implements
         layout.createHardwareLayers();
     }
 
-    private void syncEffectPageItems(int page, boolean immediate) {
-        int numCells = mCellCountX * mCellCountY;
-        int startIndex = page * numCells;
-        int endIndex = Math.min(startIndex + numCells, mEffects.size());
-        PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page
-                + mNumWallpaperPages + mNumThemePages);
+	private void syncEffectPageItems(int page, boolean immediate) {
+		int numCells = mCellCountX * mCellCountY;
+		int startIndex = page * numCells;
+		int endIndex = Math.min(startIndex + numCells, mEffects.size());
+		PagedViewCellLayout layout = (PagedViewCellLayout) getPageAt(page
+				+ mNumWallpaperPages + mNumThemePages);
 
-        layout.removeAllViewsOnPage();
-        for (int i = startIndex; i < endIndex; ++i) {
-            ScrollAnimStyleInfo animInfo = mEffects.get(i);
-            PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
-                    R.layout.apps_customize_application, layout, false);
+		layout.removeAllViewsOnPage();
+		for (int i = startIndex; i < endIndex; ++i) {
+			ScrollAnimStyleInfo animInfo = mEffects.get(i);
+			PagedViewIcon icon = (PagedViewIcon) mLayoutInflater.inflate(
+					R.layout.apps_customize_application, layout, false);
             icon.applyFromScrollAnimInfo(
                     animInfo,
                     createIconBitmap(animInfo.getIconId(mContext), mContext, animInfo.isSelected(),
                             false));
-            icon.setOnClickListener(this);
+			icon.setOnClickListener(this);
 
-            int index = i - startIndex;
-            int x = index % mCellCountX;
-            int y = index / mCellCountX;
-            layout.addViewToCellLayout(icon, -1, i,
-                    new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
-        }
+			int index = i - startIndex;
+			int x = index % mCellCountX;
+			int y = index / mCellCountX;
+			layout.addViewToCellLayout(icon, -1, i,
+					new PagedViewCellLayout.LayoutParams(x, y, 1, 1));
+		}
 
-        layout.getChildrenLayout().mChildrenDoAnim = false;
-        layout.createHardwareLayers();
-    }
+		layout.getChildrenLayout().mChildrenDoAnim = false;
+		layout.createHardwareLayers();
+	}
 
     private void setupPage(PagedViewCellLayout layout) {
         layout.setCellCount(mCellCountX, mCellCountY);
@@ -426,48 +444,25 @@ public class UserDefinedSettingsPagedView extends PagedView implements
     }
 
     public void setWallpapers() {
-        //TODO FIXME {
         loadWallpapersFromApps();
-        int ids[] = new int[] {
-                R.drawable.wallpaper_1, R.drawable.wallpaper_2,
-                R.drawable.wallpaper_3, R.drawable.wallpaper_4,
-                R.drawable.wallpaper_5, R.drawable.wallpaper_6,
-                R.drawable.wallpaper_7, R.drawable.wallpaper_8,
-                R.drawable.wallpaper_9, R.drawable.wallpaper_10
-        };
-        int ids_small[] = new int[] {
-                R.drawable.wallpaper_1_small, R.drawable.wallpaper_2_small,
-                R.drawable.wallpaper_3_small, R.drawable.wallpaper_4_small,
-                R.drawable.wallpaper_5_small, R.drawable.wallpaper_6_small,
-                R.drawable.wallpaper_7_small, R.drawable.wallpaper_8_small,
-                R.drawable.wallpaper_9_small, R.drawable.wallpaper_10_small
-        };
-        String names[] = new String[] {
-                "Classical", "Reaationary",
-                "Brave", "Braw", 
-                "Happy", "Nice", 
-                "Rorty", "Dulcet", 
-                "Splendid", "Wonderful"
-        };
-        ArrayList<ApplicationInfo> wallpapers = new ArrayList<ApplicationInfo>(ids.length);
+        int count = mWallpapersIds.length();
+        ArrayList<ApplicationInfo> wallpapers = new ArrayList<ApplicationInfo>(count);
         ApplicationInfo appInfo;
-        int i = 0;
         SharedPreferences prefs =
                 mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
         int selectedWallpaper = prefs.getInt("selected_wallpaper", -1);
-        for (int wallpaperId : ids)
-        {
+        int wallpaperId;
+        for (int i = 0; i < count; i++) {
+            wallpaperId = mWallpapersIds.getResourceId(i, 0);
             appInfo = new ApplicationInfo();
-            appInfo.title = names[i];
+            appInfo.title = mWallpapersLabels[i];
             appInfo.id = wallpaperId;
             appInfo.componentName = new ComponentName("Wallpaper", "Wallpaper");
-            appInfo.iconBitmap = createIconBitmap(ids_small[i], mContext,
+            appInfo.iconBitmap = createIconBitmap(wallpaperId, mContext,
                     wallpaperId == selectedWallpaper, i == 0);
-            i++;
             wallpapers.add(appInfo);
         }
 
-        //} TODO FIXME
         Collections.sort(wallpapers, LauncherModel.APP_NAME_COMPARATOR);
 
         mWallpapers.addAll(wallpapers);
@@ -524,30 +519,22 @@ public class UserDefinedSettingsPagedView extends PagedView implements
     }
 
     public void setThemes() {
-        //TODO FIXME {
-        int ids[] = new int[] {
-                R.drawable.theme_1, R.drawable.theme_2, R.drawable.theme_3
-        };
-        String names[] = new String[] {
-                "Default", "Classical", "Reaationary"
-        };
         ApplicationInfo appInfo;
-        int i = 0;
         SharedPreferences prefs =
                 mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
         int selectedTheme = prefs.getInt("selected_theme", -1);
-        for (int id : ids)
-        {
+        int count = mThemeIds.length();
+        int id;
+        for (int i = 0; i < count; i++) {
+            id = mThemeIds.getResourceId(i, 0);
             appInfo = new ApplicationInfo();
-            appInfo.title = names[i];
-            i++;
+            appInfo.title = mThemeLabels[i];
             appInfo.id = id;
             appInfo.componentName = new ComponentName("Theme", "Theme");
-            appInfo.iconBitmap = createIconBitmap(id, mContext, selectedTheme == id, i == 2);
+            appInfo.iconBitmap = createIconBitmap(id, mContext, id == selectedTheme, i == 2);
             mThemes.add(appInfo);
         }
 
-        //} TODO FIXME
         //Collections.sort(mThemes, LauncherModel.APP_NAME_COMPARATOR);
 
         updatePageCounts();
@@ -633,101 +620,133 @@ public class UserDefinedSettingsPagedView extends PagedView implements
     void showAllAppsCling() {
     }
 
-    private class WallpaperInfo extends ApplicationInfo {
-        // TODO
-    }
-
-    private class ThemeInfo extends ApplicationInfo {
-        // TODO
-    }
-
-    private class EffectInfo extends ApplicationInfo {
-        // TODO
-    }
-
     private boolean mBack = false;
 
     @Override
-	public void onClick(View v) {
+    public void onClick(View v) {
 
-		if (!mLauncher.isUserDefinedOpen())
-			return;
+        if (!mLauncher.isUserDefinedOpen())
+            return;
 
-		if (v instanceof PagedViewIcon) {
-			Object tag = v.getTag();
-			if (tag instanceof ScrollAnimStyleInfo) {
-				effectIconOnClick(v);
-				return;
-			}
-			
-			// Animate some feedback to the click
-			final ApplicationInfo appInfo = (ApplicationInfo) v.getTag();
-			animateClickFeedback(v, new Runnable() {
-				@Override
-				public void run() {
-					if (null != appInfo.intent) {
-						mLauncher.startActivitySafely(appInfo.intent, appInfo);
-					} else {
-						try {
-						    //TODO FIXME {
-							ComponentName cn = appInfo.componentName;
-							SharedPreferences prefs = mLauncher
-									.getSharedPreferences(
-									        Launcher.PREFS_KEY,
-											Context.MODE_PRIVATE);
-							SharedPreferences.Editor editor = prefs.edit();
-							if (null != cn
-									&& "Wallpaper".equals(cn.getClassName())) {
-								WallpaperManager wpm = (WallpaperManager) mContext
-										.getSystemService(Context.WALLPAPER_SERVICE);
-								wpm.setResource((int) appInfo.id);
-								editor.putInt("selected_wallpaper",
-										(int) appInfo.id);
-								editor.commit();
-								UserDefinedSettingsPagedView.this.initData();
-								UserDefinedSettingsPagedView.this
-										.invalidatePageData();
-							} else {
-								if ("Theme".equals(cn.getClassName())) {
-									editor.putInt("selected_theme",
-											(int) appInfo.id);
-									editor.commit();
-									UserDefinedSettingsPagedView.this
-											.initData();
-									UserDefinedSettingsPagedView.this
-											.invalidatePageData();
-								}
-								Workspace w = mLauncher.getWorkspace();
-								int pages = w.getPageCount();
-								int cPage = w.getCurrentPage();
-								if (!mBack) {
-									cPage++;
-								} else {
-									cPage--;
-								}
-								if (cPage == pages) {
-									mBack = true;
-									cPage -= 2;
-								}
-								if (cPage < 0) {
-									mBack = false;
-									cPage += 2;
-								}
-								cPage = Math.min(cPage, pages - 1);
-								cPage = Math.max(cPage, 0);
+        if (v instanceof PagedViewIcon) {
+            Object tag = v.getTag();
+            if (tag instanceof ScrollAnimStyleInfo) {
+                effectIconOnClick(v);
+                return;
+            }
 
-								w.snapToPage(cPage);
-							}
-							//} TODO FIXME
-						} catch (IOException e) {
-						}
-					}
+            // Animate some feedback to the click
+            final ApplicationInfo appInfo = (ApplicationInfo) v.getTag();
+            if (null != appInfo.intent) {
+                animateClickFeedback(v, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (null != appInfo.intent) {
+                            mLauncher.startActivitySafely(appInfo.intent, appInfo);
+                        }
+                    }
+                });
+            } else {
+                try {
+                    ComponentName cn = appInfo.componentName;
+                    if (null != cn
+                            && "Wallpaper".equals(cn.getClassName())) {
+                        WallpaperManager wpm = (WallpaperManager) mContext
+                                .getSystemService(Context.WALLPAPER_SERVICE);
+                        wpm.setResource((int) appInfo.id);
+                        updatePagedViewIcon(v, "selected_wallpaper");
 
-				}
-			});
-		}
+                    } else {
+                        
+                        if ("Theme".equals(cn.getClassName())) {
+                            updatePagedViewIcon(v, "selected_theme");
+                         
+                            // { TODO FIXME test code
+                            /*Workspace w = mLauncher.getWorkspace();
+                            int pages = w.getPageCount();
+                            int cPage = w.getCurrentPage();
+                            if (!mBack) {
+                                cPage++;
+                            } else {
+                                cPage--;
+                            }
+                            if (cPage == pages) {
+                                mBack = true;
+                                cPage -= 2;
+                            }
+                            if (cPage < 0) {
+                                mBack = false;
+                                cPage += 2;
+                            }
+                            cPage = Math.min(cPage, pages - 1);
+                            cPage = Math.max(cPage, 0);
 
-	}
+                            w.snapToPage(cPage);*/
+                            // } TODO FIXME test code
+                        }
+                    }
+                    
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+    
+    private void updatePagedViewIcon(final View icon, final String key) {
+        SharedPreferences prefs =
+                mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
+        int selectedId = prefs.getInt(key, -1);
+        
+        int pages = getPageCount();
+        PagedViewCellLayout layout;
+        PagedViewCellLayoutChildren childrenLayout;
+        boolean flag = false;
+        for (int i = 0; i < pages; i++) {
+            layout = (PagedViewCellLayout) getPageAt(i);
+            childrenLayout = layout.getChildrenLayout();
+            int count = childrenLayout.getChildCount();
+            if(flag) {
+                break;
+            }
+            for (int j = 0; j < count; j++) {
+                View v = childrenLayout.getChildAt(j);
+                if (v instanceof PagedViewIcon) {
+                    Object tag = v.getTag();
+                    if (tag instanceof ScrollAnimStyleInfo) {
+                        continue;
+                    }
+                    ApplicationInfo app = (ApplicationInfo) tag;
+                    if(app.id == selectedId) {
+                        app.iconBitmap = createIconBitmap((int) app.id, mContext,
+                                false, false);
+                        ((PagedViewIcon)v).applyFromApplicationInfo(app, true, null);
+                        v.invalidate();
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (icon instanceof PagedViewIcon) {
+            final ApplicationInfo appInfo = (ApplicationInfo) icon.getTag();
+            appInfo.iconBitmap = createIconBitmap((int) appInfo.id, mContext,
+                    true, false);
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    SharedPreferences prefs =
+                            mLauncher.getSharedPreferences(Launcher.PREFS_KEY, Context.MODE_PRIVATE);
+                    Editor editor = prefs.edit();
+                    editor.putInt(key, (int) appInfo.id);
+                    editor.commit();
+                    return null;
+                }
+            }.execute();
+            ((PagedViewIcon)icon).applyFromApplicationInfo(appInfo, true, null);
+            icon.invalidate();
+        }
+    }
     
     private void effectIconOnClick(View v) {
         final ScrollAnimStyleInfo animInfo = (ScrollAnimStyleInfo) v.getTag();

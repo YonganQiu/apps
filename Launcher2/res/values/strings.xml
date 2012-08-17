@@ -279,4 +279,23 @@ s -->
         <item>By install time</item>
         <item>By launch count</item>
     </string-array>
+    
+    <string-array name="wallpapers_labels">
+        <item>Architecture</item>
+        <item>Bubblegum</item>
+        <item>Canyon</item>
+        <item>Chroma</item>
+        <item>Dulcet</item>
+        <item>Fidelity</item>
+        <item>Flora</item>
+        <item>Splendid</item>
+        <item>Leaf</item>
+        <item>Classical</item>
+    </string-array>
+    
+    <string-array name="theme_labels">
+        <item>Default</item>
+        <item>Classical</item>
+        <item>Reaationary</item>
+    </string-array>
 </resources>

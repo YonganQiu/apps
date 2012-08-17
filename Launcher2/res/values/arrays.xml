@@ -63,46 +63,22 @@
     		<item>@drawable/big_letter_z</item>
     </array> -->
     
-    <!-- <array name="letter_icons_bg" translatable="false">
-    		<item>@drawable/letter_bg_a</item>
-    		<item>@drawable/letter_bg_b</item>
-    		<item>@drawable/letter_bg_c</item>
-    		<item>@drawable/letter_bg_d</item>
-    		<item>@drawable/letter_bg_e</item>
-    		<item>@drawable/letter_bg_f</item>
-    		<item>@drawable/letter_bg_g</item>
-    		<item>@drawable/letter_bg_h</item>
-    		<item>@drawable/letter_bg_i</item>
-    		<item>@drawable/letter_bg_j</item>
-    </array> -->
+    <array name="wallpapers_ids" translatable="false">
+        <item>@drawable/wallpaper_architecture</item>
+        <item>@drawable/wallpaper_bubblegum</item>
+        <item>@drawable/wallpaper_canyon</item>
+        <item>@drawable/wallpaper_chroma</item>
+        <item>@drawable/wallpaper_eulcet</item>
+        <item>@drawable/wallpaper_fidelity</item>
+        <item>@drawable/wallpaper_flora</item>
+        <item>@drawable/wallpaper_splendid</item>
+        <item>@drawable/wallpaper_leaf</item>
+        <item>@drawable/wallpaper_classical</item>
+    </array>
     
-    <string-array name="apps_sort_letter_keys" translatable="false">
-           <item>#</item>
-    		<item>A</item>
-    		<item>B</item>
-    		<item>C</item>
-    		<item>D</item>
-    		<item>E</item>
-    		<item>F</item>
-    		<item>G</item>
-    		<item>H</item>
-    		<item>I</item>
-    		<item>J</item>
-    		<item>K</item>
-    		<item>L</item>
-    		<item>M</item>
-    		<item>N</item>
-    		<item>O</item>
-    		<item>P</item>
-    		<item>Q</item>
-    		<item>R</item>
-    		<item>S</item>
-    		<item>T</item>
-    		<item>U</item>
-    		<item>V</item>
-    		<item>W</item>
-    		<item>X</item>
-    		<item>Y</item>
-    		<item>Z</item>
-    </string-array>
+    <array name="themes_ids" translatable="false">
+        <item>@drawable/theme_default</item>
+        <item>@drawable/theme_classical</item>
+        <item>@drawable/theme_reaationary</item>
+    </array>
 </resources>

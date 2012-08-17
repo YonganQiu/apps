@@ -61,6 +61,11 @@ public class PagedViewIcon extends TextView implements Checkable {
     private Bitmap mNewIcon;
     private boolean mIsNewIcon = false;
   //}add by zhongheng.zheng end
+    
+    public enum IconType {
+        APP, OTHER
+    }
+    private IconType mIconType = IconType.APP;
 
     public PagedViewIcon(Context context) {
         this(context, null);
@@ -189,7 +194,7 @@ public class PagedViewIcon extends TextView implements Checkable {
         }
         
       //{add by zhongheng.zheng at 2012.7.10 begin new install sign
-        if(mIsNewIcon){
+        if(mIsNewIcon && mIconType == IconType.APP){
         	initBgBitmap(this.getContext());
         	int hspace = (getWidth() - mIcon.getWidth()) / 2;
             //int vspace = (getHeight() - mIcon.getHeight()) / 2;
@@ -251,4 +256,8 @@ public class PagedViewIcon extends TextView implements Checkable {
         mNewIcon = Utilities.getAppIconNewBitmap(context);
     }
   //{add by zhongheng.zheng end
+    
+    public void setIconType(IconType type) {
+        mIconType = type;
+    }
 }
