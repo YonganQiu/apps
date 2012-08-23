@@ -123,6 +123,11 @@ public class LauncherModel extends BroadcastReceiver {
     private static int mCellCountY;
 
     protected int mPreviousConfigMcc;
+    
+
+    //{add by zhongheng.zheng at 2012.8.17 begin for app type
+    private AppTypeUitls mAppTypeUitls; 
+    //}add by zhongheng.zheng end
 
     public interface Callbacks {
         public boolean setLoadOnResume();
@@ -155,6 +160,9 @@ public class LauncherModel extends BroadcastReceiver {
         mBatchSize = res.getInteger(R.integer.config_allAppsBatchSize);
         Configuration config = res.getConfiguration();
         mPreviousConfigMcc = config.mcc;
+        //{add by zhongheng.zheng at 2012.8.17 begin for app type
+        mAppTypeUitls = mApp.getAppTypeUitls();
+        //}add by zhongheng.zheng end
     }
 
     public Bitmap getFallbackIcon() {
@@ -1549,6 +1557,14 @@ public class LauncherModel extends BroadcastReceiver {
                 case OP_REMOVE:
                 case OP_UNAVAILABLE:
                     for (int i=0; i<N; i++) {
+                    	//{add by zhongheng.zheng at 2012.8.17 begin for app type
+                        List<ComponentName> deleteComponent = mAllAppsList.toComponentNameFromPk(packages[i]);
+                        int size = deleteComponent.size();
+                        for(int j=0; j<size; j++){
+                        	Log.d(TAG,"mAppTypeUitls: " +mAppTypeUitls);
+                        	mAppTypeUitls.deleteDbForPackageRemoved(deleteComponent.get(j));
+                        }
+                      //}add by zhongheng.zheng end
                         if (DEBUG_LOADERS) Log.d(TAG, "mAllAppsList.removePackage " + packages[i]);
                         mAllAppsList.removePackage(packages[i]);
                     }

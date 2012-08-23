@@ -112,6 +112,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Default launcher application.
@@ -382,6 +383,7 @@ public final class Launcher extends Activity
       //}modify by jingjiang.yu end
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         }
+
     }
 
     private void checkForLocaleChange() {

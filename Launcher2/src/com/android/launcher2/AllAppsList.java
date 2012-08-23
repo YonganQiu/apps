@@ -112,6 +112,22 @@ class AllAppsList {
         // This is more aggressive than it needs to be.
         mIconCache.flush();
     }
+    
+  //{add by zhongheng.zheng at 2012.8.17 begin for app type
+    public List<ComponentName> toComponentNameFromPk(String packageName){
+    	List<ComponentName> componentName = new ArrayList<ComponentName>();
+    	final List<ApplicationInfo> data = this.data;
+        for (int i = data.size() - 1; i >= 0; i--) {
+            ApplicationInfo info = data.get(i);
+            final ComponentName component = info.intent.getComponent();
+            if (packageName.equals(component.getPackageName())) {
+            	componentName.add(component);
+            }
+        }
+        return componentName;
+    }
+  //}add by zhongheng.zheng end
+    
 
     /**
      * Add and remove icons for this package which has been updated.

@@ -147,6 +147,11 @@
             </intent-filter>
         </receiver>
         <!-- Added by yongan.qiu on 2012.3.20 for widget end-->
+        
+        <!-- Add by zhongheng.zheng at 2012.8.1 begin for provider-->
+        <provider android:name="com.android.launcher2.AppTypeProvider"
+			android:authorities="com.android.launcher.apptype" />
+        <!-- Add by zhongheng.zheng end-->
 
     </application>
 </manifest>

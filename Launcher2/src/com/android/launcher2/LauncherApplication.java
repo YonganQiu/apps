@@ -40,6 +40,10 @@ public class LauncherApplication extends Application {
     private Launcher mLauncher;
     //Added by yongan.qiu on 2012.3.20 end.
     
+    //{Add by zhongheng.zheng at 2012.8.15 begin for 
+    private AppTypeUitls mAppTypeUitls;
+    //}Add by zhongheng.zheng end
+    
 	// {add by jingjiang.yu at 2012.07.09 begin for screen scroll.
 	private ArrayList<ScrollAnimStyleInfo> mScrollAnimList = new ArrayList<ScrollAnimStyleInfo>(
 			0);
@@ -56,6 +60,10 @@ public class LauncherApplication extends Application {
             screenSize == Configuration.SCREENLAYOUT_SIZE_XLARGE;
         sScreenDensity = getResources().getDisplayMetrics().density;
 
+      //{Add by zhongheng.zheng at 2012.8.15 begin for 
+        mAppTypeUitls = new AppTypeUitls(this);
+        //}Add by zhongheng.zheng end
+        
         mIconCache = new IconCache(this);
         mModel = new LauncherModel(this, mIconCache);
 
@@ -125,6 +133,12 @@ public class LauncherApplication extends Application {
         return mLauncher;
     }
     //Added by yongan.qiu on 2012.3.20 end.
+    
+    //{Add by zhongheng.zheng at 2012.8.15 begin for 
+    public AppTypeUitls getAppTypeUitls(){
+    	return mAppTypeUitls;
+    }
+    //}Add by zhongheng.zheng end
     
     IconCache getIconCache() {
         return mIconCache;

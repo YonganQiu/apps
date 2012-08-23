@@ -1,0 +1,5 @@
+<app_types>
+	<app_type type_id="app_type_name_communication"/>
+	<app_type type_id="app_type_name_game"/>
+	<app_type  type_id="app_type_name_media"/>
+</app_types>

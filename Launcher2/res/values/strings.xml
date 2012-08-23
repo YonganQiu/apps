@@ -280,6 +280,7 @@ s -->
         <item>By launch count</item>
     </string-array>
     
+
     <string-array name="wallpapers_labels">
         <item>Architecture</item>
         <item>Bubblegum</item>
@@ -298,4 +299,13 @@ s -->
         <item>Classical</item>
         <item>Reaationary</item>
     </string-array>
+
+    
+    <!--add by zhongheng.zheng at 2012.8.10 begin for app type name -->
+    <string name="app_type_name_communication">Communication</string>
+    <string name="app_type_name_game">Game</string>
+    <string name="app_type_name_media">Media</string>
+    <!--add by zhongheng.zheng end -->
+    
+
 </resources>
